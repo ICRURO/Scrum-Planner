@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administración de usuarios · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-volver="/panel" data-seccion="usuarios" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1>Administración de usuarios</h1>
+      <p>Cuentas registradas</p>
+    </div>
+
+    <section class="tarjeta">
+      <div class="barra">
+        <div class="entrada entrada--icono barra__buscar">
+          <span class="entrada__icono" data-icon="buscar"></span>
+          <input class="control" id="buscar" type="search" placeholder="Buscar usuario" aria-label="Buscar usuario">
+        </div>
+        <select class="control barra__filtro" id="filtro-estado" aria-label="Filtrar por estado">
+          <option value="">Todos los estados</option>
+          <option value="activo">Activo</option>
+          <option value="desactivado">Desactivado</option>
+          <option value="invitacion_pendiente">Invitación pendiente</option>
+        </select>
+        <span class="barra__espacio"></span>
+        <a class="btn btn-secundario" href="/permisos"><span data-icon="escudo" data-size="18"></span>Permisos</a>
+        <a class="btn btn-primario" href="/usuarios/invitar"><span data-icon="mas" data-size="18"></span>Invitar usuario</a>
+      </div>
+
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead><tr><th>Nombre</th><th>Correo</th><th>Rol global</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="tabla-usuarios"></tbody>
+        </table>
+      </div>
+      <p class="tabla-nota">Una cuenta desactivada no puede ingresar; su historial se conserva.</p>
+    </section>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/users/usuarios.js"></script>
+</body>
+</html>

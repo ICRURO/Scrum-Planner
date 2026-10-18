@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editar usuario · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-volver="/usuarios" data-volver-texto="usuarios" data-seccion="usuarios" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina pagina--estrecha">
+    <div class="titulo-pagina">
+      <h1>Editar usuario</h1>
+      <p>Datos de la cuenta</p>
+    </div>
+
+    <div class="alerta alerta--error" id="error-carga" role="alert" hidden></div>
+
+    <div class="columna" id="contenido" hidden>
+      <form class="tarjeta" id="form-editar" novalidate>
+        <div class="cabecera-ficha">
+          <span class="avatar avatar--grande avatar--perfil" id="usuario-avatar"></span>
+          <div><strong id="usuario-nombre"></strong><span id="usuario-estado"></span></div>
+        </div>
+        <div class="campo-fila">
+          <div class="campo"><label for="nombre">Nombre</label><input class="control" id="nombre"></div>
+          <div class="campo"><label for="apellidos">Apellidos</label><input class="control" id="apellidos"></div>
+        </div>
+        <div class="campo"><label for="correo">Correo</label><input class="control" id="correo" type="email"></div>
+        <div class="campo"><label for="rol">Rol global</label>
+          <select class="control" id="rol"><option value="usuario">Usuario</option><option value="administrador">Administrador general</option></select>
+        </div>
+        <div class="tarjeta__pie">
+          <a class="btn btn-peligro" href="/usuarios">Cancelar</a>
+          <button class="btn btn-primario" type="submit">Guardar cambios</button>
+        </div>
+      </form>
+
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="usuario"></span>Estado de la cuenta</h2>
+        <p class="texto-suave" id="estado-texto"></p>
+        <div class="tarjeta__pie tarjeta__pie--izq" id="estado-acciones"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/users/usuario_editar.js"></script>
+</body>
+</html>

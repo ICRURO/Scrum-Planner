@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registrar o invitar usuario · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-volver="/usuarios" data-volver-texto="usuarios" data-seccion="usuarios" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina pagina--estrecha">
+    <div class="titulo-pagina">
+      <h1>Registrar o invitar usuario</h1>
+      <p>Alta controlada</p>
+    </div>
+
+    <form class="tarjeta" id="form-invitar" novalidate>
+      <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="enviar"></span>Datos obligatorios</h2>
+      <div class="campo"><label for="nombre">Nombre completo</label><input class="control" id="nombre" placeholder="Nombre y apellidos"></div>
+      <div class="campo"><label for="correo">Correo</label>
+        <div class="entrada entrada--icono"><span class="entrada__icono" data-icon="correo"></span><input class="control" id="correo" type="email" placeholder="correo@ejemplo.com"></div>
+        <span class="campo__ayuda">No puede repetirse: cada correo identifica una sola cuenta.</span>
+      </div>
+      <div class="campo"><label for="rol">Rol global</label>
+        <select class="control" id="rol"><option value="usuario">Usuario</option><option value="administrador">Administrador general</option></select>
+        <span class="campo__ayuda">El rol Scrum (Product Owner, Scrum Master…) se asigna después, dentro de cada proyecto.</span>
+      </div>
+      <div class="campo"><label for="metodo">Método</label>
+        <select class="control" id="metodo"><option>Enviar invitación por correo electrónico</option><option>Registrar con contraseña inicial</option></select>
+      </div>
+      <div class="tarjeta__pie">
+        <a class="btn btn-peligro" href="/usuarios">Cancelar</a>
+        <button class="btn btn-primario" type="submit">Enviar invitación</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/users/usuario_invitar.js"></script>
+</body>
+</html>
