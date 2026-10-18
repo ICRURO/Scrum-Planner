@@ -1,0 +1,348 @@
+{
+  "usuarios": [
+    {
+      "id": "USR-001",
+      "nombre": "Admin",
+      "apellidos": "Demo",
+      "correo": "admin@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "administrador",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-002",
+      "nombre": "Product Owner",
+      "apellidos": "Demo",
+      "correo": "po@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-003",
+      "nombre": "Scrum Master",
+      "apellidos": "Demo",
+      "correo": "sm@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-004",
+      "nombre": "Developer",
+      "apellidos": "Demo",
+      "correo": "dev@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-005",
+      "nombre": "Interesado",
+      "apellidos": "Demo",
+      "correo": "interesado@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-006",
+      "nombre": "Cuenta",
+      "apellidos": "Desactivada",
+      "correo": "desactivado@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "usuario",
+      "estado": "desactivado"
+    },
+    {
+      "id": "USR-007",
+      "nombre": "Invitación",
+      "apellidos": "Pendiente",
+      "correo": "pendiente@scrum.test",
+      "password": null,
+      "rolGlobal": "usuario",
+      "estado": "invitacion_pendiente"
+    },
+    {
+      "id": "USR-008",
+      "nombre": "Antonio de Jesús",
+      "apellidos": "Tejeda López",
+      "correo": "antonio@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "administrador",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-009",
+      "nombre": "María de Lourdes",
+      "apellidos": "Méndez Prigada",
+      "correo": "lourdes@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-010",
+      "nombre": "Sara",
+      "apellidos": "Ortega Hernández",
+      "correo": "sara@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-011",
+      "nombre": "Ian Carlo",
+      "apellidos": "Rumayor Romero",
+      "correo": "ian@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "usuario",
+      "estado": "desactivado"
+    },
+    {
+      "id": "USR-012",
+      "nombre": "José Fernando",
+      "apellidos": "Martínez Enríquez",
+      "correo": "fernando@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-013",
+      "nombre": "Aradan",
+      "apellidos": "Schwartz Rocha",
+      "correo": "aradan@scrum.test",
+      "password": null,
+      "rolGlobal": "usuario",
+      "estado": "invitacion_pendiente"
+    },
+    {
+      "id": "USR-014",
+      "nombre": "Diego",
+      "apellidos": "Aburto Lara",
+      "correo": "diego@scrum.test",
+      "password": "scrum123",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    }
+  ],
+  "proyectos": [
+    {
+      "id": "PRJ-001",
+      "nombre": "Sistema de gestión Scrum",
+      "descripcion": "Plataforma web para administrar usuarios, proyectos, backlog, sprints y reportes con Scrum.",
+      "objetivo": "Facilitar la planeación, el seguimiento y la evaluación de los sprints del equipo.",
+      "fechaInicio": "2026-10-05",
+      "fechaFin": "2026-12-11",
+      "estado": "activo",
+      "archivado": false
+    },
+    {
+      "id": "PRJ-002",
+      "nombre": "Portal de servicio social",
+      "descripcion": "Registro y seguimiento de las horas de servicio social de los estudiantes.",
+      "objetivo": "Centralizar el control de horas y reducir los trámites en papel.",
+      "fechaInicio": "2026-02-02",
+      "fechaFin": "2026-06-26",
+      "estado": "finalizado",
+      "archivado": false
+    },
+    {
+      "id": "PRJ-003",
+      "nombre": "App de biblioteca",
+      "descripcion": "Catálogo digital y control de préstamos de libros.",
+      "objetivo": "Reducir los tiempos de préstamo y devolución.",
+      "fechaInicio": "2027-01-11",
+      "fechaFin": "2027-05-28",
+      "estado": "preparacion",
+      "archivado": false
+    },
+    {
+      "id": "PRJ-004",
+      "nombre": "Tablero de inventario",
+      "descripcion": "Control del inventario de material de laboratorio.",
+      "objetivo": "Evitar faltantes de material durante el semestre.",
+      "fechaInicio": "2026-08-17",
+      "fechaFin": "2026-11-27",
+      "estado": "suspendido",
+      "archivado": false
+    },
+    {
+      "id": "PRJ-005",
+      "nombre": "Sitio web institucional",
+      "descripcion": "Rediseño del sitio informativo de la facultad.",
+      "objetivo": "Presentar la oferta académica de forma clara y accesible.",
+      "fechaInicio": "2025-08-18",
+      "fechaFin": "2026-01-23",
+      "estado": "finalizado",
+      "archivado": true
+    }
+  ],
+  "participantes": [
+    {
+      "id": "PAR-001",
+      "idProyecto": "PRJ-001",
+      "idUsuario": "USR-002",
+      "rol": "Product Owner"
+    },
+    {
+      "id": "PAR-002",
+      "idProyecto": "PRJ-001",
+      "idUsuario": "USR-003",
+      "rol": "Scrum Master"
+    },
+    {
+      "id": "PAR-003",
+      "idProyecto": "PRJ-001",
+      "idUsuario": "USR-004",
+      "rol": "Developer"
+    },
+    {
+      "id": "PAR-004",
+      "idProyecto": "PRJ-001",
+      "idUsuario": "USR-005",
+      "rol": "Interesado"
+    },
+    {
+      "id": "PAR-005",
+      "idProyecto": "PRJ-002",
+      "idUsuario": "USR-002",
+      "rol": "Product Owner"
+    },
+    {
+      "id": "PAR-006",
+      "idProyecto": "PRJ-002",
+      "idUsuario": "USR-003",
+      "rol": "Scrum Master"
+    },
+    {
+      "id": "PAR-007",
+      "idProyecto": "PRJ-002",
+      "idUsuario": "USR-004",
+      "rol": "Developer"
+    },
+    {
+      "id": "PAR-008",
+      "idProyecto": "PRJ-003",
+      "idUsuario": "USR-002",
+      "rol": "Product Owner"
+    },
+    {
+      "id": "PAR-009",
+      "idProyecto": "PRJ-004",
+      "idUsuario": "USR-010",
+      "rol": "Product Owner"
+    },
+    {
+      "id": "PAR-010",
+      "idProyecto": "PRJ-004",
+      "idUsuario": "USR-003",
+      "rol": "Scrum Master"
+    },
+    {
+      "id": "PAR-011",
+      "idProyecto": "PRJ-004",
+      "idUsuario": "USR-004",
+      "rol": "Developer"
+    },
+    {
+      "id": "PAR-012",
+      "idProyecto": "PRJ-005",
+      "idUsuario": "USR-002",
+      "rol": "Product Owner"
+    }
+  ],
+  "historial": [
+    {
+      "id": "HIS-001",
+      "fecha": "2026-10-05T09:15:00Z",
+      "idUsuario": "USR-001",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-001",
+      "campo": "estado",
+      "valorAnterior": "preparacion",
+      "valorNuevo": "activo"
+    },
+    {
+      "id": "HIS-002",
+      "fecha": "2026-10-09T16:40:00Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-001",
+      "campo": "informacion",
+      "valorAnterior": null,
+      "valorNuevo": null
+    },
+    {
+      "id": "HIS-003",
+      "fecha": "2026-10-12T11:05:00Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-001",
+      "campo": "informacion",
+      "valorAnterior": null,
+      "valorNuevo": null
+    },
+    {
+      "id": "HIS-004",
+      "fecha": "2026-02-02T08:30:00Z",
+      "idUsuario": "USR-001",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-002",
+      "campo": "estado",
+      "valorAnterior": "preparacion",
+      "valorNuevo": "activo"
+    },
+    {
+      "id": "HIS-005",
+      "fecha": "2026-06-26T18:00:00Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-002",
+      "campo": "estado",
+      "valorAnterior": "activo",
+      "valorNuevo": "finalizado"
+    },
+    {
+      "id": "HIS-006",
+      "fecha": "2026-08-17T10:00:00Z",
+      "idUsuario": "USR-001",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-004",
+      "campo": "estado",
+      "valorAnterior": "preparacion",
+      "valorNuevo": "activo"
+    },
+    {
+      "id": "HIS-007",
+      "fecha": "2026-10-02T13:20:00Z",
+      "idUsuario": "USR-001",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-004",
+      "campo": "estado",
+      "valorAnterior": "activo",
+      "valorNuevo": "suspendido"
+    },
+    {
+      "id": "HIS-008",
+      "fecha": "2026-01-23T17:45:00Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-005",
+      "campo": "estado",
+      "valorAnterior": "activo",
+      "valorNuevo": "finalizado"
+    },
+    {
+      "id": "HIS-009",
+      "fecha": "2026-02-10T09:00:00Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-005",
+      "campo": "archivado",
+      "valorAnterior": false,
+      "valorNuevo": true
+    }
+  ]
+}
