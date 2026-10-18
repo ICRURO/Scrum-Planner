@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guía de componentes · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/modules/common/componentes.css">
+</head>
+<body>
+  <div id="app-header"></div>
+
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1>Guía de componentes</h1>
+      <p>Todo lo que las pantallas reutilizan. Para que puedan ver qué cosas son las que deben añadir a sus pantallas, respectivamente</p>
+    </div>
+
+    <div class="columna">
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Colores</h2>
+        <div class="muestras" id="muestras"></div>
+      </section>
+
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Botones</h2>
+        <div class="fila">
+          <button class="btn btn-primario">Guardar proyecto</button>
+          <button class="btn btn-secundario">Editar</button>
+          <button class="btn btn-peligro">Finalizar proyecto</button>
+          <button class="btn btn-peligro-solido">Desactivar</button>
+          <button class="btn btn-texto">Cancelar</button>
+          <button class="btn btn-primario btn-chico"><span data-icon="mas" data-size="18"></span>Nuevo proyecto</button>
+          <button class="btn btn-primario cargando">Guardando</button>
+          <button class="btn btn-primario" disabled>Deshabilitado</button>
+        </div>
+      </section>
+
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Campos de formulario</h2>
+        <div class="rejilla-doble">
+          <div>
+            <div class="campo"><label for="c1">Nombre del proyecto</label><input class="control" id="c1" placeholder="Ej. Sistema de inventario"></div>
+            <div class="campo"><label for="c2">Con ícono</label>
+              <div class="entrada entrada--icono"><span class="entrada__icono" data-icon="correo"></span><input class="control" id="c2" placeholder="correo@ejemplo.com"></div>
+            </div>
+            <div class="campo"><label for="c3">Con error</label><input class="control invalido" id="c3" value="dato incorrecto"><span class="campo__error">Este campo es obligatorio.</span></div>
+          </div>
+          <div>
+            <div class="campo"><label for="c4">Estado inicial</label>
+              <select class="control" id="c4"><option>En preparación</option><option>Activo</option></select>
+              <span class="campo__ayuda">Texto de ayuda debajo del campo.</span></div>
+            <div class="campo"><label for="c5">Solo lectura</label><input class="control" id="c5" value="PRJ-005" readonly></div>
+            <div class="campo"><label for="c6">Descripción</label><textarea class="control" id="c6" placeholder="Describe el proyecto"></textarea></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Insignias de estado y rol</h2>
+        <div class="fila" id="insignias"></div>
+      </section>
+
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Avisos y mensajes</h2>
+        <div class="alerta alerta--error"><span data-icon="alerta"></span><span>Correo o contraseña incorrectos.</span></div>
+        <div class="alerta alerta--exito"><span data-icon="check"></span><span>Proyecto guardado correctamente.</span></div>
+        <div class="alerta alerta--aviso"><span data-icon="alerta"></span><span>Este proyecto está suspendido.</span></div>
+        <div class="alerta alerta--info"><span data-icon="info"></span><span>Una cuenta desactivada no puede ingresar; su historial se conserva.</span></div>
+        <div class="fila">
+          <button class="btn btn-secundario btn-chico" id="prueba-toast-ok">Ver aviso de éxito</button>
+          <button class="btn btn-secundario btn-chico" id="prueba-toast-error">Ver aviso de error</button>
+          <button class="btn btn-peligro btn-chico" id="prueba-confirmar">Ver confirmación</button>
+        </div>
+      </section>
+
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Barra de herramientas y tabla</h2>
+        <div class="barra">
+          <div class="entrada entrada--icono barra__buscar"><span class="entrada__icono" data-icon="buscar"></span><input class="control" placeholder="Buscar proyecto"></div>
+          <select class="control barra__filtro"><option>Todos los estados</option><option>Activo</option></select>
+          <label class="casilla"><input type="checkbox"> Ver archivados</label>
+          <span class="barra__espacio"></span>
+          <button class="btn btn-primario"><span data-icon="mas" data-size="18"></span>Nuevo proyecto</button>
+        </div>
+        <div class="tabla-contenedor">
+          <table class="tabla">
+            <thead><tr><th>ID</th><th>Proyecto</th><th>Fechas previstas</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-ejemplo"></tbody>
+          </table>
+        </div>
+        <p class="tabla-nota">Archivar oculta el proyecto de la lista activa sin eliminar sus datos.</p>
+      </section>
+
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Estados del proyecto</h2>
+        <div class="estados">
+          <div class="estado-opcion">En preparación</div>
+          <div class="estado-opcion actual">Activo</div>
+          <div class="estado-opcion">Suspendido</div>
+          <div class="estado-opcion">Finalizado</div>
+        </div>
+        <div class="acciones-fila">
+          <button class="btn btn-primario">Cambiar estado</button>
+          <button class="btn btn-peligro">Finalizar proyecto</button>
+          <button class="btn btn-secundario">Reabrir proyecto</button>
+          <button class="btn btn-secundario">Editar</button>
+          <button class="btn btn-secundario">Archivar</button>
+        </div>
+      </section>
+
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Matriz de permisos</h2>
+        <div class="tabla-contenedor">
+          <table class="tabla">
+            <thead><tr><th>Acción</th><th class="tabla__centro">Admin</th><th class="tabla__centro">Product Owner</th><th class="tabla__centro">Developer</th></tr></thead>
+            <tbody>
+              <tr><td>Consultar proyecto</td><td class="tabla__centro"><span class="si" data-icon="check"></span></td><td class="tabla__centro"><span class="si" data-icon="check"></span></td><td class="tabla__centro"><span class="si" data-icon="check"></span></td></tr>
+              <tr><td>Crear proyecto</td><td class="tabla__centro"><span class="si" data-icon="check"></span></td><td class="tabla__centro"><span class="si" data-icon="check"></span></td><td class="tabla__centro"><span class="no">—</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Estado vacío</h2>
+        <div class="vacio">
+          <span class="vacio__icono" data-icon="carpeta_vacia" data-size="24"></span>
+          <h3>Aún no hay proyectos</h3>
+          <p>Crea el primero para empezar a organizar el trabajo.</p>
+          <button class="btn btn-primario"><span data-icon="mas" data-size="18"></span>Nuevo proyecto</button>
+        </div>
+      </section>
+
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Íconos disponibles</h2>
+        <div class="iconos" id="iconos"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/common/componentes.js"></script>
+</body>
+</html>
