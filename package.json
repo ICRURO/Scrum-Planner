@@ -1,0 +1,15 @@
+{
+  "name": "scrum-manager",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de proyectos mediante Scrum",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
