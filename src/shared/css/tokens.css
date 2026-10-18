@@ -1,0 +1,43 @@
+/* 
+   TOKENS DE DISEÑO
+   
+   Única fuente de colores, tamaños y sombras
+
+*/
+:root {
+  /* Paleta de colores */
+  --c-bosque: #1B4D40;      /* encabezado */
+  --c-bosque-700: #143B31;
+  --c-hoja: #2E7D32;        /* botones principales */
+  --c-hoja-700: #256628;
+  --c-brote: #4CAF50;       /* logo y acentos */
+  --c-papel: #F5F6F8;       /* fondo de página */
+  --c-blanco: #FFFFFF;
+  --c-tinta: #1A1F1C;       /* texto */
+  --c-piedra: #5F6663;      /* texto secundario */
+  --c-linea: #DDE1DE;       /* bordes */
+  --c-brasa: #C62828;       /* peligro / finalizado */
+  --c-miel: #B7791F;        /* pendiente / en preparación */
+
+  /* Fondos suaves para insignias y avisos */
+  --t-hoja: #E6F2E8;
+  --t-bosque: #DCEBE4;
+  --t-brasa: #FBE7E6;
+  --t-miel: #FFF1CF;
+  --t-piedra: #ECEFED;
+
+  /* Forma */
+  --radio-s: 8px;
+  --radio-m: 12px;
+  --radio-l: 18px;
+
+  /* Sombras */
+  --sombra-tarjeta: 0 1px 2px rgba(26, 31, 28, 0.06);
+  --sombra-flotante: 0 14px 34px rgba(20, 59, 49, 0.18);
+
+  /* Tipografía (fuentes del sistema) */
+  --fuente: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Medidas */
+  --alto-header: 68px;
+}
