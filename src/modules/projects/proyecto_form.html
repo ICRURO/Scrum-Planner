@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proyecto · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-volver="/proyectos" data-volver-texto="proyectos" data-seccion="proyectos" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina pagina--media">
+    <div class="titulo-pagina">
+      <h1 id="titulo">Crear proyecto</h1>
+      <p id="subtitulo">Información básica</p>
+    </div>
+
+    <div class="alerta alerta--error" id="error-carga" role="alert" hidden></div>
+
+    <form class="tarjeta" id="form-proyecto" novalidate>
+      <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="carpeta"></span>Información básica</h2>
+      <div class="campo"><label for="nombre">Nombre</label><input class="control" id="nombre" placeholder="Nombre del proyecto"></div>
+      <div class="campo"><label for="descripcion">Descripción</label><textarea class="control" id="descripcion" placeholder="¿De qué trata el proyecto?"></textarea></div>
+      <div class="campo"><label for="objetivo">Objetivo</label><textarea class="control" id="objetivo" placeholder="¿Qué se quiere lograr?"></textarea></div>
+      <div class="campo-fila">
+        <div class="campo"><label for="inicio">Fecha de inicio</label><input class="control" id="inicio" type="date"></div>
+        <div class="campo"><label for="fin">Fecha de fin</label><input class="control" id="fin" type="date"></div>
+      </div>
+      <div class="campo-fila">
+        <div class="campo"><label for="identificador">Identificador</label><input class="control" id="identificador" readonly><span class="campo__ayuda">Se genera automáticamente y no se repite.</span></div>
+        <div class="campo"><label for="estado" id="etiqueta-estado">Estado inicial</label><input class="control" id="estado" readonly></div>
+      </div>
+      <div class="tarjeta__pie">
+        <a class="btn btn-peligro" id="btn-cancelar" href="/proyectos">Cancelar</a>
+        <button class="btn btn-primario" type="submit">Guardar proyecto</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/projects/proyecto_form.js"></script>
+</body>
+</html>

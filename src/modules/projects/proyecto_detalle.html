@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detalle del proyecto · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-volver="/proyectos" data-volver-texto="proyectos" data-seccion="proyectos" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1 id="nombre">Proyecto</h1>
+      <div class="titulo-meta"><span id="id-proyecto"></span><span id="estado-insignia"></span><span id="archivado-insignia"></span></div>
+    </div>
+
+    <section class="tarjeta tarjeta--aviso" id="sin-acceso" hidden>
+      <div class="vacio">
+        <span class="vacio__icono" data-icon="escudo" data-size="26"></span>
+        <h3 id="sin-acceso-titulo">Acceso no autorizado</h3>
+        <p id="sin-acceso-texto">No tienes permisos para realizar esta acción.</p>
+        <a class="btn btn-secundario" href="/proyectos">Volver a proyectos</a>
+      </div>
+    </section>
+
+    <div class="columna" id="contenido" hidden>
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="bandera"></span>Estado del proyecto</h2>
+        <div class="estados" id="estados"></div>
+        <div class="acciones-fila" id="acciones"></div>
+        <div class="alerta alerta--info" id="aviso-rol" hidden></div>
+      </section>
+
+      <div class="rejilla-doble">
+        <section class="tarjeta">
+          <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="info"></span>Información general</h2>
+          <dl class="datos" id="info"></dl>
+        </section>
+        <section class="tarjeta">
+          <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="reloj"></span>Historial de cambios</h2>
+          <div class="tabla-contenedor">
+            <table class="tabla">
+              <thead><tr><th>Fecha</th><th>Usuario</th><th>Cambios</th></tr></thead>
+              <tbody id="historial"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/projects/proyecto_detalle.js"></script>
+</body>
+</html>

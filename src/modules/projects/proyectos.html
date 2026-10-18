@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proyectos · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-volver="/panel" data-seccion="proyectos" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1>Proyectos</h1>
+      <p>Proyectos con acceso autorizado</p>
+    </div>
+
+    <section class="tarjeta">
+      <div class="barra">
+        <div class="entrada entrada--icono barra__buscar">
+          <span class="entrada__icono" data-icon="buscar"></span>
+          <input class="control" id="buscar" type="search" placeholder="Buscar proyecto" aria-label="Buscar proyecto">
+        </div>
+        <select class="control barra__filtro" id="filtro-estado" aria-label="Filtrar por estado">
+          <option value="">Todos los estados</option>
+          <option value="preparacion">En preparación</option>
+          <option value="activo">Activo</option>
+          <option value="suspendido">Suspendido</option>
+          <option value="finalizado">Finalizado</option>
+        </select>
+        <label class="casilla"><input type="checkbox" id="ver-archivados"> Ver archivados</label>
+        <span class="barra__espacio"></span>
+        <a class="btn btn-primario" id="btn-nuevo" href="/proyectos/nuevo" hidden><span data-icon="mas" data-size="18"></span>Nuevo proyecto</a>
+      </div>
+
+      <div class="tabla-contenedor" id="contenedor-tabla">
+        <table class="tabla">
+          <thead><tr><th>ID</th><th>Proyecto</th><th>Tu rol</th><th>Fechas previstas</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="tabla-proyectos"></tbody>
+        </table>
+      </div>
+      <div class="vacio" id="sin-resultados" hidden>
+        <span class="vacio__icono" data-icon="carpeta_vacia" data-size="24"></span>
+        <h3>No hay proyectos para mostrar</h3>
+        <p>Cambia los filtros o espera a que te agreguen a un proyecto.</p>
+      </div>
+      <p class="tabla-nota">Archivar oculta el proyecto de la lista activa sin eliminar sus datos.</p>
+    </section>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/projects/proyectos.js"></script>
+</body>
+</html>
