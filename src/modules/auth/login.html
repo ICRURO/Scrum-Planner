@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/modules/auth/login.css">
+</head>
+<body data-header="publico">
+  <div id="app-header"></div>
+
+  <main class="login">
+    <section class="login__visual" aria-hidden="true">
+      <img src="/assets/login-tablero.svg" alt="">
+      <h2>Cada sprint, a la vista de todo el equipo</h2>
+      <p>Proyectos, historias y tareas en un solo lugar.</p>
+    </section>
+
+    <section class="login__formulario">
+      <div class="login__columna">
+        <div class="titulo-pagina">
+          <h1>Iniciar sesión</h1>
+          <p>Accede con tu cuenta registrada</p>
+        </div>
+
+        <form class="tarjeta" id="form-login" novalidate>
+          <div class="alerta alerta--error" id="login-error" role="alert" hidden></div>
+
+          <div class="campo">
+            <label for="correo">Correo</label>
+            <div class="entrada entrada--icono">
+              <span class="entrada__icono" data-icon="correo"></span>
+              <input class="control" id="correo" name="correo" type="email" autocomplete="username" placeholder="correo@ejemplo.com" required>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="password">Contraseña</label>
+            <div class="entrada entrada--icono">
+              <span class="entrada__icono" data-icon="candado"></span>
+              <input class="control con-accion" id="password" name="password" type="password" autocomplete="current-password" placeholder="Tu contraseña" required>
+              <button class="entrada__accion" type="button" id="ver-password" aria-label="Mostrar contraseña">
+                <span data-icon="ojo"></span>
+              </button>
+            </div>
+          </div>
+
+          <button class="btn btn-primario btn-bloque" type="submit" id="btn-entrar">Entrar</button>
+          <div class="login__enlace">
+            <a class="btn btn-texto" href="/recuperar">¿Olvidaste tu contraseña?</a>
+          </div>
+        </form>
+
+      </div>
+    </section>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/auth/login.js"></script>
+</body>
+</html>
