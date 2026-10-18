@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/modules/dashboard/panel.css">
+</head>
+<body data-seccion="panel" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1 id="saludo">Bienvenido</h1>
+      <p>Sistema base de proyectos de Scrum</p>
+    </div>
+
+    <div class="rejilla-panel">
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="rayo"></span>Accesos rápidos</h2>
+        <div class="rejilla-accesos" id="accesos"></div>
+      </section>
+
+      <div class="columna">
+        <section class="tarjeta">
+          <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="usuario"></span>Tu acceso</h2>
+          <div id="mi-acceso"></div>
+        </section>
+
+        <section class="tarjeta">
+          <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="reloj"></span>Actividad reciente</h2>
+          <div class="vacio">
+            <span class="vacio__icono" data-icon="reloj" data-size="24"></span>
+            <h3>Sin actividad todavía</h3>
+            <p>Los cambios en tus proyectos aparecerán aquí.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/dashboard/panel.js"></script>
+</body>
+</html>

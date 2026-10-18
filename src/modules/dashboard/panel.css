@@ -1,0 +1,7 @@
+/* Estilos propios del panel */
+
+.acceso-vacio { color: var(--c-piedra); }
+.mi-acceso__bloque { display: grid; gap: 8px; margin-bottom: 18px; }
+.mi-acceso__bloque:last-child { margin-bottom: 0; }
+.mi-acceso__bloque h3 { font-size: 0.9rem; color: var(--c-piedra); font-weight: 600; }
+.mi-acceso__proyecto { font-weight: 600; }
