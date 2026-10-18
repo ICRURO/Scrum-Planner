@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi perfil · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-volver="/panel" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina pagina--estrecha">
+    <div class="titulo-pagina">
+      <h1>Mi perfil</h1>
+      <p>Datos básicos</p>
+    </div>
+
+    <form class="tarjeta" id="form-perfil" novalidate>
+      <div class="cabecera-ficha">
+        <span class="avatar avatar--grande avatar--perfil" id="perfil-avatar"></span>
+        <div><strong id="perfil-nombre"></strong><span id="perfil-rol"></span></div>
+      </div>
+      <h2 class="tarjeta__titulo">Información personal</h2>
+      <div class="campo"><label for="nombre">Nombre</label><input class="control" id="nombre" autocomplete="given-name"></div>
+      <div class="campo"><label for="apellidos">Apellidos</label><input class="control" id="apellidos" autocomplete="family-name"></div>
+      <div class="campo"><label for="correo">Correo</label><input class="control" id="correo" readonly><span class="campo__ayuda">El correo identifica tu cuenta; solo el administrador puede cambiarlo.</span></div>
+      <div class="campo"><label for="rol">Rol global</label><input class="control" id="rol" readonly></div>
+      <div class="tarjeta__pie">
+        <a class="btn btn-peligro" href="/panel">Cancelar</a>
+        <button class="btn btn-primario" type="submit">Guardar cambios</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/users/perfil.js"></script>
+</body>
+</html>

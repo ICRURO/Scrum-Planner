@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recuperar contraseña · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-header="publico">
+  <div id="app-header"></div>
+
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1>Recuperar contraseña</h1>
+      <p>Sigue los dos pasos para volver a entrar</p>
+    </div>
+
+    <div class="rejilla-doble">
+      <form class="tarjeta" id="form-solicitar" novalidate>
+        <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="correo"></span>1. Solicitar enlace</h2>
+        <div class="campo">
+          <label for="correo">Correo</label>
+          <div class="entrada entrada--icono">
+            <span class="entrada__icono" data-icon="correo"></span>
+            <input class="control" id="correo" type="email" autocomplete="username" placeholder="Tu correo registrado">
+          </div>
+          <span class="campo__ayuda">Se enviará un enlace de un solo uso con vigencia limitada.</span>
+        </div>
+        <div class="tarjeta__pie tarjeta__pie--izq">
+          <button class="btn btn-primario" type="submit">Enviar enlace</button>
+          <a class="btn btn-secundario" href="/login">Volver</a>
+        </div>
+      </form>
+
+      <form class="tarjeta paso--bloqueado" id="form-nueva" novalidate>
+        <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="candado"></span>2. Nueva contraseña</h2>
+        <div class="alerta alerta--info" id="aviso-paso2">
+          <span data-icon="info"></span>
+          <span>Este paso se habilita al abrir el enlace que llega a tu correo.</span>
+        </div>
+        <div class="campo">
+          <label for="nueva">Nueva contraseña</label>
+          <input class="control" id="nueva" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" disabled>
+        </div>
+        <div class="campo">
+          <label for="confirmar">Confirmar contraseña</label>
+          <input class="control" id="confirmar" type="password" autocomplete="new-password" placeholder="Repite la contraseña" disabled>
+        </div>
+        <div class="tarjeta__pie tarjeta__pie--izq">
+          <button class="btn btn-primario" type="submit" id="btn-restablecer" disabled>Restablecer</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/auth/recuperar.js"></script>
+</body>
+</html>

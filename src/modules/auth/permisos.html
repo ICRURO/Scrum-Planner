@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Permisos de acceso · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-volver="/panel" data-seccion="permisos" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1>Permisos de acceso</h1>
+      <p>Según el rol y la participación en el proyecto</p>
+    </div>
+
+    <div class="rejilla-panel">
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="escudo"></span>Matriz de permisos</h2>
+        <div class="tabla-contenedor">
+          <table class="tabla">
+            <thead id="matriz-cabecera"></thead>
+            <tbody id="matriz-cuerpo"></tbody>
+          </table>
+        </div>
+        <p class="tabla-nota">El administrador general tiene permisos propios, separados de los roles Scrum. El rol Scrum cambia de un proyecto a otro.</p>
+      </section>
+
+      <section class="tarjeta tarjeta--aviso">
+        <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="alerta"></span>Acceso no autorizado</h2>
+        <div class="alerta alerta--aviso">
+          <span data-icon="alerta"></span>
+          <span>No tienes permisos para realizar esta acción.</span>
+        </div>
+        <p class="nota">Este es el mensaje que verá quien intente entrar a algo que su rol no permite.</p>
+        <div class="tarjeta__pie"><a class="btn btn-secundario" href="/panel">Volver al panel</a></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/auth/permisos.js"></script>
+</body>
+</html>

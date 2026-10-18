@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acceso no autorizado · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina pagina--estrecha">
+    <section class="tarjeta tarjeta--aviso">
+      <div class="vacio">
+        <span class="vacio__icono" data-icon="escudo" data-size="26"></span>
+        <h3>Acceso no autorizado</h3>
+        <p>No tienes permisos para realizar esta acción.</p>
+        <a class="btn btn-secundario" href="/panel">Volver al panel</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/auth/sin_permiso.js"></script>
+</body>
+</html>
