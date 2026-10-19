@@ -69,7 +69,7 @@
       "apellidos": "Tejeda López",
       "correo": "antonio@scrum.test",
       "password": "scrum123",
-      "rolGlobal": "administrador",
+      "rolGlobal": "usuario",
       "estado": "activo"
     },
     {
@@ -251,6 +251,36 @@
       "idProyecto": "PRJ-005",
       "idUsuario": "USR-002",
       "rol": "Product Owner"
+    }, 
+        {
+      "id": "PAR-013",
+      "idProyecto": "PRJ-001",
+      "idUsuario": "USR-008",
+      "rol": "Product Owner"
+    },
+    {
+      "id": "PAR-014",
+      "idProyecto": "PRJ-001",
+      "idUsuario": "USR-009",
+      "rol": "Scrum Master"
+    },
+    {
+      "id": "PAR-015",
+      "idProyecto": "PRJ-001",
+      "idUsuario": "USR-010",
+      "rol": "Developer"
+    },
+    {
+      "id": "PAR-016",
+      "idProyecto": "PRJ-001",
+      "idUsuario": "USR-012",
+      "rol": "Developer"
+    },
+    {
+      "id": "PAR-017",
+      "idProyecto": "PRJ-001",
+      "idUsuario": "USR-014",
+      "rol": "Developer"
     }
   ],
   "historial": [
