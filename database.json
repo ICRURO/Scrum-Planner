@@ -747,6 +747,16 @@
       "campo": "estado",
       "valorAnterior": "invitacion_pendiente",
       "valorNuevo": "activo"
+    },
+    {
+      "id": "HIS-037",
+      "fecha": "2026-10-26T21:29:16.140Z",
+      "idUsuario": "USR-001",
+      "entidad": "historia_usuario",
+      "idEntidad": "HU-001",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "HU-01 Organizacion"
     }
   ],
   "tokens": [
@@ -826,6 +836,15 @@
       "tipo": "invitacion",
       "expira": "2026-10-29T14:09:40.737Z",
       "usado": true
+    }
+  ],
+  "historiasUsuario": [
+    {
+      "id": "HU-001",
+      "idProyecto": "PRJ-001",
+      "titulo": "HU-01 Organizacion",
+      "descripcion": "Como Scrum master quiero que se organicen para poder empezar",
+      "criterios": []
     }
   ]
 }

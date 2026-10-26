@@ -19,6 +19,121 @@
   const SIGUIENTE = { preparacion: 'activo', activo: 'suspendido', suspendido: 'activo' };
 
   let actual = null; // proyecto mostrado en pantalla
+  let historiasActuales = [];
+  let historiaEditando = null;
+
+  const formularioHistoria = document.getElementById('formulario-historia');
+  const formularioContenedor = document.getElementById('formulario-historia-contenedor');
+  const criteriosFormulario = document.getElementById('criterios-formulario');
+  const listaHistorias = document.getElementById('lista-historias');
+
+  function agregarCriterio(criterio = {}) {
+    const numero = criteriosFormulario.children.length + 1;
+    const fila = document.createElement('div');
+    fila.className = 'historia-criterio';
+    fila.dataset.id = criterio.id || '';
+    fila.innerHTML = `
+      <div class="historia-criterio__encabezado">
+        <div class="historia-criterio__titulo">Criterio ${numero}</div>
+        ${criterio.id ? '' : '<button class="btn btn-texto btn-chico" type="button" data-quitar-criterio>Quitar criterio</button>'}
+      </div>
+      <div class="historia-criterio__campos">
+        <div class="campo">
+          <label for="criterio-${numero}-dado">Dado</label>
+          <textarea class="control" id="criterio-${numero}-dado" data-campo="dado" required>${UI.escapar(criterio.dado || '')}</textarea>
+        </div>
+        <div class="campo">
+          <label for="criterio-${numero}-cuando">Cuando</label>
+          <textarea class="control" id="criterio-${numero}-cuando" data-campo="cuando" required>${UI.escapar(criterio.cuando || '')}</textarea>
+        </div>
+        <div class="campo">
+          <label for="criterio-${numero}-entonces">Entonces</label>
+          <textarea class="control" id="criterio-${numero}-entonces" data-campo="entonces" required>${UI.escapar(criterio.entonces || '')}</textarea>
+        </div>
+      </div>`;
+    criteriosFormulario.appendChild(fila);
+  }
+
+  function reiniciarFormularioHistoria() {
+    formularioHistoria.reset();
+    criteriosFormulario.replaceChildren();
+    historiaEditando = null;
+    document.getElementById('guardar-historia').textContent = 'Registrar historia';
+    document.getElementById('cancelar-edicion-historia').hidden = true;
+  }
+
+  function dibujarHistorias(historias, puedeGestionar, archivado) {
+    historiasActuales = historias || [];
+    formularioContenedor.hidden = !puedeGestionar || archivado;
+    listaHistorias.innerHTML = historiasActuales.length
+      ? historiasActuales.map((historia) => {
+        const criterios = historia.criterios || [];
+        return `
+          <tr>
+            <td><span class="insignia">${UI.escapar(historia.id)}</span></td>
+            <td><strong>${UI.escapar(historia.titulo)}</strong></td>
+            <td class="historia-tabla__descripcion">${UI.escapar(historia.descripcion)}</td>
+            <td>${criterios.length
+              ? `<details class="historia-tabla__criterios">
+                  <summary>Ver ${criterios.length} ${criterios.length === 1 ? 'criterio' : 'criterios'}</summary>
+                  <ol class="historia-criterios-lista">${criterios.map((criterio) => `
+                  <li><strong>Dado:</strong> ${UI.escapar(criterio.dado)}; <strong>Cuando:</strong> ${UI.escapar(criterio.cuando)}; <strong>Entonces:</strong> ${UI.escapar(criterio.entonces)}</li>
+                  `).join('')}</ol>
+                </details>`
+              : '<span class="historia-vacio">Sin criterios</span>'}</td>
+            <td>${puedeGestionar && !archivado
+              ? `<button class="btn btn-secundario btn-chico" type="button" data-editar-historia="${UI.escapar(historia.id)}">Editar</button>`
+              : '—'}</td>
+          </tr>`;
+      }).join('')
+      : '<tr><td colspan="5" class="historia-vacio">Todavía no hay historias registradas en este proyecto.</td></tr>';
+  }
+
+  document.getElementById('agregar-criterio').addEventListener('click', () => agregarCriterio());
+  criteriosFormulario.addEventListener('click', (e) => {
+    const boton = e.target.closest('[data-quitar-criterio]');
+    if (boton) boton.closest('.historia-criterio').remove();
+  });
+  document.getElementById('cancelar-edicion-historia').addEventListener('click', reiniciarFormularioHistoria);
+
+  formularioHistoria.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const criterios = [...criteriosFormulario.querySelectorAll('.historia-criterio')]
+      .map((fila) => ({
+        ...(fila.dataset.id ? { id: fila.dataset.id } : {}),
+        dado: fila.querySelector('[data-campo="dado"]').value.trim(),
+        cuando: fila.querySelector('[data-campo="cuando"]').value.trim(),
+        entonces: fila.querySelector('[data-campo="entonces"]').value.trim()
+      }))
+      .filter((criterio) => criterio.dado || criterio.cuando || criterio.entonces);
+    const datos = {
+      titulo: document.getElementById('historia-titulo').value.trim(),
+      descripcion: document.getElementById('historia-descripcion').value.trim(),
+      criterios
+    };
+    const url = `/api/projects/${encodeURIComponent(actual.id)}/historias${historiaEditando ? `/${encodeURIComponent(historiaEditando)}` : ''}`;
+    const r = historiaEditando ? await Api.put(url, datos) : await Api.post(url, datos);
+    if (!r.ok) return UI.toast(r.datos?.mensaje || 'No se pudo guardar la historia.', 'error');
+    reiniciarFormularioHistoria();
+    await pintar();
+    UI.toast(r.datos.mensaje, 'exito');
+  });
+
+  listaHistorias.addEventListener('click', (e) => {
+    const boton = e.target.closest('[data-editar-historia]');
+    if (!boton) return;
+    const historia = historiasActuales.find((item) => item.id === boton.dataset.editarHistoria);
+    if (!historia) return;
+    historiaEditando = historia.id;
+    document.getElementById('historia-titulo').value = historia.titulo;
+    document.getElementById('historia-descripcion').value = historia.descripcion;
+    criteriosFormulario.replaceChildren();
+    (historia.criterios || []).forEach((criterio) => agregarCriterio(criterio));
+    document.getElementById('guardar-historia').textContent = 'Guardar cambios';
+    document.getElementById('cancelar-edicion-historia').hidden = false;
+    formularioContenedor.hidden = false;
+    formularioHistoria.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   // Carga el proyecto y dibuja la pantalla. Se vuelve a llamar después de cada acción.
   async function pintar() {
@@ -34,7 +149,7 @@
       return false;
     }
 
-    const { proyecto: p, permisos, miRol, historial } = r.datos;
+    const { proyecto: p, permisos, miRol, historial, historiasUsuario } = r.datos;
     actual = p;
 
     // Encabezado
@@ -77,6 +192,8 @@
       <div><dt>Objetivo</dt><dd>${UI.escapar(p.objetivo)}</dd></div>
       <div><dt>Fechas previstas</dt><dd>${UI.rangoFechas(p.fechaInicio, p.fechaFin)}</dd></div>
       <div><dt>Tu rol</dt><dd>${UI.insigniaRol(miRol === 'administrador' ? 'Administrador general' : miRol)}</dd></div>`;
+
+    dibujarHistorias(historiasUsuario, permisos.gestionarHistorias, p.archivado);
 
     // Historial
     document.getElementById('historial').innerHTML = historial.length

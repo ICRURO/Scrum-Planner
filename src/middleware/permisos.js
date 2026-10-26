@@ -25,6 +25,7 @@ const MATRIZ = [
   { accion: 'finalizar_proyecto', texto: 'Finalizar proyecto', roles: ADMIN_Y_PO },
   { accion: 'reabrir_proyecto', texto: 'Reabrir proyecto', roles: ADMIN_Y_PO },
   { accion: 'archivar_proyecto', texto: 'Archivar proyecto', roles: ADMIN_Y_PO },
+  { accion: 'gestionar_historias', texto: 'Registrar y editar historias de usuario', roles: ADMIN_Y_PO },
   { accion: 'administrar_usuarios', texto: 'Administrar usuarios', roles: ['administrador'] }
 ];
 
@@ -56,7 +57,8 @@ function permisosProyecto(usuario, proyecto, db = readDB()) {
     cambiarEstado: puede(usuario, 'cambiar_estado', proyecto.id, db),
     finalizar: puede(usuario, 'finalizar_proyecto', proyecto.id, db),
     reabrir: puede(usuario, 'reabrir_proyecto', proyecto.id, db),
-    archivar: puede(usuario, 'archivar_proyecto', proyecto.id, db)
+    archivar: puede(usuario, 'archivar_proyecto', proyecto.id, db),
+    gestionarHistorias: puede(usuario, 'gestionar_historias', proyecto.id, db)
   };
 }
 

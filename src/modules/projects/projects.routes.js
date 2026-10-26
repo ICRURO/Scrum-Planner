@@ -30,6 +30,57 @@ function siguienteId(db) {
   return `PRJ-${String(max + 1).padStart(3, '0')}`;
 }
 
+function siguienteIdHistoria(historias) {
+  const max = historias.reduce((m, h) => Math.max(m, parseInt(String(h.id).replace(/^HU-/, ''), 10) || 0), 0);
+  return `HU-${String(max + 1).padStart(3, '0')}`;
+}
+
+function siguienteIdCriterio(historias) {
+  const max = historias.reduce((m, h) =>
+    (h.criterios || []).reduce((n, c) => Math.max(n, parseInt(String(c.id).replace(/^CA-/, ''), 10) || 0), m), 0);
+  return `CA-${String(max + 1).padStart(3, '0')}`;
+}
+
+function validarHistoria(datos) {
+  if (typeof datos.titulo !== 'string' || !datos.titulo.trim()) return 'El título de la historia es obligatorio.';
+  if (typeof datos.descripcion !== 'string' || !datos.descripcion.trim()) return 'La descripción es obligatoria.';
+  if (datos.criterios !== undefined && !Array.isArray(datos.criterios)) return 'Los criterios deben enviarse como una lista.';
+  for (const criterio of datos.criterios || []) {
+    if (!criterio || typeof criterio !== 'object' || Array.isArray(criterio)) return 'Cada criterio debe incluir Dado, Cuando y Entonces.';
+    for (const campo of ['dado', 'cuando', 'entonces']) {
+      if (typeof criterio[campo] !== 'string' || !criterio[campo].trim()) return 'Cada criterio debe incluir Dado, Cuando y Entonces.';
+    }
+  }
+  return null;
+}
+
+function normalizarCriterios(db, historia, criterios) {
+  const actuales = historia ? historia.criterios || [] : [];
+  const idsActuales = new Set(actuales.map((c) => c.id));
+  const idsRecibidos = new Set();
+  const lista = [];
+  let siguienteNumero = parseInt(siguienteIdCriterio(db.historiasUsuario).slice(3), 10);
+
+  for (const criterio of criterios || []) {
+    if (criterio.id && (!idsActuales.has(criterio.id) || idsRecibidos.has(criterio.id))) {
+      return { error: 'Uno de los criterios no pertenece a esta historia o está duplicado.' };
+    }
+    const id = criterio.id || `CA-${String(siguienteNumero++).padStart(3, '0')}`;
+    idsRecibidos.add(id);
+    lista.push({
+      id,
+      dado: String(criterio.dado).trim(),
+      cuando: String(criterio.cuando).trim(),
+      entonces: String(criterio.entonces).trim()
+    });
+  }
+
+  if (historia && actuales.some((criterio) => !idsRecibidos.has(criterio.id))) {
+    return { error: 'No se pueden quitar criterios existentes; modifica su contenido o agrega otro.' };
+  }
+  return { lista };
+}
+
 function textoCambio(h) {
   if (h.campo === 'creacion') return 'Proyecto creado';
   if (h.campo === 'estado') return `Estado: ${ETIQUETAS[h.valorAnterior] || h.valorAnterior} → ${ETIQUETAS[h.valorNuevo] || h.valorNuevo}`;
@@ -86,7 +137,62 @@ router.get('/:id', (req, res) => {
       const autor = db.usuarios.find((x) => x.id === h.idUsuario);
       return { fecha: h.fecha, usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido', cambio: textoCambio(h) };
     });
-  res.json({ proyecto, miRol: rolEnProyecto(u, proyecto.id, db), permisos: permisosProyecto(u, proyecto, db), historial, siguienteId: siguienteId(db) });
+  const historiasUsuario = (db.historiasUsuario || []).filter((h) => h.idProyecto === proyecto.id);
+  res.json({ proyecto, miRol: rolEnProyecto(u, proyecto.id, db), permisos: permisosProyecto(u, proyecto, db), historial, historiasUsuario, siguienteId: siguienteId(db) });
+});
+
+// ---------- HU-18 y HU-19 Historias de usuario y criterios de aceptación ----------
+router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const datos = req.body || {};
+  const error = validarHistoria(datos);
+  if (error) return res.status(400).json({ mensaje: error });
+
+  const db = ctx.db;
+  if (!db.historiasUsuario) db.historiasUsuario = [];
+  const criterios = normalizarCriterios(db, null, datos.criterios);
+  if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
+
+  const historia = {
+    id: siguienteIdHistoria(db.historiasUsuario),
+    idProyecto: ctx.proyecto.id,
+    titulo: String(datos.titulo).trim(),
+    descripcion: String(datos.descripcion).trim(),
+    criterios: criterios.lista
+  };
+  db.historiasUsuario.push(historia);
+  registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'historia_usuario', idEntidad: historia.id, campo: 'creacion', valorNuevo: historia.titulo });
+  writeDB(db);
+  res.status(201).json({ mensaje: 'Historia de usuario registrada.', historia });
+});
+
+router.put('/:id/historias/:idHistoria', apiConPermiso('gestionar_historias', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const db = ctx.db;
+  const historia = (db.historiasUsuario || []).find((h) => h.id === req.params.idHistoria && h.idProyecto === ctx.proyecto.id);
+  if (!historia) return res.status(404).json({ mensaje: 'No se encontró la historia de usuario en este proyecto.' });
+
+  const datos = req.body || {};
+  const error = validarHistoria(datos);
+  if (error) return res.status(400).json({ mensaje: error });
+  const criterios = normalizarCriterios(db, historia, datos.criterios === undefined ? historia.criterios : datos.criterios);
+  if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
+
+  const titulo = String(datos.titulo).trim();
+  const descripcion = String(datos.descripcion).trim();
+  const cambios = titulo !== historia.titulo || descripcion !== historia.descripcion
+    || JSON.stringify(criterios.lista) !== JSON.stringify(historia.criterios || []);
+  if (!cambios) return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
+
+  const valorAnterior = { titulo: historia.titulo, descripcion: historia.descripcion, criterios: historia.criterios || [] };
+  historia.titulo = titulo;
+  historia.descripcion = descripcion;
+  historia.criterios = criterios.lista;
+  registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'historia_usuario', idEntidad: historia.id, campo: 'edicion', valorAnterior, valorNuevo: { titulo, descripcion, criterios: historia.criterios } });
+  writeDB(db);
+  res.json({ mensaje: 'Historia de usuario actualizada.', historia });
 });
 
 // ---------- HU-08 Crear proyecto ----------

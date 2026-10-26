@@ -6,7 +6,7 @@ http://localhost:3000/proximamente
 
 La carpeta shared tiene precisamente los archivos base de estilo para que todos los manden a llamar en sus pantallas y mantengamos un mismo orden, y ya no estar repitiendo código
 
-La bd está organizada en: usuarios, proyectos, participantes e historial. Un usuario puede participar en varios proyectos y puede tener un rol diferente en cada uno. 
+La bd está organizada en: usuarios, proyectos, participantes, historiasUsuario e historial. Cada historia de usuario se asocia a un proyecto y contiene sus criterios de aceptación en formato Dado/Cuando/Entonces. Un usuario puede participar en varios proyectos y puede tener un rol diferente en cada uno.
 
 No se eliminan registros (porque así lo piden las historias). Se desactivan cuentas o se archivan proyectos. La bd si puede guardar cambios (crear proyecto, editar, desactivar) pero, aún no se habilitan esos botones. Sin embargo writeDB() ya existe y funciona. 
 

@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/shared/css/tokens.css">
   <link rel="stylesheet" href="/shared/css/base.css">
   <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/modules/projects/historias.css">
 </head>
 <body data-volver="/proyectos" data-volver-texto="proyectos" data-seccion="proyectos" data-protegida>
   <div id="app-header"></div>
@@ -86,9 +87,46 @@
           </div>
         </section>
 
-
-        
       </div>
+      <section class="tarjeta historias-proyecto">
+        <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="info"></span>Historias de usuario y criterios de aceptación</h2>
+        <div id="formulario-historia-contenedor" hidden>
+          <form id="formulario-historia">
+            <div class="campo">
+              <label for="historia-titulo">Título</label>
+              <input class="control" id="historia-titulo" name="titulo" maxlength="160" required>
+            </div>
+            <div class="campo">
+              <label for="historia-descripcion">Descripción</label>
+              <textarea class="control" id="historia-descripcion" name="descripcion" required placeholder="Como [rol], quiero [necesidad], para [beneficio]."></textarea>
+              <span class="campo__ayuda">Puedes redactarla con la estructura: Como…, quiero…, para…</span>
+            </div>
+            <div class="historias-criterios-encabezado">
+              <h3>Criterios de aceptación</h3>
+              <button class="btn btn-secundario btn-chico" type="button" id="agregar-criterio">Agregar criterio</button>
+            </div>
+            <div id="criterios-formulario" class="historias-criterios"></div>
+            <div class="historias-acciones">
+              <button class="btn btn-primario" type="submit" id="guardar-historia">Registrar historia</button>
+              <button class="btn btn-secundario" type="button" id="cancelar-edicion-historia" hidden>Cancelar edición</button>
+            </div>
+          </form>
+        </div>
+        <div class="tabla-contenedor">
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Identificador</th>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Criterios de aceptación</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="lista-historias"></tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </main>
 

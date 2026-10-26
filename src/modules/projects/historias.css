@@ -1,0 +1,24 @@
+.historias-proyecto { display: grid; gap: 20px; }
+.historias-proyecto .tarjeta__titulo { margin-bottom: 0; }
+.historias-criterios-encabezado,
+.historias-acciones {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.historias-criterios-encabezado { margin: 8px 0 16px; }
+.historias-criterios-encabezado h3 { font-size: 1rem; }
+.historias-criterios { display: grid; gap: 16px; margin-bottom: 18px; }
+.historia-criterio { padding: 18px; border: 1px solid var(--c-linea); border-radius: var(--radio-m); }
+.historia-criterio__encabezado { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.historia-criterio__titulo { font-weight: 700; }
+.historia-criterio__campos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.historias-acciones { justify-content: flex-start; }
+.historia-tabla__descripcion { min-width: 240px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.historia-tabla__criterios { min-width: 150px; }
+.historia-tabla__criterios summary { color: var(--c-hoja); cursor: pointer; font-weight: 600; }
+.historia-tabla__criterios[open] { min-width: 300px; }
+.historia-criterios-lista { display: grid; gap: 8px; margin: 12px 0 0; padding-left: 22px; }
+.historia-criterios-lista li { overflow-wrap: anywhere; }
+.historia-vacio { color: var(--c-piedra); }
+@media (max-width: 760px) {
+  .historia-criterio__campos { grid-template-columns: 1fr; gap: 0; }
+}
