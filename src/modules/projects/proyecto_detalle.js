@@ -165,14 +165,17 @@ async function agregarParticipanteConRol(proyectoId) {
     const rolScrum = document.getElementById('select-rol').value; 
 
     try {
-        const respuesta = await fetch(`/api/equipos/proyectos/${proyectoId}/participantes`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ usuarioId, rolScrum })
+        const respuesta = await fetch('/api/equipos', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            idProyecto: proyectoId, 
+            idUsuario: usuarioId, 
+            rol: rolScrum 
+          })
         });
-
         const resultado = await respuesta.json();
 
         if (respuesta.ok) {

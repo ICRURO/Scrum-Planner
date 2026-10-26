@@ -48,6 +48,7 @@ app.get('/proyectos/nuevo', requierePagina, paginaConPermiso('crear_proyecto'),
   (req, res) => res.sendFile(pagina('projects', 'proyecto_form.html')));
 app.get('/proyectos/editar', requierePagina, paginaConPermiso('editar_proyecto', (req) => req.query.id),
   (req, res) => res.sendFile(pagina('projects', 'proyecto_form.html')));
+app.get('/equipos', requierePagina, (req, res) => res.sendFile(pagina('equipos', 'equipos.html')));
 
 // ---------- API ----------
 // Cada módulo monta aquí sus rutas con una sola línea.

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Equipos - Scrum Manager</title>
+  <!-- Hojas de estilo globales y tokens -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+</head>
+<body data-volver="/panel" data-seccion="equipos" data-protegida>
+  <!-- El encabezado y menú se cargan automáticamente -->
+  <div id="app-header"></div>
+  
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1>Equipos</h1>
+      <p>Participantes y roles Scrum de los proyectos</p>
+    </div>
+
+    <!-- Contenido principal envuelto en tarjetas -->
+    <section class="tarjeta">
+      
+      <!-- Barra superior con buscador (Uniforme a otras pantallas) -->
+      <div class="barra">
+        <div class="entrada entrada--icono barra__buscar">
+          <span class="entrada__icono" data-icon="buscar"></span>
+          <input class="control" id="buscar" type="search" placeholder="Buscar por proyecto, usuario o rol..." aria-label="Buscar en equipos">
+        </div>
+        <span class="barra__espacio"></span>
+      </div>
+
+      <!-- Contenedor de la tabla -->
+      <div class="tabla-contenedor" id="contenedor-tabla">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Proyecto</th>
+              <th>Usuario</th>
+              <th>Correo</th>
+              <th>Rol Scrum</th>
+              <th>Estado de cuenta</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-equipos">
+            <!-- Se llenará mediante JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mensaje cuando la tabla esté vacía o la búsqueda no coincida -->
+      <div class="vacio" id="sin-resultados" hidden>
+        <span class="vacio__icono" data-icon="equipo" data-size="24"></span>
+        <h3>No hay participantes para mostrar</h3>
+        <p>Intenta con otra búsqueda o espera a que se asignen usuarios a los proyectos.</p>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Scripts compartidos del sistema -->
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  
+  <!-- Lógica específica de la pantalla Equipos -->
+  <script src="/modules/equipos/equipos.js"></script>
+</body>
+</html>
