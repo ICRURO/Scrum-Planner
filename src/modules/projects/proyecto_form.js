@@ -37,7 +37,9 @@
   }
 
   const form = campo('form-proyecto');
-  form.addEventListener('submit', (e) => {
+  const boton = form.querySelector('[type="submit"]');
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     UI.limpiarErrores(form);
     let valido = true;
@@ -49,6 +51,26 @@
     if (campo('inicio').value && campo('fin').value && campo('fin').value < campo('inicio').value) {
       UI.marcarError(campo('fin'), 'La fecha de fin debe ser posterior a la de inicio.'); valido = false;
     }
-    if (valido) UI.pendiente();
+    if (!valido) return;
+
+    const datos = {
+      nombre: campo('nombre').value.trim(),
+      descripcion: campo('descripcion').value.trim(),
+      objetivo: campo('objetivo').value.trim(),
+      fechaInicio: campo('inicio').value,
+      fechaFin: campo('fin').value
+    };
+
+    UI.cargando(boton, true);
+    const r = editando
+      ? await Api.put(`/api/projects/${encodeURIComponent(id)}`, datos)
+      : await Api.post('/api/projects', datos);
+    UI.cargando(boton, false);
+
+    if (!r.ok) return UI.toast(r.datos?.mensaje || 'No se pudo guardar el proyecto.', 'error');
+
+    // El aviso de éxito se muestra en la página de destino
+    sessionStorage.setItem('flash', r.datos.mensaje);
+    window.location.href = `/proyectos/detalle?id=${encodeURIComponent(r.datos.proyecto.id)}`;
   });
 })();
