@@ -19,7 +19,10 @@
 
     <form class="tarjeta" id="form-invitar" novalidate>
       <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="enviar"></span>Datos obligatorios</h2>
-      <div class="campo"><label for="nombre">Nombre completo</label><input class="control" id="nombre" placeholder="Nombre y apellidos"></div>
+      <div class="campo-fila">
+        <div class="campo"><label for="nombre">Nombre</label><input class="control" id="nombre" placeholder="Nombre(s)"></div>
+        <div class="campo"><label for="apellidos">Apellidos</label><input class="control" id="apellidos" placeholder="Apellidos"></div>
+      </div>
       <div class="campo"><label for="correo">Correo</label>
         <div class="entrada entrada--icono"><span class="entrada__icono" data-icon="correo"></span><input class="control" id="correo" type="email" placeholder="correo@ejemplo.com"></div>
         <span class="campo__ayuda">No puede repetirse: cada correo identifica una sola cuenta.</span>
@@ -29,11 +32,18 @@
         <span class="campo__ayuda">El rol Scrum (Product Owner, Scrum Master…) se asigna después, dentro de cada proyecto.</span>
       </div>
       <div class="campo"><label for="metodo">Método</label>
-        <select class="control" id="metodo"><option>Enviar invitación por correo electrónico</option><option>Registrar con contraseña inicial</option></select>
+        <select class="control" id="metodo">
+          <option value="invitacion">Enviar invitación por correo electrónico</option>
+          <option value="password">Registrar con contraseña inicial</option>
+        </select>
+      </div>
+      <div class="campo" id="campo-password" hidden>
+        <label for="password">Contraseña inicial</label>
+        <input class="control" id="password" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
       </div>
       <div class="tarjeta__pie">
         <a class="btn btn-peligro" href="/usuarios">Cancelar</a>
-        <button class="btn btn-primario" type="submit">Enviar invitación</button>
+        <button class="btn btn-primario" type="submit" id="btn-enviar">Enviar invitación</button>
       </div>
     </form>
   </main>

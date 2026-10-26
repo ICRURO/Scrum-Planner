@@ -1,11 +1,13 @@
-// Editar usuario: carga la cuenta indicada en ?id=USR-000
+// Editar usuario: carga la cuenta indicada en ?id=USR-000 (HU-06)
 
 (async function () {
   const sesion = await Layout.listo;
   if (!sesion) return;
+  const miId = sesion.usuario.id;
 
+  const $ = (id) => document.getElementById(id);
   const id = new URLSearchParams(window.location.search).get('id');
-  const aviso = document.getElementById('error-carga');
+  const aviso = $('error-carga');
   const r = id ? await Api.get(`/api/users/${encodeURIComponent(id)}`) : { ok: false, datos: { mensaje: 'Falta indicar la cuenta a editar.' } };
   if (r.status === 403) { window.location.href = '/sin-permiso'; return; }
   if (!r.ok) {
@@ -14,44 +16,99 @@
     return;
   }
 
-  const u = r.datos.usuario;
-  const nombreCompleto = `${u.nombre} ${u.apellidos}`.trim();
-  document.getElementById('usuario-avatar').textContent = UI.iniciales(nombreCompleto);
-  document.getElementById('usuario-nombre').textContent = nombreCompleto;
-  document.getElementById('usuario-estado').innerHTML = UI.insigniaUsuario(u.estado);
-  document.getElementById('nombre').value = u.nombre;
-  document.getElementById('apellidos').value = u.apellidos;
-  document.getElementById('correo').value = u.correo;
-  document.getElementById('rol').value = u.rolGlobal;
+  let u = r.datos.usuario;
+  const esMiCuenta = () => u.id === miId;
 
-  // Texto y botón de estado según la cuenta
-  const texto = document.getElementById('estado-texto');
-  const acciones = document.getElementById('estado-acciones');
-  if (u.estado === 'activo') {
-    texto.textContent = 'La cuenta puede iniciar sesión. Si la desactivas, no podrá entrar, pero su historial se conserva.';
-    acciones.innerHTML = '<button class="btn btn-peligro" type="button" id="btn-estado">Desactivar cuenta</button>';
-  } else if (u.estado === 'desactivado') {
-    texto.textContent = 'La cuenta está desactivada: no puede iniciar sesión. Su historial se conserva.';
-    acciones.innerHTML = '<button class="btn btn-secundario" type="button" id="btn-estado">Activar cuenta</button>';
-  } else {
-    texto.textContent = 'La invitación aún no se acepta. La persona no puede iniciar sesión hasta activar su cuenta.';
-    acciones.innerHTML = '<button class="btn btn-secundario" type="button" id="btn-estado">Reenviar invitación</button>';
+  // Dibuja la cuenta: encabezado, campos y bloque de estado
+  function mostrar() {
+    const nombreCompleto = `${u.nombre} ${u.apellidos}`.trim();
+    $('usuario-avatar').textContent = UI.iniciales(nombreCompleto);
+    $('usuario-nombre').textContent = nombreCompleto;
+    $('usuario-estado').innerHTML = UI.insigniaUsuario(u.estado);
+    $('nombre').value = u.nombre;
+    $('apellidos').value = u.apellidos;
+    $('correo').value = u.correo;
+    $('rol').value = u.rolGlobal;
+    $('rol').disabled = esMiCuenta(); // nadie cambia su propio rol global
+
+    const texto = $('estado-texto');
+    const acciones = $('estado-acciones');
+    if (esMiCuenta()) {
+      texto.textContent = 'Esta es tu propia cuenta: no puedes desactivarla ni cambiar tu rol global.';
+      acciones.innerHTML = '';
+    } else if (u.estado === 'activo') {
+      texto.textContent = 'La cuenta puede iniciar sesión. Si la desactivas, no podrá entrar, pero su historial se conserva.';
+      acciones.innerHTML = '<button class="btn btn-peligro" type="button" data-accion="desactivar">Desactivar cuenta</button>';
+    } else if (u.estado === 'desactivado') {
+      texto.textContent = 'La cuenta está desactivada: no puede iniciar sesión. Su historial se conserva.';
+      acciones.innerHTML = '<button class="btn btn-secundario" type="button" data-accion="activar">Activar cuenta</button>';
+    } else {
+      texto.textContent = 'La invitación aún no se acepta. La persona no puede iniciar sesión hasta activar su cuenta.';
+      acciones.innerHTML = '<button class="btn btn-secundario" type="button" data-accion="reenviar">Reenviar invitación</button>';
+    }
   }
-  document.getElementById('btn-estado').addEventListener('click', UI.pendiente);
 
-  const form = document.getElementById('form-editar');
-  form.addEventListener('submit', (e) => {
+  const TEXTOS = {
+    desactivar: { titulo: 'Desactivar cuenta', mensaje: 'La persona ya no podrá iniciar sesión. Su historial de actividades se conserva.', textoOk: 'Desactivar', peligro: true },
+    activar: { titulo: 'Activar cuenta', mensaje: 'La persona podrá volver a iniciar sesión.', textoOk: 'Activar' },
+    reenviar: { titulo: 'Reenviar invitación', mensaje: 'Se generará un enlace nuevo. El enlace anterior dejará de funcionar.', textoOk: 'Generar enlace' }
+  };
+
+  $('estado-acciones').addEventListener('click', async (e) => {
+    const boton = e.target.closest('[data-accion]');
+    if (!boton || !TEXTOS[boton.dataset.accion]) return;
+    const accion = boton.dataset.accion;
+    if (!await UI.confirmar(TEXTOS[accion])) return;
+
+    UI.cargando(boton, true);
+    const resp = await Api.post(`/api/users/${encodeURIComponent(u.id)}/${accion}`);
+    UI.cargando(boton, false);
+    if (!resp.ok) return UI.toast(resp.datos?.mensaje || 'No se pudo completar la acción.', 'error');
+
+    // El enlace de invitación se muestra en la lista de usuarios
+    if (resp.datos.enlace) {
+      sessionStorage.setItem('flash', resp.datos.mensaje);
+      sessionStorage.setItem('enlace', JSON.stringify({ correo: u.correo, enlace: resp.datos.enlace }));
+      window.location.href = '/usuarios';
+      return;
+    }
+    u = resp.datos.usuario;
+    mostrar();
+    UI.toast(resp.datos.mensaje, 'exito');
+  });
+
+  const form = $('form-editar');
+  const botonGuardar = form.querySelector('[type="submit"]');
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     UI.limpiarErrores(form);
     let valido = true;
     ['nombre', 'apellidos'].forEach((campoId) => {
-      const campo = document.getElementById(campoId);
+      const campo = $(campoId);
       if (!campo.value.trim()) { UI.marcarError(campo, 'Este campo es obligatorio.'); valido = false; }
     });
-    const correo = document.getElementById('correo');
+    const correo = $('correo');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value.trim())) { UI.marcarError(correo, 'Escribe un correo válido.'); valido = false; }
-    if (valido) UI.pendiente();
+    if (!valido) return;
+
+    UI.cargando(botonGuardar, true);
+    const resp = await Api.put(`/api/users/${encodeURIComponent(u.id)}`, {
+      nombre: $('nombre').value.trim(),
+      apellidos: $('apellidos').value.trim(),
+      correo: correo.value.trim(),
+      rolGlobal: $('rol').value
+    });
+    UI.cargando(botonGuardar, false);
+
+    if (!resp.ok) {
+      if (resp.status === 409 && /correo/i.test(resp.datos?.mensaje || '')) return UI.marcarError(correo, resp.datos.mensaje);
+      return UI.toast(resp.datos?.mensaje || 'No se pudo guardar la cuenta.', 'error');
+    }
+    u = resp.datos.usuario;
+    mostrar();
+    UI.toast(resp.datos.mensaje, 'exito');
   });
 
-  document.getElementById('contenido').hidden = false;
+  mostrar();
+  $('contenido').hidden = false;
 })();
