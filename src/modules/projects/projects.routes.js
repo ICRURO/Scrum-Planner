@@ -1,13 +1,25 @@
-// /api/projects — solo lectura por ahora (crear, editar y cambiar estado llegan en el siguiente paso)
+// /api/projects — consultar, crear, editar, cambiar estado, finalizar/reabrir y archivar
 const express = require('express');
-const { readDB } = require('../../config/db');
+const { readDB, writeDB } = require('../../config/db');
+const { registrarHistorial } = require('../../config/historial');
 const { requiereSesion } = require('../../middleware/auth');
-const { puede, rolEnProyecto, permisosProyecto, esParticipante } = require('../../middleware/permisos');
+const { puede, rolEnProyecto, permisosProyecto, esParticipante, apiConPermiso } = require('../../middleware/permisos');
 
 const router = express.Router();
 router.use(requiereSesion);
 
 const ETIQUETAS = { preparacion: 'En preparación', activo: 'Activo', suspendido: 'Suspendido', finalizado: 'Finalizado' };
+
+// Transiciones permitidas con "Cambiar estado". Finalizar y reabrir tienen su propia ruta.
+const TRANSICIONES = {
+  preparacion: ['activo'],
+  activo: ['suspendido'],
+  suspendido: ['activo'],
+  finalizado: []
+};
+
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+const CAMPOS_EDITABLES = ['nombre', 'descripcion', 'objetivo', 'fechaInicio', 'fechaFin'];
 
 // El administrador ve todos; los demás solo los proyectos donde participan (RF-09)
 const proyectosVisibles = (db, usuario) =>
@@ -19,11 +31,36 @@ function siguienteId(db) {
 }
 
 function textoCambio(h) {
+  if (h.campo === 'creacion') return 'Proyecto creado';
   if (h.campo === 'estado') return `Estado: ${ETIQUETAS[h.valorAnterior] || h.valorAnterior} → ${ETIQUETAS[h.valorNuevo] || h.valorNuevo}`;
   if (h.campo === 'archivado') return h.valorNuevo ? 'Proyecto archivado' : 'Proyecto desarchivado';
+  if (h.valorNuevo && typeof h.valorNuevo === 'object') return `Información editada (${Object.keys(h.valorNuevo).join(', ')})`;
   return 'Información editada';
 }
 
+// Valida los campos de un proyecto. Devuelve un mensaje de error o null.
+function validar(d) {
+  for (const c of ['nombre', 'descripcion', 'objetivo']) {
+    if (!String(d[c] || '').trim()) return `El campo ${c} es obligatorio.`;
+  }
+  if (!FECHA.test(d.fechaInicio || '') || !FECHA.test(d.fechaFin || '')) return 'Las fechas de inicio y fin son obligatorias (formato AAAA-MM-DD).';
+  if (d.fechaFin < d.fechaInicio) return 'La fecha de fin debe ser posterior a la de inicio.';
+  return null;
+}
+
+// Busca el proyecto o responde 404. Un proyecto archivado solo admite desarchivarse.
+function cargar(req, res, { permitirArchivado = false } = {}) {
+  const db = readDB();
+  const proyecto = db.proyectos.find((p) => p.id === req.params.id);
+  if (!proyecto) { res.status(404).json({ mensaje: 'No se encontró el proyecto.' }); return null; }
+  if (proyecto.archivado && !permitirArchivado) {
+    res.status(409).json({ mensaje: 'El proyecto está archivado. Desarchívalo para modificarlo.' });
+    return null;
+  }
+  return { db, proyecto };
+}
+
+// ---------- Consultas ----------
 router.get('/', (req, res) => {
   const db = readDB();
   const u = req.usuario;
@@ -50,6 +87,119 @@ router.get('/:id', (req, res) => {
       return { fecha: h.fecha, usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido', cambio: textoCambio(h) };
     });
   res.json({ proyecto, miRol: rolEnProyecto(u, proyecto.id, db), permisos: permisosProyecto(u, proyecto, db), historial, siguienteId: siguienteId(db) });
+});
+
+// ---------- HU-08 Crear proyecto ----------
+router.post('/', apiConPermiso('crear_proyecto'), (req, res) => {
+  const d = req.body || {};
+  const error = validar(d);
+  if (error) return res.status(400).json({ mensaje: error });
+
+  const db = readDB();
+  const proyecto = {
+    id: siguienteId(db),
+    nombre: String(d.nombre).trim(),
+    descripcion: String(d.descripcion).trim(),
+    objetivo: String(d.objetivo).trim(),
+    fechaInicio: d.fechaInicio,
+    fechaFin: d.fechaFin,
+    estado: 'preparacion',
+    archivado: false
+  };
+  db.proyectos.push(proyecto);
+
+  // Quien crea el proyecto (si no es el administrador) queda como su Product Owner
+  if (req.usuario.rolGlobal !== 'administrador') {
+    if (!db.participantes) db.participantes = [];
+    const max = db.participantes.reduce((m, p) => Math.max(m, parseInt(String(p.id).split('-')[1], 10) || 0), 0);
+    db.participantes.push({ id: `PAR-${String(max + 1).padStart(3, '0')}`, idProyecto: proyecto.id, idUsuario: req.usuario.id, rol: 'Product Owner' });
+  }
+
+  registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'creacion', valorNuevo: proyecto.nombre });
+  writeDB(db);
+  res.status(201).json({ mensaje: 'Proyecto creado.', proyecto });
+});
+
+// ---------- HU-10 Modificar información ----------
+router.put('/:id', apiConPermiso('editar_proyecto', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const { db, proyecto } = ctx;
+
+  const d = { ...proyecto, ...(req.body || {}) };
+  const error = validar(d);
+  if (error) return res.status(400).json({ mensaje: error });
+
+  const antes = {}, despues = {};
+  CAMPOS_EDITABLES.forEach((c) => {
+    const nuevo = typeof d[c] === 'string' ? d[c].trim() : d[c];
+    if (nuevo !== proyecto[c]) { antes[c] = proyecto[c]; despues[c] = nuevo; proyecto[c] = nuevo; }
+  });
+  if (!Object.keys(despues).length) return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
+
+  registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'informacion', valorAnterior: antes, valorNuevo: despues });
+  writeDB(db);
+  res.json({ mensaje: 'Proyecto actualizado.', proyecto });
+});
+
+// ---------- HU-11 Cambiar estado ----------
+router.put('/:id/estado', apiConPermiso('cambiar_estado', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const { db, proyecto } = ctx;
+  const nuevo = req.body?.estado;
+
+  if (!ETIQUETAS[nuevo]) return res.status(400).json({ mensaje: 'Estado no válido.' });
+  if (nuevo === 'finalizado') return res.status(400).json({ mensaje: 'Para finalizar usa la acción "Finalizar proyecto".' });
+  if (!(TRANSICIONES[proyecto.estado] || []).includes(nuevo)) {
+    return res.status(409).json({ mensaje: `No se puede pasar de ${ETIQUETAS[proyecto.estado]} a ${ETIQUETAS[nuevo]}.` });
+  }
+
+  registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'estado', valorAnterior: proyecto.estado, valorNuevo: nuevo });
+  proyecto.estado = nuevo;
+  writeDB(db);
+  res.json({ mensaje: `Estado cambiado a ${ETIQUETAS[nuevo]}.`, proyecto });
+});
+
+// ---------- HU-12 Finalizar y reabrir ----------
+router.put('/:id/finalizar', apiConPermiso('finalizar_proyecto', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const { db, proyecto } = ctx;
+  if (proyecto.estado === 'finalizado') return res.status(409).json({ mensaje: 'El proyecto ya está finalizado.' });
+  if (proyecto.estado === 'preparacion') return res.status(409).json({ mensaje: 'Un proyecto en preparación no puede finalizarse; actívalo primero.' });
+
+  registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'estado', valorAnterior: proyecto.estado, valorNuevo: 'finalizado' });
+  proyecto.estado = 'finalizado';
+  writeDB(db);
+  res.json({ mensaje: 'Proyecto finalizado.', proyecto });
+});
+
+router.put('/:id/reabrir', apiConPermiso('reabrir_proyecto', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const { db, proyecto } = ctx;
+  if (proyecto.estado !== 'finalizado') return res.status(409).json({ mensaje: 'Solo se puede reabrir un proyecto finalizado.' });
+
+  // No se borra nada: historias, tareas, reuniones e historial siguen asociados al proyecto
+  registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'estado', valorAnterior: 'finalizado', valorNuevo: 'activo' });
+  proyecto.estado = 'activo';
+  writeDB(db);
+  res.json({ mensaje: 'Proyecto reabierto.', proyecto });
+});
+
+// ---------- HU-13 Archivar / desarchivar (no elimina datos) ----------
+router.put('/:id/archivar', apiConPermiso('archivar_proyecto', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res, { permitirArchivado: true });
+  if (!ctx) return;
+  const { db, proyecto } = ctx;
+  const archivar = req.body?.archivado !== false; // por defecto archiva; { archivado: false } desarchiva
+  if (proyecto.archivado === archivar) return res.status(409).json({ mensaje: archivar ? 'El proyecto ya está archivado.' : 'El proyecto no está archivado.' });
+
+  registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'archivado', valorAnterior: proyecto.archivado, valorNuevo: archivar });
+  proyecto.archivado = archivar;
+  writeDB(db);
+  res.json({ mensaje: archivar ? 'Proyecto archivado.' : 'Proyecto desarchivado.', proyecto });
 });
 
 module.exports = router;
