@@ -1,4 +1,4 @@
-// /api/projects — consultar, crear, editar, cambiar estado, finalizar/reabrir y archivar
+// /api/projects — proyectos, Product Backlog e historias de usuario
 const express = require('express');
 const { readDB, writeDB } = require('../../config/db');
 const { registrarHistorial } = require('../../config/historial');
@@ -85,6 +85,12 @@ function textoCambio(h) {
   if (h.campo === 'creacion') return 'Proyecto creado';
   if (h.campo === 'estado') return `Estado: ${ETIQUETAS[h.valorAnterior] || h.valorAnterior} → ${ETIQUETAS[h.valorNuevo] || h.valorNuevo}`;
   if (h.campo === 'archivado') return h.valorNuevo ? 'Proyecto archivado' : 'Proyecto desarchivado';
+  if (h.entidad === 'historia_usuario') {
+    if (h.campo === 'creacion') return `Historia creada: ${h.valorNuevo}`;
+    if (h.campo === 'edicion') return 'Historia editada';
+    if (h.campo === 'orden') return `Prioridad actualizada: ${h.valorAnterior} → ${h.valorNuevo}`;
+    if (h.campo === 'comentario') return 'Comentario agregado a una historia';
+  }
   if (h.valorNuevo && typeof h.valorNuevo === 'object') return `Información editada (${Object.keys(h.valorNuevo).join(', ')})`;
   return 'Información editada';
 }
@@ -130,18 +136,33 @@ router.get('/:id', (req, res) => {
   if (!puede(u, 'consultar_proyecto', proyecto.id, db)) {
     return res.status(403).json({ mensaje: 'No tienes permisos para realizar esta acción.' });
   }
+  const historiasUsuario = (db.historiasUsuario || [])
+    .filter((h) => h.idProyecto === proyecto.id)
+    .map((h, indice) => ({
+      ...h,
+      orden: Number.isInteger(h.orden) && h.orden > 0 ? h.orden : indice + 1,
+      comentarios: (h.comentarios || []).map((comentario) => {
+        const autor = db.usuarios.find((x) => x.id === comentario.idUsuario);
+        return {
+          ...comentario,
+          usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido'
+        };
+      })
+    }))
+    .sort((a, b) => a.orden - b.orden);
+  const idsHistorias = new Set(historiasUsuario.map((h) => h.id));
   const historial = (db.historial || [])
-    .filter((h) => h.entidad === 'proyecto' && h.idEntidad === proyecto.id)
+    .filter((h) => (h.entidad === 'proyecto' && h.idEntidad === proyecto.id)
+      || (h.entidad === 'historia_usuario' && idsHistorias.has(h.idEntidad)))
     .sort((a, b) => b.fecha.localeCompare(a.fecha))
     .map((h) => {
       const autor = db.usuarios.find((x) => x.id === h.idUsuario);
       return { fecha: h.fecha, usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido', cambio: textoCambio(h) };
     });
-  const historiasUsuario = (db.historiasUsuario || []).filter((h) => h.idProyecto === proyecto.id);
   res.json({ proyecto, miRol: rolEnProyecto(u, proyecto.id, db), permisos: permisosProyecto(u, proyecto, db), historial, historiasUsuario, siguienteId: siguienteId(db) });
 });
 
-// ---------- HU-18 y HU-19 Historias de usuario y criterios de aceptación ----------
+// ---------- HU-18, HU-19, HU-20 y HU-21 Historias, prioridad y comentarios ----------
 router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.params.id), (req, res) => {
   const ctx = cargar(req, res);
   if (!ctx) return;
@@ -159,12 +180,90 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
     idProyecto: ctx.proyecto.id,
     titulo: String(datos.titulo).trim(),
     descripcion: String(datos.descripcion).trim(),
-    criterios: criterios.lista
+    criterios: criterios.lista,
+    orden: db.historiasUsuario.filter((h) => h.idProyecto === ctx.proyecto.id).length + 1,
+    comentarios: []
   };
   db.historiasUsuario.push(historia);
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'historia_usuario', idEntidad: historia.id, campo: 'creacion', valorNuevo: historia.titulo });
   writeDB(db);
   res.status(201).json({ mensaje: 'Historia de usuario registrada.', historia });
+});
+
+// ---------- HU-20 Priorizar historias del Product Backlog ----------
+router.put('/:id/historias/orden', apiConPermiso('priorizar_historias', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const historias = (ctx.db.historiasUsuario || []).filter((h) => h.idProyecto === ctx.proyecto.id);
+  const ids = req.body?.ids;
+  if (!Array.isArray(ids) || ids.length !== historias.length
+    || ids.some((idHistoria) => typeof idHistoria !== 'string')
+    || new Set(ids).size !== historias.length
+    || ids.some((idHistoria) => !historias.some((h) => h.id === idHistoria))) {
+    return res.status(400).json({ mensaje: 'Envía el orden completo y válido de las historias del proyecto.' });
+  }
+
+  const ordenAnterior = historias
+    .map((h, indice) => ({ id: h.id, orden: Number.isInteger(h.orden) && h.orden > 0 ? h.orden : indice + 1 }))
+    .sort((a, b) => a.orden - b.orden)
+    .map((h) => h.id);
+  if (ids.every((idHistoria, indice) => idHistoria === ordenAnterior[indice])) {
+    return res.status(400).json({ mensaje: 'El Product Backlog ya tiene ese orden.' });
+  }
+
+  ids.forEach((idHistoria, indice) => {
+    const historia = historias.find((h) => h.id === idHistoria);
+    const ordenAnteriorHistoria = Number.isInteger(historia.orden) && historia.orden > 0 ? historia.orden : ordenAnterior.indexOf(idHistoria) + 1;
+    historia.orden = indice + 1;
+    if (ordenAnteriorHistoria !== historia.orden) {
+      registrarHistorial(ctx.db, {
+        idUsuario: req.usuario.id,
+        entidad: 'historia_usuario',
+        idEntidad: historia.id,
+        campo: 'orden',
+        valorAnterior: ordenAnteriorHistoria,
+        valorNuevo: historia.orden
+      });
+    }
+  });
+  writeDB(ctx.db);
+  res.json({ mensaje: 'El orden del Product Backlog se actualizó.', ids });
+});
+
+// ---------- HU-21 Comentar historias ----------
+router.post('/:id/historias/:idHistoria/comentarios', apiConPermiso('comentar_historias', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const historia = (ctx.db.historiasUsuario || []).find((h) => h.id === req.params.idHistoria && h.idProyecto === ctx.proyecto.id);
+  if (!historia) return res.status(404).json({ mensaje: 'No se encontró la historia de usuario en este proyecto.' });
+
+  const texto = req.body?.texto;
+  if (typeof texto !== 'string' || !texto.trim() || texto.trim().length > 2000) {
+    return res.status(400).json({ mensaje: 'El comentario es obligatorio y no puede superar 2000 caracteres.' });
+  }
+
+  if (!historia.comentarios) historia.comentarios = [];
+  const max = historia.comentarios.reduce((m, c) => Math.max(m, parseInt(String(c.id).replace(/^COM-/, ''), 10) || 0), 0);
+  const comentario = {
+    id: `COM-${String(max + 1).padStart(3, '0')}`,
+    idUsuario: req.usuario.id,
+    texto: texto.trim(),
+    fecha: new Date().toISOString()
+  };
+  historia.comentarios.push(comentario);
+  registrarHistorial(ctx.db, {
+    idUsuario: req.usuario.id,
+    entidad: 'historia_usuario',
+    idEntidad: historia.id,
+    campo: 'comentario',
+    valorNuevo: comentario.texto
+  });
+  writeDB(ctx.db);
+  const autor = ctx.db.usuarios.find((x) => x.id === req.usuario.id);
+  res.status(201).json({
+    mensaje: 'Comentario agregado.',
+    comentario: { ...comentario, usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido' }
+  });
 });
 
 router.put('/:id/historias/:idHistoria', apiConPermiso('gestionar_historias', (req) => req.params.id), (req, res) => {

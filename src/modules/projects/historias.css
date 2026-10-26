@@ -18,6 +18,14 @@
 .historia-tabla__criterios[open] { min-width: 300px; }
 .historia-criterios-lista { display: grid; gap: 8px; margin: 12px 0 0; padding-left: 22px; }
 .historia-criterios-lista li { overflow-wrap: anywhere; }
+.historia-prioridad { min-width: 112px; text-align: center; }
+.historia-prioridad__acciones { display: flex; justify-content: center; gap: 4px; margin-top: 6px; }
+.historia-comentarios { min-width: 220px; }
+.historia-comentarios__lista { display: grid; gap: 8px; margin: 10px 0; padding: 0; list-style: none; }
+.historia-comentarios__item { padding: 8px; border-radius: var(--radio-s); background: var(--c-fondo); overflow-wrap: anywhere; }
+.historia-comentarios__item p { margin: 4px 0 0; white-space: pre-wrap; }
+.historia-comentarios__formulario { display: grid; gap: 8px; margin-top: 10px; }
+.historia-comentarios__formulario textarea { min-height: 64px; }
 .historia-vacio { color: var(--c-piedra); }
 @media (max-width: 760px) {
   .historia-criterio__campos { grid-template-columns: 1fr; gap: 0; }

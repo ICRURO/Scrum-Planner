@@ -62,15 +62,23 @@
     document.getElementById('cancelar-edicion-historia').hidden = true;
   }
 
-  function dibujarHistorias(historias, puedeGestionar, archivado) {
+  function dibujarHistorias(historias, permisos, archivado) {
     historiasActuales = historias || [];
-    formularioContenedor.hidden = !puedeGestionar || archivado;
+    formularioContenedor.hidden = !permisos.gestionarHistorias || archivado;
     listaHistorias.innerHTML = historiasActuales.length
-      ? historiasActuales.map((historia) => {
+      ? historiasActuales.map((historia, indice) => {
         const criterios = historia.criterios || [];
+        const comentarios = historia.comentarios || [];
         return `
           <tr>
             <td><span class="insignia">${UI.escapar(historia.id)}</span></td>
+            <td class="historia-prioridad">
+              <strong>${indice + 1}</strong>
+              ${permisos.priorizarHistorias && !archivado ? `<div class="historia-prioridad__acciones">
+                <button class="btn btn-secundario btn-chico" type="button" data-mover-historia="${indice}" data-direccion="-1" aria-label="Subir prioridad de ${UI.escapar(historia.id)}" ${indice === 0 ? 'disabled' : ''}>↑</button>
+                <button class="btn btn-secundario btn-chico" type="button" data-mover-historia="${indice}" data-direccion="1" aria-label="Bajar prioridad de ${UI.escapar(historia.id)}" ${indice === historiasActuales.length - 1 ? 'disabled' : ''}>↓</button>
+              </div>` : ''}
+            </td>
             <td><strong>${UI.escapar(historia.titulo)}</strong></td>
             <td class="historia-tabla__descripcion">${UI.escapar(historia.descripcion)}</td>
             <td>${criterios.length
@@ -81,12 +89,30 @@
                   `).join('')}</ol>
                 </details>`
               : '<span class="historia-vacio">Sin criterios</span>'}</td>
-            <td>${puedeGestionar && !archivado
+            <td class="historia-comentarios">
+              ${comentarios.length
+                ? `<details>
+                    <summary>Ver ${comentarios.length} ${comentarios.length === 1 ? 'comentario' : 'comentarios'}</summary>
+                    <ul class="historia-comentarios__lista">${comentarios.map((comentario) => `
+                      <li class="historia-comentarios__item">
+                        <strong>${UI.escapar(comentario.usuario)}</strong> · <time>${UI.formatoFecha(comentario.fecha)}</time>
+                        <p>${UI.escapar(comentario.texto)}</p>
+                      </li>`).join('')}
+                    </ul>
+                  </details>`
+                : '<span class="historia-vacio">Sin comentarios</span>'}
+              ${permisos.comentarHistorias && !archivado ? `
+                <form class="historia-comentarios__formulario" data-comentar-historia="${UI.escapar(historia.id)}">
+                  <textarea class="control" name="texto" maxlength="2000" aria-label="Comentario para ${UI.escapar(historia.id)}" placeholder="Escribe un comentario..." required></textarea>
+                  <button class="btn btn-secundario btn-chico" type="submit">Comentar</button>
+                </form>` : ''}
+            </td>
+            <td>${permisos.gestionarHistorias && !archivado
               ? `<button class="btn btn-secundario btn-chico" type="button" data-editar-historia="${UI.escapar(historia.id)}">Editar</button>`
               : '—'}</td>
           </tr>`;
       }).join('')
-      : '<tr><td colspan="5" class="historia-vacio">Todavía no hay historias registradas en este proyecto.</td></tr>';
+      : '<tr><td colspan="7" class="historia-vacio">Todavía no hay historias registradas en este proyecto.</td></tr>';
   }
 
   document.getElementById('agregar-criterio').addEventListener('click', () => agregarCriterio());
@@ -119,7 +145,20 @@
     UI.toast(r.datos.mensaje, 'exito');
   });
 
-  listaHistorias.addEventListener('click', (e) => {
+  listaHistorias.addEventListener('click', async (e) => {
+    const botonMover = e.target.closest('[data-mover-historia]');
+    if (botonMover && actual) {
+      const origen = Number(botonMover.dataset.moverHistoria);
+      const destino = origen + Number(botonMover.dataset.direccion);
+      if (destino < 0 || destino >= historiasActuales.length) return;
+      const ids = historiasActuales.map((historia) => historia.id);
+      [ids[origen], ids[destino]] = [ids[destino], ids[origen]];
+      const r = await Api.put(`/api/projects/${encodeURIComponent(actual.id)}/historias/orden`, { ids });
+      if (!r.ok) return UI.toast(r.datos?.mensaje || 'No se pudo actualizar la prioridad.', 'error');
+      await pintar();
+      return;
+    }
+
     const boton = e.target.closest('[data-editar-historia]');
     if (!boton) return;
     const historia = historiasActuales.find((item) => item.id === boton.dataset.editarHistoria);
@@ -133,6 +172,18 @@
     document.getElementById('cancelar-edicion-historia').hidden = false;
     formularioContenedor.hidden = false;
     formularioHistoria.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  listaHistorias.addEventListener('submit', async (e) => {
+    const formulario = e.target.closest('[data-comentar-historia]');
+    if (!formulario || !actual) return;
+    e.preventDefault();
+    const historiaId = formulario.dataset.comentarHistoria;
+    const texto = new FormData(formulario).get('texto');
+    const r = await Api.post(`/api/projects/${encodeURIComponent(actual.id)}/historias/${encodeURIComponent(historiaId)}/comentarios`, { texto });
+    if (!r.ok) return UI.toast(r.datos?.mensaje || 'No se pudo agregar el comentario.', 'error');
+    await pintar();
+    UI.toast(r.datos.mensaje, 'exito');
   });
 
   // Carga el proyecto y dibuja la pantalla. Se vuelve a llamar después de cada acción.
@@ -193,7 +244,7 @@
       <div><dt>Fechas previstas</dt><dd>${UI.rangoFechas(p.fechaInicio, p.fechaFin)}</dd></div>
       <div><dt>Tu rol</dt><dd>${UI.insigniaRol(miRol === 'administrador' ? 'Administrador general' : miRol)}</dd></div>`;
 
-    dibujarHistorias(historiasUsuario, permisos.gestionarHistorias, p.archivado);
+    dibujarHistorias(historiasUsuario, permisos, p.archivado);
 
     // Historial
     document.getElementById('historial').innerHTML = historial.length
