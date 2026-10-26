@@ -5,7 +5,7 @@
       "nombre": "Admin",
       "apellidos": "Demo",
       "correo": "admin@scrum.test",
-      "password": "scrum123",
+      "password": "scrypt$92a23d5894225cc71d6663ea5a5189f2$20bc94302166688a266a29e6ac373da66929501060e00d4aa6e48cb9f74a22f49dc7b0f07388dbb0ade0b34389f4607251a8de3e94c8e931a2f6d05c5fb4143a",
       "rolGlobal": "administrador",
       "estado": "activo"
     },
@@ -29,10 +29,10 @@
     },
     {
       "id": "USR-004",
-      "nombre": "Developer",
+      "nombre": "boladearroz",
       "apellidos": "Demo",
       "correo": "dev@scrum.test",
-      "password": "scrum123",
+      "password": "scrypt$59c0e68225a7fd1a691f6fec07c85268$6dce16de6deb36bdda2fc2f3f1534e3ee2e4c592a2abf08a904eafe546e37b5153144784a1d8685c30bcb35687eff76fd09087ecb66c8afc958430cf228e4f8a",
       "rolGlobal": "usuario",
       "estado": "activo"
     },
@@ -125,6 +125,78 @@
       "password": "scrum123",
       "rolGlobal": "usuario",
       "estado": "activo"
+    },
+    {
+      "id": "USR-015",
+      "nombre": "Sofía Camila",
+      "apellidos": "Guzmán Hernández",
+      "correo": "chofsguzhdez13@gmail.com",
+      "password": null,
+      "rolGlobal": "usuario",
+      "estado": "invitacion_pendiente"
+    },
+    {
+      "id": "USR-016",
+      "nombre": "Fausto",
+      "apellidos": "Martínez Sánchez",
+      "correo": "faustostrange15@gmail.com",
+      "password": "scrypt$65dd23cc39001fb04bb2861b502eb60c$be5f9aaff43218783e09f39bd2e8c66530bfd37e425e29117b3aeeba270a6c607b1b01bad3694a90b0c91612d37fd14d603aeaa0716fa9bdfbf3faf62d3e650d",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-017",
+      "nombre": "Ricardo",
+      "apellidos": "Landa Martínez",
+      "correo": "ricardo@gmail.com",
+      "password": "scrypt$3d4da4b4e9645c2a19d8ccfb02bbc20a$247b44a5c12ee83f8dd7046ab96837a5654f7517d916bc6ca0953d0cc06964a10cbf32e5ce6deb806435a7ad5dddc0db94b4345e67c69832d5b118ed9c968eab",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-018",
+      "nombre": "usuarioPrueba",
+      "apellidos": "Correo",
+      "correo": "saritaortegahdez13@gmail.com",
+      "password": "scrypt$c37da8135d57aa55694ae15afef724db$d55bb2d83601fecf6d58febc8795b9edd68f10e2875bfc061f83381a53c5296bab6bb57b2cb8835049abd3614c0a73932bc4015f0c178d3173fc21dbfaf99483",
+      "rolGlobal": "usuario",
+      "estado": "activo"
+    },
+    {
+      "id": "USR-019",
+      "nombre": "usarioPrueba2",
+      "apellidos": "Correo",
+      "correo": "alguncorreo@correo.com",
+      "password": null,
+      "rolGlobal": "usuario",
+      "estado": "invitacion_pendiente"
+    },
+    {
+      "id": "USR-020",
+      "nombre": "usuarioPrueba3",
+      "apellidos": "Correo",
+      "correo": "usuario3@gmail.com",
+      "password": null,
+      "rolGlobal": "usuario",
+      "estado": "invitacion_pendiente"
+    },
+    {
+      "id": "USR-021",
+      "nombre": "usuarioPrueba4",
+      "apellidos": "Correo",
+      "correo": "usuario4@gmail.com",
+      "password": null,
+      "rolGlobal": "usuario",
+      "estado": "invitacion_pendiente"
+    },
+    {
+      "id": "USR-022",
+      "nombre": "usuarioPrueba5",
+      "apellidos": "Correo",
+      "correo": "usuario5@gmail.com",
+      "password": "scrypt$f9100dc4d429708fcbe0259e23a4c65c$b51a9bf94a41463b896d1fb739c9dc1c6a02e12bcccdf888e1212673181696d79ac7241bf363aea7f09652856c1f191bff94cd8c1bf305be2bae2b8b4bba788f",
+      "rolGlobal": "usuario",
+      "estado": "activo"
     }
   ],
   "proyectos": [
@@ -185,6 +257,16 @@
       "fechaFin": "2026-01-23",
       "estado": "finalizado",
       "archivado": true
+    },
+    {
+      "id": "PRJ-006",
+      "nombre": "Proyecto de prueba día 26 OCTUBRE",
+      "descripcion": "Toni, quiero un amper",
+      "objetivo": "Que Toni vaya al x24 y me compre un amper",
+      "fechaInicio": "2026-10-26",
+      "fechaFin": "2026-10-31",
+      "estado": "activo",
+      "archivado": false
     }
   ],
   "participantes": [
@@ -289,6 +371,12 @@
       "idProyecto": "PRJ-001",
       "idUsuario": "USR-014",
       "rol": "Developer"
+    },
+    {
+      "id": "PAR-018",
+      "idProyecto": "PRJ-006",
+      "idUsuario": "USR-002",
+      "rol": "Product Owner"
     }
   ],
   "historial": [
@@ -381,6 +469,363 @@
       "campo": "archivado",
       "valorAnterior": false,
       "valorNuevo": true
+    },
+    {
+      "id": "HIS-010",
+      "fecha": "2026-10-26T06:10:50.698Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-006",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "Proyecto de prueba día 26 OCT"
+    },
+    {
+      "id": "HIS-011",
+      "fecha": "2026-10-26T06:11:45.241Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-006",
+      "campo": "estado",
+      "valorAnterior": "preparacion",
+      "valorNuevo": "activo"
+    },
+    {
+      "id": "HIS-012",
+      "fecha": "2026-10-26T06:12:15.863Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-006",
+      "campo": "informacion",
+      "valorAnterior": {
+        "nombre": "Proyecto de prueba día 26 OCT"
+      },
+      "valorNuevo": {
+        "nombre": "Proyecto de prueba día 26 OCTUBRE"
+      }
+    },
+    {
+      "id": "HIS-013",
+      "fecha": "2026-10-26T06:12:33.440Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-006",
+      "campo": "estado",
+      "valorAnterior": "activo",
+      "valorNuevo": "finalizado"
+    },
+    {
+      "id": "HIS-014",
+      "fecha": "2026-10-26T06:12:36.262Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-006",
+      "campo": "estado",
+      "valorAnterior": "finalizado",
+      "valorNuevo": "activo"
+    },
+    {
+      "id": "HIS-015",
+      "fecha": "2026-10-26T06:12:49.127Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-006",
+      "campo": "archivado",
+      "valorAnterior": false,
+      "valorNuevo": true
+    },
+    {
+      "id": "HIS-016",
+      "fecha": "2026-10-26T06:13:01.161Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-006",
+      "campo": "archivado",
+      "valorAnterior": true,
+      "valorNuevo": false
+    },
+    {
+      "id": "HIS-017",
+      "fecha": "2026-10-26T06:16:13.798Z",
+      "idUsuario": "USR-001",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-002",
+      "campo": "estado",
+      "valorAnterior": "finalizado",
+      "valorNuevo": "activo"
+    },
+    {
+      "id": "HIS-018",
+      "fecha": "2026-10-26T06:16:16.950Z",
+      "idUsuario": "USR-001",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-002",
+      "campo": "estado",
+      "valorAnterior": "activo",
+      "valorNuevo": "finalizado"
+    },
+    {
+      "id": "HIS-019",
+      "fecha": "2026-10-26T06:33:43.469Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-015",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "chofsguzhdez13@gmail.com"
+    },
+    {
+      "id": "HIS-020",
+      "fecha": "2026-10-26T06:35:37.076Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-016",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "faustostrange15@gmail.com"
+    },
+    {
+      "id": "HIS-021",
+      "fecha": "2026-10-26T06:36:37.052Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-004",
+      "campo": "estado",
+      "valorAnterior": "activo",
+      "valorNuevo": "desactivado"
+    },
+    {
+      "id": "HIS-022",
+      "fecha": "2026-10-26T06:37:15.971Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-004",
+      "campo": "estado",
+      "valorAnterior": "desactivado",
+      "valorNuevo": "activo"
+    },
+    {
+      "id": "HIS-023",
+      "fecha": "2026-10-26T06:39:04.622Z",
+      "idUsuario": "USR-004",
+      "entidad": "usuario",
+      "idEntidad": "USR-004",
+      "campo": "perfil",
+      "valorAnterior": {
+        "nombre": "Developer"
+      },
+      "valorNuevo": {
+        "nombre": "boladearroz"
+      }
+    },
+    {
+      "id": "HIS-024",
+      "fecha": "2026-10-26T13:05:24.209Z",
+      "idUsuario": "USR-004",
+      "entidad": "usuario",
+      "idEntidad": "USR-004",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-025",
+      "fecha": "2026-10-26T13:06:49.375Z",
+      "idUsuario": "USR-004",
+      "entidad": "usuario",
+      "idEntidad": "USR-004",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-026",
+      "fecha": "2026-10-26T13:09:15.187Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-017",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "ricardo@gmail.com"
+    },
+    {
+      "id": "HIS-027",
+      "fecha": "2026-10-26T13:09:44.430Z",
+      "idUsuario": "USR-017",
+      "entidad": "usuario",
+      "idEntidad": "USR-017",
+      "campo": "estado",
+      "valorAnterior": "invitacion_pendiente",
+      "valorNuevo": "activo"
+    },
+    {
+      "id": "HIS-028",
+      "fecha": "2026-10-26T13:20:15.376Z",
+      "idUsuario": "USR-004",
+      "entidad": "usuario",
+      "idEntidad": "USR-004",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-029",
+      "fecha": "2026-10-26T13:47:30.218Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-001",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-030",
+      "fecha": "2026-10-26T13:48:16.346Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-018",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "saritaortegahdez13@gmail.com"
+    },
+    {
+      "id": "HIS-031",
+      "fecha": "2026-10-26T13:55:55.098Z",
+      "idUsuario": "USR-018",
+      "entidad": "usuario",
+      "idEntidad": "USR-018",
+      "campo": "estado",
+      "valorAnterior": "invitacion_pendiente",
+      "valorNuevo": "activo"
+    },
+    {
+      "id": "HIS-032",
+      "fecha": "2026-10-26T13:59:51.871Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-019",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "alguncorreo@correo.com"
+    },
+    {
+      "id": "HIS-033",
+      "fecha": "2026-10-26T14:04:47.864Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-020",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "usuario3@gmail.com"
+    },
+    {
+      "id": "HIS-034",
+      "fecha": "2026-10-26T14:07:18.251Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-021",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "usuario4@gmail.com"
+    },
+    {
+      "id": "HIS-035",
+      "fecha": "2026-10-26T14:09:40.736Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-022",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "usuario5@gmail.com"
+    },
+    {
+      "id": "HIS-036",
+      "fecha": "2026-10-26T14:10:10.071Z",
+      "idUsuario": "USR-022",
+      "entidad": "usuario",
+      "idEntidad": "USR-022",
+      "campo": "estado",
+      "valorAnterior": "invitacion_pendiente",
+      "valorNuevo": "activo"
+    }
+  ],
+  "tokens": [
+    {
+      "token": "0ca5c544f2cba3773cffc47d9f59163400e7c6c1cbfd3e03",
+      "idUsuario": "USR-015",
+      "tipo": "invitacion",
+      "expira": "2026-10-29T06:33:43.469Z",
+      "usado": false
+    },
+    {
+      "token": "f84f0c9eaae4a3d0f0b18b4023b703cce4365ca8f273fb87",
+      "idUsuario": "USR-004",
+      "tipo": "recuperacion",
+      "expira": "2026-10-26T14:04:17.486Z",
+      "usado": true
+    },
+    {
+      "token": "04784b1e78804c58a749f6be04ad8de51e5880155e172cbd",
+      "idUsuario": "USR-004",
+      "tipo": "recuperacion",
+      "expira": "2026-10-26T14:06:12.143Z",
+      "usado": true
+    },
+    {
+      "token": "83c2b7352bcda9dcb7f46b59712d3b2f007970646073fea7",
+      "idUsuario": "USR-017",
+      "tipo": "invitacion",
+      "expira": "2026-10-29T13:09:15.187Z",
+      "usado": true
+    },
+    {
+      "token": "83393c4e6207ee3b691a0aa7e5eabe62a532bf85cb608c23",
+      "idUsuario": "USR-004",
+      "tipo": "recuperacion",
+      "expira": "2026-10-26T14:19:21.078Z",
+      "usado": true
+    },
+    {
+      "token": "d7fa1d939ed75dffe8bac15f8394246970bdba7f3ed0f30d",
+      "idUsuario": "USR-001",
+      "tipo": "recuperacion",
+      "expira": "2026-10-26T14:47:02.063Z",
+      "usado": true
+    },
+    {
+      "token": "bdae06ac92fac27c191533639d54432127b6a28329019a03",
+      "idUsuario": "USR-018",
+      "tipo": "invitacion",
+      "expira": "2026-10-29T13:48:16.346Z",
+      "usado": true
+    },
+    {
+      "token": "a6ef6ccce01c168a7abbf9dac9b5056fa26a1120fed82f8c",
+      "idUsuario": "USR-019",
+      "tipo": "invitacion",
+      "expira": "2026-10-29T13:59:51.872Z",
+      "usado": false
+    },
+    {
+      "token": "6fde1a32b0aa40f9ffe93a9a463928628162de98d7f3937a",
+      "idUsuario": "USR-020",
+      "tipo": "invitacion",
+      "expira": "2026-10-29T14:04:47.864Z",
+      "usado": false
+    },
+    {
+      "token": "028e0f51aca761089d77636aa4c9d534f498060c3fc30247",
+      "idUsuario": "USR-021",
+      "tipo": "invitacion",
+      "expira": "2026-10-29T14:07:18.252Z",
+      "usado": false
+    },
+    {
+      "token": "ca219fa4ae479c52db8cd0c1608d5c1c2f162f81d9cc5000",
+      "idUsuario": "USR-022",
+      "tipo": "invitacion",
+      "expira": "2026-10-29T14:09:40.737Z",
+      "usado": true
     }
   ]
 }
