@@ -67,3 +67,30 @@
   document.getElementById('contenido').hidden = false;
   Icons.hidratar();
 })();
+
+// Función para ejecutar HU-14 y HU-15 desde la interfaz
+async function agregarParticipanteConRol(proyectoId) {
+    const usuarioId = document.getElementById('select-usuario').value;
+    const rolScrum = document.getElementById('select-rol').value; 
+
+    try {
+        const respuesta = await fetch(`/api/equipos/proyectos/${proyectoId}/participantes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ usuarioId, rolScrum })
+        });
+
+        const resultado = await respuesta.json();
+
+        if (respuesta.ok) {
+            alert('Participante y rol registrados correctamente.');
+            // Aquí llamas a la función que recarga la tabla del equipo (HU-16)
+        } else {
+            alert(`Error: ${resultado.error}`);
+        }
+    } catch (error) {
+        console.error('Error de red al agregar participante:', error);
+    }
+}

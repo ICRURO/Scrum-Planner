@@ -39,6 +39,28 @@
           <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="info"></span>Información general</h2>
           <dl class="datos" id="info"></dl>
         </section>
+        <div class="tarjeta mt-4">
+          <div class="tarjeta-encabezado">
+            <h3 class="tarjeta-titulo">Agregar Participante (HU-14 y HU-15)</h3>
+          </div>
+          <div class="tarjeta-cuerpo">
+            <div class="campo">
+              <label for="select-usuario">ID del Usuario:</label>
+              <input type="text" id="select-usuario" placeholder="Ej: USR-001" class="input">
+            </div>
+            <div class="campo mt-2">
+              <label for="select-rol">Rol Scrum:</label>
+              <select id="select-rol" class="input">
+                <option value="Product Owner">Product Owner</option>
+                <option value="Scrum Master">Scrum Master</option>
+                <option value="Developer">Developer</option>
+                <option value="Interesado">Interesado</option>
+              </select>
+            </div>
+            <!-- Se pasa el ID del proyecto directamente desde la URL o el DOM -->
+            <button class="btn btn-primario mt-3" onclick="agregarParticipanteConRol(new URLSearchParams(window.location.search).get('id'))">Agregar al Equipo</button>
+          </div>
+        </div>
         <section class="tarjeta">
           <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="reloj"></span>Historial de cambios</h2>
           <div class="tabla-contenedor">
@@ -48,6 +70,7 @@
             </table>
           </div>
         </section>
+        
       </div>
     </div>
   </main>

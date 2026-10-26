@@ -54,6 +54,8 @@ app.get('/proyectos/editar', requierePagina, paginaConPermiso('editar_proyecto',
 app.use('/api/auth', require('./src/modules/auth/auth.routes'));
 app.use('/api/users', require('./src/modules/users/users.routes'));
 app.use('/api/projects', require('./src/modules/projects/projects.routes'));
+// Apartado equipos
+app.use('/api/equipos', require('./src/modules/equipos/equipos.routes'));
 
 app.use((req, res) => res.status(404).send('Página no encontrada'));
 

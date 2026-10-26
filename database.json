@@ -136,7 +136,15 @@
       "fechaInicio": "2026-10-05",
       "fechaFin": "2026-12-11",
       "estado": "activo",
-      "archivado": false
+      "archivado": false,
+      "equipo": [
+        {
+          "usuarioId": "USR-01",
+          "rolScrum": "Product Owner",
+          "estado": "Activo",
+          "fechaAsignacion": "2026-10-26T04:27:45.364Z"
+        }
+      ]
     },
     {
       "id": "PRJ-002",
@@ -251,8 +259,8 @@
       "idProyecto": "PRJ-005",
       "idUsuario": "USR-002",
       "rol": "Product Owner"
-    }, 
-        {
+    },
+    {
       "id": "PAR-013",
       "idProyecto": "PRJ-001",
       "idUsuario": "USR-008",
