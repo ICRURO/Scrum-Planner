@@ -64,7 +64,9 @@
     ? historial.map((h) => `<tr><td>${UI.formatoFecha(h.fecha)}</td><td>${UI.escapar(h.usuario)}</td><td>${UI.escapar(h.cambio)}</td></tr>`).join('')
     : '<tr><td colspan="3" class="texto-suave">Todavía no hay cambios registrados.</td></tr>';
 
+  // Mostrar contenido, cargar equipo y renderizar iconos
   document.getElementById('contenido').hidden = false;
+  await cargarEquipo(p.id, miRol);
   Icons.hidratar();
 })();
 
@@ -86,11 +88,43 @@ async function agregarParticipanteConRol(proyectoId) {
 
         if (respuesta.ok) {
             alert('Participante y rol registrados correctamente.');
-            // Aquí llamas a la función que recarga la tabla del equipo (HU-16)
+            // Recargar la lista del equipo en pantalla tras agregar uno nuevo
+            location.reload(); 
         } else {
             alert(`Error: ${resultado.error}`);
         }
     } catch (error) {
         console.error('Error de red al agregar participante:', error);
+    }
+}
+
+// Función para ejecutar HU-16 y HU-17 (Consultar equipo y restringir interesados)
+async function cargarEquipo(proyectoId, miRol) {
+    try {
+        const respuesta = await fetch(`/api/equipos/proyectos/${proyectoId}/participantes`);
+        const equipo = await respuesta.json();
+        
+        const contenedorLista = document.getElementById('lista-equipo');
+        if (contenedorLista) {
+            if (Array.isArray(equipo) && equipo.length > 0) {
+                contenedorLista.innerHTML = equipo.map(m => `
+                    <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                        Usuario: <strong>${m.usuarioId || m.id || 'N/A'}</strong> — 
+                        Rol: <span class="insignia">${m.rolScrum || m.rol || 'Sin rol'}</span> 
+                        (${m.estado || 'Activo'})
+                    </li>
+                `).join('');
+            } else {
+                contenedorLista.innerHTML = '<li class="texto-suave">Sin participantes registrados en este proyecto.</li>';
+            }
+        }
+
+        // HU-17: Dar acceso limitado a interesados (oculta controles de edición)
+        if (miRol === 'Interesado') {
+            const controlesEdicion = document.querySelectorAll('.controles-edicion');
+            controlesEdicion.forEach(control => control.style.display = 'none');
+        }
+    } catch (error) {
+        console.error('Error al cargar el equipo:', error);
     }
 }

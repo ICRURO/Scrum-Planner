@@ -49,3 +49,15 @@ router.post('/proyectos/:proyectoId/participantes', (req, res) => {
 });
 
 module.exports = router;
+
+// HU-16: Consultar el equipo del proyecto
+router.get('/proyectos/:proyectoId/participantes', (req, res) => {
+    const db = leerDB();
+    const proyecto = db.proyectos.find(p => p.id === req.params.proyectoId);
+    
+    if (!proyecto) {
+        return res.status(404).json({ error: 'Proyecto no encontrado' });
+    }
+    
+    res.json(proyecto.equipo || []);
+});

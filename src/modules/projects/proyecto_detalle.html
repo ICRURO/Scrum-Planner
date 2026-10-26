@@ -43,7 +43,7 @@
           <div class="tarjeta-encabezado">
             <h3 class="tarjeta-titulo">Agregar Participante (HU-14 y HU-15)</h3>
           </div>
-          <div class="tarjeta-cuerpo">
+          <div class="controles-edicion">
             <div class="campo">
               <label for="select-usuario">ID del Usuario:</label>
               <input type="text" id="select-usuario" placeholder="Ej: USR-001" class="input">
@@ -59,6 +59,14 @@
             </div>
             <!-- Se pasa el ID del proyecto directamente desde la URL o el DOM -->
             <button class="btn btn-primario mt-3" onclick="agregarParticipanteConRol(new URLSearchParams(window.location.search).get('id'))">Agregar al Equipo</button>
+          </div>
+        </div>
+        <div class="tarjeta mt-4">
+          <div class="tarjeta-encabezado">
+            <h3 class="tarjeta-titulo">Equipo del Proyecto (HU-16)</h3>
+          </div>
+          <div class="tarjeta-cuerpo">
+            <ul id="lista-equipo" class="lista-equipo-estilo"></ul>
           </div>
         </div>
         <section class="tarjeta">
