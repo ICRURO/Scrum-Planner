@@ -1,5 +1,3 @@
-// Detalle del proyecto: estado, acciones permitidas, información general e historial
-
 (async function () {
   const sesion = await Layout.listo;
   if (!sesion) return;
@@ -26,6 +24,9 @@
   const formularioContenedor = document.getElementById('formulario-historia-contenedor');
   const criteriosFormulario = document.getElementById('criterios-formulario');
   const listaHistorias = document.getElementById('lista-historias');
+  const divisionContenedor = document.getElementById('division-contenedor');
+  const historiasDivision = document.getElementById('historias-division');
+  let historiaParaDividir = null;
 
   function agregarCriterio(criterio = {}) {
     const numero = criteriosFormulario.children.length + 1;
@@ -58,6 +59,8 @@
     formularioHistoria.reset();
     criteriosFormulario.replaceChildren();
     historiaEditando = null;
+    document.getElementById('historia-aclaracion').value = '';
+    document.getElementById('aclaracion-refinamiento').hidden = true;
     document.getElementById('guardar-historia').textContent = 'Registrar historia';
     document.getElementById('cancelar-edicion-historia').hidden = true;
   }
@@ -69,9 +72,15 @@
       ? historiasActuales.map((historia, indice) => {
         const criterios = historia.criterios || [];
         const comentarios = historia.comentarios || [];
+        const aclaraciones = historia.aclaraciones || [];
+        const relacion = historia.idHistoriaOrigen
+          ? `Derivada de: ${UI.escapar(historia.idHistoriaOrigen)}`
+          : historia.divisiones?.length
+            ? `Dividida en: ${historia.divisiones.map((id) => UI.escapar(id)).join(', ')}`
+            : '';
         return `
           <tr>
-            <td><span class="insignia">${UI.escapar(historia.id)}</span></td>
+            <td><span class="insignia">${UI.escapar(historia.id)}</span>${relacion ? `<small class="historia-relacion">${relacion}</small>` : ''}</td>
             <td class="historia-prioridad">
               <strong>${indice + 1}</strong>
               ${permisos.priorizarHistorias && !archivado ? `<div class="historia-prioridad__acciones">
@@ -81,6 +90,7 @@
             </td>
             <td><strong>${UI.escapar(historia.titulo)}</strong></td>
             <td class="historia-tabla__descripcion">${UI.escapar(historia.descripcion)}</td>
+            <td>${UI.escapar(historia.estimacion || 'Sin estimar')}</td>
             <td>${criterios.length
               ? `<details class="historia-tabla__criterios">
                   <summary>Ver ${criterios.length} ${criterios.length === 1 ? 'criterio' : 'criterios'}</summary>
@@ -107,13 +117,99 @@
                   <button class="btn btn-secundario btn-chico" type="submit">Comentar</button>
                 </form>` : ''}
             </td>
-            <td>${permisos.gestionarHistorias && !archivado
-              ? `<button class="btn btn-secundario btn-chico" type="button" data-editar-historia="${UI.escapar(historia.id)}">Editar</button>`
-              : '—'}</td>
+            <td>${aclaraciones.length
+              ? `<details>
+                  <summary>Ver ${aclaraciones.length} ${aclaraciones.length === 1 ? 'aclaración' : 'aclaraciones'}</summary>
+                  <ul class="historia-comentarios__lista">${aclaraciones.map((aclaracion) => `
+                    <li class="historia-comentarios__item">
+                      <strong>${UI.escapar(aclaracion.usuario)}</strong> · <time>${UI.formatoFecha(aclaracion.fecha)}</time>
+                      <p>${UI.escapar(aclaracion.texto)}</p>
+                    </li>`).join('')}
+                  </ul>
+                </details>`
+              : '<span class="historia-vacio">Sin aclaraciones</span>'}</td>
+            <td class="historia-acciones">
+              ${permisos.refinarHistorias && !archivado
+                ? `<button class="btn btn-secundario btn-chico" type="button" data-editar-historia="${UI.escapar(historia.id)}">Refinar</button>`
+                : ''}
+              ${permisos.gestionarHistorias && !archivado
+                ? `<button class="btn btn-secundario btn-chico" type="button" data-dividir-historia="${UI.escapar(historia.id)}">Dividir</button>`
+                : ''}
+              ${!permisos.refinarHistorias && !permisos.gestionarHistorias ? '—' : ''}
+            </td>
           </tr>`;
       }).join('')
-      : '<tr><td colspan="7" class="historia-vacio">Todavía no hay historias registradas en este proyecto.</td></tr>';
+      : '<tr><td colspan="9" class="historia-vacio">Todavía no hay historias registradas en este proyecto.</td></tr>';
   }
+
+  function agregarHistoriaDivision() {
+    const numero = historiasDivision.children.length + 1;
+    const fila = document.createElement('article');
+    fila.className = 'historia-division__item';
+    fila.innerHTML = `
+      <div class="historia-criterio__encabezado">
+        <strong class="historia-criterio__titulo">Historia resultante ${numero}</strong>
+        <button class="btn btn-texto btn-chico" type="button" data-quitar-division ${numero <= 2 ? 'hidden' : ''}>Quitar</button>
+      </div>
+      <div class="campo">
+        <label>Título</label>
+        <input class="control" data-division-titulo maxlength="160" required>
+      </div>
+      <div class="campo">
+        <label>Descripción</label>
+        <textarea class="control" data-division-descripcion placeholder="Como [rol], quiero [necesidad], para [beneficio]." required></textarea>
+      </div>
+      <div class="campo">
+        <label>Estimación</label>
+        <select class="control" data-division-estimacion>
+          <option value="">Sin estimar</option>
+          <option value="XS">XS</option>
+          <option value="S">S</option>
+          <option value="M">M</option>
+          <option value="L">L</option>
+          <option value="XL">XL</option>
+        </select>
+      </div>`;
+    historiasDivision.appendChild(fila);
+    [...historiasDivision.querySelectorAll('[data-quitar-division]')].forEach((boton) => {
+      boton.hidden = historiasDivision.children.length <= 2;
+    });
+  }
+
+  function cerrarDivision() {
+    historiaParaDividir = null;
+    divisionContenedor.hidden = true;
+    historiasDivision.replaceChildren();
+  }
+
+  document.getElementById('agregar-historia-division').addEventListener('click', agregarHistoriaDivision);
+  document.getElementById('cancelar-division').addEventListener('click', cerrarDivision);
+  historiasDivision.addEventListener('click', (e) => {
+    const boton = e.target.closest('[data-quitar-division]');
+    if (boton && historiasDivision.children.length > 2) {
+      boton.closest('.historia-division__item').remove();
+      [...historiasDivision.querySelectorAll('[data-quitar-division]')].forEach((item) => {
+        item.hidden = historiasDivision.children.length <= 2;
+      });
+    }
+  });
+  document.getElementById('formulario-division').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!actual || !historiaParaDividir) return;
+    const historias = [...historiasDivision.querySelectorAll('.historia-division__item')].map((fila) => ({
+      titulo: fila.querySelector('[data-division-titulo]').value.trim(),
+      descripcion: fila.querySelector('[data-division-descripcion]').value.trim(),
+      estimacion: fila.querySelector('[data-division-estimacion]').value || null
+    }));
+    const r = await Api.post(
+      `/api/projects/${encodeURIComponent(actual.id)}/historias/${encodeURIComponent(historiaParaDividir)}/divisiones`,
+      { historias }
+    );
+    if (!r.ok) return UI.toast(r.datos?.mensaje || 'No se pudieron crear las divisiones.', 'error');
+    cerrarDivision();
+    await pintar();
+    UI.toast(r.datos.mensaje, 'exito');
+  });
 
   document.getElementById('agregar-criterio').addEventListener('click', () => agregarCriterio());
   criteriosFormulario.addEventListener('click', (e) => {
@@ -135,6 +231,8 @@
     const datos = {
       titulo: document.getElementById('historia-titulo').value.trim(),
       descripcion: document.getElementById('historia-descripcion').value.trim(),
+      estimacion: document.getElementById('historia-estimacion').value || null,
+      ...(historiaEditando ? { aclaracion: document.getElementById('historia-aclaracion').value.trim() } : {}),
       criterios
     };
     const url = `/api/projects/${encodeURIComponent(actual.id)}/historias${historiaEditando ? `/${encodeURIComponent(historiaEditando)}` : ''}`;
@@ -159,6 +257,21 @@
       return;
     }
 
+    const botonDividir = e.target.closest('[data-dividir-historia]');
+    if (botonDividir) {
+      const historia = historiasActuales.find((item) => item.id === botonDividir.dataset.dividirHistoria);
+      if (!historia) return;
+      historiaParaDividir = historia.id;
+      document.getElementById('division-titulo').textContent = `Dividir ${historia.id}`;
+      document.getElementById('division-origen').textContent = historia.titulo;
+      historiasDivision.replaceChildren();
+      agregarHistoriaDivision();
+      agregarHistoriaDivision();
+      divisionContenedor.hidden = false;
+      divisionContenedor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
     const boton = e.target.closest('[data-editar-historia]');
     if (!boton) return;
     const historia = historiasActuales.find((item) => item.id === boton.dataset.editarHistoria);
@@ -166,6 +279,9 @@
     historiaEditando = historia.id;
     document.getElementById('historia-titulo').value = historia.titulo;
     document.getElementById('historia-descripcion').value = historia.descripcion;
+    document.getElementById('historia-estimacion').value = historia.estimacion || '';
+    document.getElementById('historia-aclaracion').value = '';
+    document.getElementById('aclaracion-refinamiento').hidden = false;
     criteriosFormulario.replaceChildren();
     (historia.criterios || []).forEach((criterio) => agregarCriterio(criterio));
     document.getElementById('guardar-historia').textContent = 'Guardar cambios';

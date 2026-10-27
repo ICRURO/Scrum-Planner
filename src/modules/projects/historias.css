@@ -27,6 +27,13 @@
 .historia-comentarios__formulario { display: grid; gap: 8px; margin-top: 10px; }
 .historia-comentarios__formulario textarea { min-height: 64px; }
 .historia-vacio { color: var(--c-piedra); }
+.historia-relacion { display: block; margin-top: 6px; color: var(--c-piedra); }
+.historia-acciones { min-width: 150px; }
+.historia-acciones .btn { margin: 2px; }
+.historia-division { display: grid; gap: 16px; padding: 18px; border: 1px solid var(--c-linea); border-radius: var(--radio-m); }
+.historia-division__item { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--c-linea); border-radius: var(--radio-s); }
+.historia-division__item textarea { min-height: 76px; }
+.historia-division__item .historia-criterio__encabezado { margin-bottom: 0; }
 @media (max-width: 760px) {
   .historia-criterio__campos { grid-template-columns: 1fr; gap: 0; }
 }

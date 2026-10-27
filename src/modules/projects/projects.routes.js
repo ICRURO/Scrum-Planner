@@ -20,6 +20,7 @@ const TRANSICIONES = {
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const CAMPOS_EDITABLES = ['nombre', 'descripcion', 'objetivo', 'fechaInicio', 'fechaFin'];
+const ESTIMACIONES = ['XS', 'S', 'M', 'L', 'XL'];
 
 // El administrador ve todos; los demás solo los proyectos donde participan (RF-09)
 const proyectosVisibles = (db, usuario) =>
@@ -42,8 +43,12 @@ function siguienteIdCriterio(historias) {
 }
 
 function validarHistoria(datos) {
+  if (!datos || typeof datos !== 'object' || Array.isArray(datos)) return 'Los datos de la historia no son válidos.';
   if (typeof datos.titulo !== 'string' || !datos.titulo.trim()) return 'El título de la historia es obligatorio.';
   if (typeof datos.descripcion !== 'string' || !datos.descripcion.trim()) return 'La descripción es obligatoria.';
+  if (datos.estimacion !== undefined && datos.estimacion !== null && !ESTIMACIONES.includes(datos.estimacion)) {
+    return 'La estimación debe ser una talla XS, S, M, L o XL.';
+  }
   if (datos.criterios !== undefined && !Array.isArray(datos.criterios)) return 'Los criterios deben enviarse como una lista.';
   for (const criterio of datos.criterios || []) {
     if (!criterio || typeof criterio !== 'object' || Array.isArray(criterio)) return 'Cada criterio debe incluir Dado, Cuando y Entonces.';
@@ -88,6 +93,8 @@ function textoCambio(h) {
   if (h.entidad === 'historia_usuario') {
     if (h.campo === 'creacion') return `Historia creada: ${h.valorNuevo}`;
     if (h.campo === 'edicion') return 'Historia editada';
+    if (h.campo === 'refinamiento') return 'Historia refinada';
+    if (h.campo === 'division') return `Historia dividida; se creó ${h.valorNuevo}`;
     if (h.campo === 'orden') return `Prioridad actualizada: ${h.valorAnterior} → ${h.valorNuevo}`;
     if (h.campo === 'comentario') return 'Comentario agregado a una historia';
   }
@@ -141,12 +148,17 @@ router.get('/:id', (req, res) => {
     .map((h, indice) => ({
       ...h,
       orden: Number.isInteger(h.orden) && h.orden > 0 ? h.orden : indice + 1,
+      divisiones: (db.historiasUsuario || []).filter((derivada) => derivada.idHistoriaOrigen === h.id).map((derivada) => derivada.id),
       comentarios: (h.comentarios || []).map((comentario) => {
         const autor = db.usuarios.find((x) => x.id === comentario.idUsuario);
         return {
           ...comentario,
           usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido'
         };
+      }),
+      aclaraciones: (h.aclaraciones || []).map((aclaracion) => {
+        const autor = db.usuarios.find((x) => x.id === aclaracion.idUsuario);
+        return { ...aclaracion, usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido' };
       })
     }))
     .sort((a, b) => a.orden - b.orden);
@@ -181,6 +193,7 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
     titulo: String(datos.titulo).trim(),
     descripcion: String(datos.descripcion).trim(),
     criterios: criterios.lista,
+    estimacion: datos.estimacion || null,
     orden: db.historiasUsuario.filter((h) => h.idProyecto === ctx.proyecto.id).length + 1,
     comentarios: []
   };
@@ -188,6 +201,63 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'historia_usuario', idEntidad: historia.id, campo: 'creacion', valorNuevo: historia.titulo });
   writeDB(db);
   res.status(201).json({ mensaje: 'Historia de usuario registrada.', historia });
+});
+
+
+router.post('/:id/historias/:idHistoria/divisiones', apiConPermiso('gestionar_historias', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const db = ctx.db;
+  const origen = (db.historiasUsuario || []).find((h) => h.id === req.params.idHistoria && h.idProyecto === ctx.proyecto.id);
+  if (!origen) return res.status(404).json({ mensaje: 'No se encontró la historia de usuario en este proyecto.' });
+
+  const historias = req.body?.historias;
+  if (!Array.isArray(historias) || historias.length < 2) {
+    return res.status(400).json({ mensaje: 'Una división debe incluir al menos dos historias resultantes.' });
+  }
+  for (const datos of historias) {
+    const error = validarHistoria(datos);
+    if (error) return res.status(400).json({ mensaje: error });
+  }
+
+  let orden = db.historiasUsuario.filter((h) => h.idProyecto === ctx.proyecto.id).length;
+  const creadas = historias.map((datos) => {
+    const criterios = normalizarCriterios(db, null, datos.criterios);
+    if (criterios.error) return { error: criterios.error };
+    const historia = {
+      id: siguienteIdHistoria(db.historiasUsuario),
+      idProyecto: ctx.proyecto.id,
+      idHistoriaOrigen: origen.id,
+      titulo: String(datos.titulo).trim(),
+      descripcion: String(datos.descripcion).trim(),
+      criterios: criterios.lista,
+      estimacion: datos.estimacion || null,
+      orden: ++orden,
+      comentarios: [],
+      aclaraciones: []
+    };
+    db.historiasUsuario.push(historia);
+    registrarHistorial(db, {
+      idUsuario: req.usuario.id,
+      entidad: 'historia_usuario',
+      idEntidad: historia.id,
+      campo: 'creacion',
+      valorNuevo: historia.titulo
+    });
+    registrarHistorial(db, {
+      idUsuario: req.usuario.id,
+      entidad: 'historia_usuario',
+      idEntidad: origen.id,
+      campo: 'division',
+      valorNuevo: historia.id
+    });
+    return historia;
+  });
+  const errorCriterios = creadas.find((historia) => historia.error);
+  if (errorCriterios) return res.status(400).json({ mensaje: errorCriterios.error });
+
+  writeDB(db);
+  res.status(201).json({ mensaje: 'Historias resultantes creadas y vinculadas con la historia original.', historias: creadas });
 });
 
 // ---------- HU-20 Priorizar historias del Product Backlog ----------
@@ -266,7 +336,7 @@ router.post('/:id/historias/:idHistoria/comentarios', apiConPermiso('comentar_hi
   });
 });
 
-router.put('/:id/historias/:idHistoria', apiConPermiso('gestionar_historias', (req) => req.params.id), (req, res) => {
+router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req) => req.params.id), (req, res) => {
   const ctx = cargar(req, res);
   if (!ctx) return;
   const db = ctx.db;
@@ -281,15 +351,36 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('gestionar_historias', (r
 
   const titulo = String(datos.titulo).trim();
   const descripcion = String(datos.descripcion).trim();
+  const estimacion = datos.estimacion === undefined ? historia.estimacion || null : datos.estimacion || null;
+  const aclaracion = datos.aclaracion === undefined ? '' : datos.aclaracion;
+  if (typeof aclaracion !== 'string' || aclaracion.length > 2000) {
+    return res.status(400).json({ mensaje: 'La aclaración no puede superar 2000 caracteres.' });
+  }
   const cambios = titulo !== historia.titulo || descripcion !== historia.descripcion
-    || JSON.stringify(criterios.lista) !== JSON.stringify(historia.criterios || []);
+    || estimacion !== (historia.estimacion || null)
+    || JSON.stringify(criterios.lista) !== JSON.stringify(historia.criterios || [])
+    || !!aclaracion.trim();
   if (!cambios) return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
 
-  const valorAnterior = { titulo: historia.titulo, descripcion: historia.descripcion, criterios: historia.criterios || [] };
+  const valorAnterior = { titulo: historia.titulo, descripcion: historia.descripcion, criterios: historia.criterios || [], estimacion: historia.estimacion || null };
   historia.titulo = titulo;
   historia.descripcion = descripcion;
   historia.criterios = criterios.lista;
-  registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'historia_usuario', idEntidad: historia.id, campo: 'edicion', valorAnterior, valorNuevo: { titulo, descripcion, criterios: historia.criterios } });
+  historia.estimacion = estimacion;
+  const valorNuevo = { titulo, descripcion, criterios: historia.criterios, estimacion };
+  if (aclaracion.trim()) {
+    if (!historia.aclaraciones) historia.aclaraciones = [];
+    const max = historia.aclaraciones.reduce((m, item) => Math.max(m, parseInt(String(item.id).replace(/^ACL-/, ''), 10) || 0), 0);
+    const nuevaAclaracion = {
+      id: `ACL-${String(max + 1).padStart(3, '0')}`,
+      idUsuario: req.usuario.id,
+      texto: aclaracion.trim(),
+      fecha: new Date().toISOString()
+    };
+    historia.aclaraciones.push(nuevaAclaracion);
+    valorNuevo.aclaracion = nuevaAclaracion.texto;
+  }
+  registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'historia_usuario', idEntidad: historia.id, campo: 'refinamiento', valorAnterior, valorNuevo });
   writeDB(db);
   res.json({ mensaje: 'Historia de usuario actualizada.', historia });
 });

@@ -26,6 +26,7 @@ const MATRIZ = [
   { accion: 'reabrir_proyecto', texto: 'Reabrir proyecto', roles: ADMIN_Y_PO },
   { accion: 'archivar_proyecto', texto: 'Archivar proyecto', roles: ADMIN_Y_PO },
   { accion: 'gestionar_historias', texto: 'Registrar y editar historias de usuario', roles: ADMIN_Y_PO },
+  { accion: 'refinar_historias', texto: 'Refinar historias de usuario', roles: ['administrador', 'Product Owner', 'Scrum Master', 'Developer'] },
   { accion: 'priorizar_historias', texto: 'Modificar el orden del Product Backlog', roles: ADMIN_Y_PO },
   { accion: 'comentar_historias', texto: 'Comentar historias de usuario', roles: TODOS },
   { accion: 'administrar_usuarios', texto: 'Administrar usuarios', roles: ['administrador'] }
@@ -61,6 +62,7 @@ function permisosProyecto(usuario, proyecto, db = readDB()) {
     reabrir: puede(usuario, 'reabrir_proyecto', proyecto.id, db),
     archivar: puede(usuario, 'archivar_proyecto', proyecto.id, db),
     gestionarHistorias: puede(usuario, 'gestionar_historias', proyecto.id, db),
+    refinarHistorias: puede(usuario, 'refinar_historias', proyecto.id, db),
     priorizarHistorias: puede(usuario, 'priorizar_historias', proyecto.id, db),
     comentarHistorias: puede(usuario, 'comentar_historias', proyecto.id, db)
   };

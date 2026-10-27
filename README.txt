@@ -17,3 +17,5 @@ Esto es importante porque, a pesar de que tendremos opciones de eliminar, las hi
 Por eso no desaparece por completo, cambia su estado
 
 De momento estamos todos nosotros con nuestros respectivos roles, y, aparte, los roles tal cual para hacer pruebas
+
+Las historias del backlog se pueden dividir en dos o más historias nuevas, cada una con identificador propio, referencia a su historia de origen, prioridad individual y estimación independiente por tallas (XS, S, M, L o XL). El Product Owner y el administrador pueden crear divisiones. El Product Owner, Scrum Master y Developer pueden refinar historias, actualizar sus criterios de aceptación y registrar aclaraciones; las aclaraciones y modificaciones se conservan en el historial de la historia.
