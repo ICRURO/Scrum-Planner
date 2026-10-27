@@ -23,6 +23,7 @@
   const formularioHistoria = document.getElementById('formulario-historia');
   const formularioContenedor = document.getElementById('formulario-historia-contenedor');
   const criteriosFormulario = document.getElementById('criterios-formulario');
+  const dependenciasFormulario = document.getElementById('historia-dependencias');
   const listaHistorias = document.getElementById('lista-historias');
   const divisionContenedor = document.getElementById('division-contenedor');
   const historiasDivision = document.getElementById('historias-division');
@@ -65,8 +66,22 @@
     document.getElementById('cancelar-edicion-historia').hidden = true;
   }
 
+  function actualizarOpcionesDependencias(seleccionadas = [], excluirId = null) {
+    dependenciasFormulario.replaceChildren();
+    historiasActuales
+      .filter((historia) => historia.id !== excluirId)
+      .forEach((historia) => {
+        const opcion = document.createElement('option');
+        opcion.value = historia.id;
+        opcion.textContent = `${historia.id} · ${historia.titulo}`;
+        opcion.selected = seleccionadas.includes(historia.id);
+        dependenciasFormulario.appendChild(opcion);
+      });
+  }
+
   function dibujarHistorias(historias, permisos, archivado) {
     historiasActuales = historias || [];
+    actualizarOpcionesDependencias([], historiaEditando);
     formularioContenedor.hidden = !permisos.gestionarHistorias || archivado;
     listaHistorias.innerHTML = historiasActuales.length
       ? historiasActuales.map((historia, indice) => {
@@ -90,7 +105,16 @@
             </td>
             <td><strong>${UI.escapar(historia.titulo)}</strong></td>
             <td class="historia-tabla__descripcion">${UI.escapar(historia.descripcion)}</td>
-            <td>${UI.escapar(historia.estimacion || 'Sin estimar')}</td>
+            <td>${historia.estimacion
+              ? `<span class="insignia historia-estimacion">Talla ${UI.escapar(historia.estimacion)}</span>`
+              : '<span class="historia-vacio">Sin estimar</span>'}</td>
+            <td class="historia-dependencias">${historia.dependencias?.length
+              ? historia.dependencias.map((idDependencia) => {
+                const dependencia = historiasActuales.find((item) => item.id === idDependencia);
+                return `<span class="historia-relacion">${UI.escapar(idDependencia)}${dependencia ? ` · ${UI.escapar(dependencia.titulo)}` : ''}</span>`;
+              }).join('')
+              : '<span class="historia-vacio">Sin dependencias</span>'}</td>
+            <td class="historia-responsable">${UI.escapar(historia.responsableOrganizativo || 'Sin responsable')}</td>
             <td>${criterios.length
               ? `<details class="historia-tabla__criterios">
                   <summary>Ver ${criterios.length} ${criterios.length === 1 ? 'criterio' : 'criterios'}</summary>
@@ -139,7 +163,7 @@
             </td>
           </tr>`;
       }).join('')
-      : '<tr><td colspan="9" class="historia-vacio">Todavía no hay historias registradas en este proyecto.</td></tr>';
+      : '<tr><td colspan="11" class="historia-vacio">Todavía no hay historias registradas en este proyecto.</td></tr>';
   }
 
   function agregarHistoriaDivision() {
@@ -160,7 +184,7 @@
         <textarea class="control" data-division-descripcion placeholder="Como [rol], quiero [necesidad], para [beneficio]." required></textarea>
       </div>
       <div class="campo">
-        <label>Estimación</label>
+        <label>Estimación relativa</label>
         <select class="control" data-division-estimacion>
           <option value="">Sin estimar</option>
           <option value="XS">XS</option>
@@ -169,6 +193,7 @@
           <option value="L">L</option>
           <option value="XL">XL</option>
         </select>
+        <span class="campo__ayuda">Tallas categóricas; no se suman como puntos.</span>
       </div>`;
     historiasDivision.appendChild(fila);
     [...historiasDivision.querySelectorAll('[data-quitar-division]')].forEach((boton) => {
@@ -232,6 +257,8 @@
       titulo: document.getElementById('historia-titulo').value.trim(),
       descripcion: document.getElementById('historia-descripcion').value.trim(),
       estimacion: document.getElementById('historia-estimacion').value || null,
+      dependencias: [...dependenciasFormulario.selectedOptions].map((opcion) => opcion.value),
+      responsableOrganizativo: document.getElementById('historia-responsable').value.trim(),
       ...(historiaEditando ? { aclaracion: document.getElementById('historia-aclaracion').value.trim() } : {}),
       criterios
     };
@@ -280,6 +307,8 @@
     document.getElementById('historia-titulo').value = historia.titulo;
     document.getElementById('historia-descripcion').value = historia.descripcion;
     document.getElementById('historia-estimacion').value = historia.estimacion || '';
+    document.getElementById('historia-responsable').value = historia.responsableOrganizativo || '';
+    actualizarOpcionesDependencias(historia.dependencias || [], historia.id);
     document.getElementById('historia-aclaracion').value = '';
     document.getElementById('aclaracion-refinamiento').hidden = false;
     criteriosFormulario.replaceChildren();

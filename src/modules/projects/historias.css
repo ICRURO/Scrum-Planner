@@ -13,6 +13,9 @@
 .historia-criterio__campos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .historias-acciones { justify-content: flex-start; }
 .historia-tabla__descripcion { min-width: 240px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.historia-estimacion { white-space: nowrap; }
+.historia-dependencias { min-width: 190px; }
+.historia-responsable { min-width: 160px; overflow-wrap: anywhere; }
 .historia-tabla__criterios { min-width: 150px; }
 .historia-tabla__criterios summary { color: var(--c-hoja); cursor: pointer; font-weight: 600; }
 .historia-tabla__criterios[open] { min-width: 300px; }

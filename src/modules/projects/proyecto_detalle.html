@@ -102,7 +102,7 @@
               <span class="campo__ayuda">Puedes redactarla con la estructura: Como…, quiero…, para…</span>
             </div>
             <div class="campo">
-              <label for="historia-estimacion">Estimación</label>
+              <label for="historia-estimacion">Estimación relativa</label>
               <select class="control" id="historia-estimacion" name="estimacion">
                 <option value="">Sin estimar</option>
                 <option value="XS">XS</option>
@@ -111,6 +111,16 @@
                 <option value="L">L</option>
                 <option value="XL">XL</option>
               </select>
+              <span class="campo__ayuda">XS, S, M, L y XL son categorías de complejidad; no se suman como puntos.</span>
+            </div>
+            <div class="campo">
+              <label for="historia-dependencias">Depende de</label>
+              <select class="control" id="historia-dependencias" name="dependencias" multiple size="4"></select>
+              <span class="campo__ayuda">Puedes seleccionar varias historias que deben completarse antes. No se permiten dependencias circulares.</span>
+            </div>
+            <div class="campo">
+              <label for="historia-responsable">Responsable organizativo (opcional)</label>
+              <input class="control" id="historia-responsable" name="responsableOrganizativo" maxlength="120" placeholder="Ej.: Área de Operaciones">
             </div>
             <div class="campo" id="aclaracion-refinamiento" hidden>
               <label for="historia-aclaracion">Aclaración del refinamiento</label>
@@ -149,7 +159,9 @@
                 <th>Prioridad</th>
                 <th>Título</th>
                 <th>Descripción</th>
-                <th>Estimación</th>
+                <th>Estimación relativa</th>
+                <th>Dependencias</th>
+                <th>Responsable organizativo</th>
                 <th>Criterios de aceptación</th>
                 <th>Comentarios</th>
                 <th>Aclaraciones</th>

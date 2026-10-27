@@ -59,6 +59,44 @@ function validarHistoria(datos) {
   return null;
 }
 
+function validarPlanificacion(db, idProyecto, idHistoria, datos) {
+  const responsable = datos.responsableOrganizativo;
+  if (responsable !== undefined && responsable !== null
+    && (typeof responsable !== 'string' || responsable.trim().length > 120)) {
+    return 'El responsable organizativo debe ser texto de hasta 120 caracteres.';
+  }
+  if (datos.dependencias === undefined) return null;
+  if (!Array.isArray(datos.dependencias)
+    || datos.dependencias.some((id) => typeof id !== 'string')
+    || new Set(datos.dependencias).size !== datos.dependencias.length) {
+    return 'Las dependencias deben ser una lista válida de historias sin duplicados.';
+  }
+
+  const historias = (db.historiasUsuario || []).filter((historia) => historia.idProyecto === idProyecto);
+  const idsValidos = new Set(historias.map((historia) => historia.id));
+  if (datos.dependencias.some((id) => id === idHistoria || !idsValidos.has(id))) {
+    return 'Cada dependencia debe ser otra historia del mismo proyecto.';
+  }
+
+  if (idHistoria) {
+    const dependenciasPorHistoria = new Map(historias.map((historia) => [
+      historia.id,
+      historia.id === idHistoria ? datos.dependencias : historia.dependencias || []
+    ]));
+    const visitadas = new Set();
+    const alcanzaHistoria = (id) => {
+      if (id === idHistoria) return true;
+      if (visitadas.has(id)) return false;
+      visitadas.add(id);
+      return (dependenciasPorHistoria.get(id) || []).some(alcanzaHistoria);
+    };
+    if (datos.dependencias.some(alcanzaHistoria)) {
+      return 'Las dependencias no pueden crear un ciclo entre historias.';
+    }
+  }
+  return null;
+}
+
 function normalizarCriterios(db, historia, criterios) {
   const actuales = historia ? historia.criterios || [] : [];
   const idsActuales = new Set(actuales.map((c) => c.id));
@@ -183,6 +221,8 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
   if (error) return res.status(400).json({ mensaje: error });
 
   const db = ctx.db;
+  const errorPlanificacion = validarPlanificacion(db, ctx.proyecto.id, null, datos);
+  if (errorPlanificacion) return res.status(400).json({ mensaje: errorPlanificacion });
   if (!db.historiasUsuario) db.historiasUsuario = [];
   const criterios = normalizarCriterios(db, null, datos.criterios);
   if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
@@ -194,6 +234,8 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
     descripcion: String(datos.descripcion).trim(),
     criterios: criterios.lista,
     estimacion: datos.estimacion || null,
+    responsableOrganizativo: datos.responsableOrganizativo?.trim() || null,
+    dependencias: datos.dependencias || [],
     orden: db.historiasUsuario.filter((h) => h.idProyecto === ctx.proyecto.id).length + 1,
     comentarios: []
   };
@@ -232,6 +274,8 @@ router.post('/:id/historias/:idHistoria/divisiones', apiConPermiso('gestionar_hi
       descripcion: String(datos.descripcion).trim(),
       criterios: criterios.lista,
       estimacion: datos.estimacion || null,
+      responsableOrganizativo: null,
+      dependencias: [],
       orden: ++orden,
       comentarios: [],
       aclaraciones: []
@@ -346,28 +390,52 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   const datos = req.body || {};
   const error = validarHistoria(datos);
   if (error) return res.status(400).json({ mensaje: error });
+  const errorPlanificacion = validarPlanificacion(db, ctx.proyecto.id, historia.id, datos);
+  if (errorPlanificacion) return res.status(400).json({ mensaje: errorPlanificacion });
   const criterios = normalizarCriterios(db, historia, datos.criterios === undefined ? historia.criterios : datos.criterios);
   if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
 
   const titulo = String(datos.titulo).trim();
   const descripcion = String(datos.descripcion).trim();
   const estimacion = datos.estimacion === undefined ? historia.estimacion || null : datos.estimacion || null;
+  const responsableOrganizativo = datos.responsableOrganizativo === undefined
+    ? historia.responsableOrganizativo || null
+    : datos.responsableOrganizativo?.trim() || null;
+  const dependencias = datos.dependencias === undefined ? historia.dependencias || [] : datos.dependencias;
   const aclaracion = datos.aclaracion === undefined ? '' : datos.aclaracion;
   if (typeof aclaracion !== 'string' || aclaracion.length > 2000) {
     return res.status(400).json({ mensaje: 'La aclaración no puede superar 2000 caracteres.' });
   }
   const cambios = titulo !== historia.titulo || descripcion !== historia.descripcion
     || estimacion !== (historia.estimacion || null)
+    || responsableOrganizativo !== (historia.responsableOrganizativo || null)
+    || JSON.stringify(dependencias) !== JSON.stringify(historia.dependencias || [])
     || JSON.stringify(criterios.lista) !== JSON.stringify(historia.criterios || [])
     || !!aclaracion.trim();
   if (!cambios) return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
 
-  const valorAnterior = { titulo: historia.titulo, descripcion: historia.descripcion, criterios: historia.criterios || [], estimacion: historia.estimacion || null };
+  const valorAnterior = {
+    titulo: historia.titulo,
+    descripcion: historia.descripcion,
+    criterios: historia.criterios || [],
+    estimacion: historia.estimacion || null,
+    responsableOrganizativo: historia.responsableOrganizativo || null,
+    dependencias: historia.dependencias || []
+  };
   historia.titulo = titulo;
   historia.descripcion = descripcion;
   historia.criterios = criterios.lista;
   historia.estimacion = estimacion;
-  const valorNuevo = { titulo, descripcion, criterios: historia.criterios, estimacion };
+  historia.responsableOrganizativo = responsableOrganizativo;
+  historia.dependencias = dependencias;
+  const valorNuevo = {
+    titulo,
+    descripcion,
+    criterios: historia.criterios,
+    estimacion,
+    responsableOrganizativo,
+    dependencias
+  };
   if (aclaracion.trim()) {
     if (!historia.aclaraciones) historia.aclaraciones = [];
     const max = historia.aclaraciones.reduce((m, item) => Math.max(m, parseInt(String(item.id).replace(/^ACL-/, ''), 10) || 0), 0);
