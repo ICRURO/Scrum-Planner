@@ -14,7 +14,7 @@
       "nombre": "Product Owner",
       "apellidos": "Demo",
       "correo": "po@scrum.test",
-      "password": "scrum123",
+      "password": "scrypt$5a010ea67194acf8527f7ce4392b55af$6f866830b8c0c8c812b9f8fdf219b21d95d93dd72a70173b7a7496068537a60c6402d297d1590f4f7d3ddf76371d69a496641d9130e2e43aeb767b2d93c2bd12",
       "rolGlobal": "usuario",
       "estado": "activo"
     },
@@ -23,7 +23,7 @@
       "nombre": "Scrum Master",
       "apellidos": "Demo",
       "correo": "sm@scrum.test",
-      "password": "scrum123",
+      "password": "scrypt$3e8c3e57602e55663089bcb44ab063c2$5db3c24de77698cc6ba06c6ffb92c8a6947cdf85bc88c0ddc221a38ec8244038b2e7de8ca73929eec98bbd8213420373721c26f29d5be432d96a3c86348510bf",
       "rolGlobal": "usuario",
       "estado": "activo"
     },
@@ -41,7 +41,7 @@
       "nombre": "Interesado",
       "apellidos": "Demo",
       "correo": "interesado@scrum.test",
-      "password": "scrum123",
+      "password": "scrypt$f4736cd5e54f5d4b8df6f801fef8826e$1abfc46a7dd7b921f87473ed9e19b5a7bbb9d0df435b806e174ebec4078a29b4a008539f2a604993bf9ee4229b4cace204b77490c05771607a93bd718c393ec6",
       "rolGlobal": "usuario",
       "estado": "activo"
     },
@@ -68,7 +68,7 @@
       "nombre": "Antonio de Jesús",
       "apellidos": "Tejeda López",
       "correo": "antonio@scrum.test",
-      "password": "scrum123",
+      "password": "scrypt$9322146ff4b8dbe141fe8f8e3c396168$cbe9fe93a2bcdd18a52e949dfdf8f9497d9331d6de163e5588af8a9a31c9b7a21ed95adb48e57b138a6f3472f27696ecb79515403e4721f414b67484ea76625c",
       "rolGlobal": "usuario",
       "estado": "activo"
     },
@@ -77,7 +77,7 @@
       "nombre": "María de Lourdes",
       "apellidos": "Méndez Prigada",
       "correo": "lourdes@scrum.test",
-      "password": "scrum123",
+      "password": "scrypt$edb59c2791dd42b34f539b91a79aa3ab$30077f29c4cf9506bd8e815ac091e6e6046b0afea55153ac6a33f9e9d4484ea96b6f10e7c4ac5e118de45b458d03f367337c14fc62fff31b424305222bd808f6",
       "rolGlobal": "usuario",
       "estado": "activo"
     },
@@ -86,7 +86,7 @@
       "nombre": "Sara",
       "apellidos": "Ortega Hernández",
       "correo": "sara@scrum.test",
-      "password": "scrum123",
+      "password": "scrypt$d08572e93bdfbb5fdc4c29dcff415481$93f95a9613d24420a141b78adb59d4ff5be3aa036586b789ced1bd979669cd0f384acd6629a26975fb099948bc16ad23a2786dbb599acf7b5783eb52c05e9f0a",
       "rolGlobal": "usuario",
       "estado": "activo"
     },
@@ -104,7 +104,7 @@
       "nombre": "José Fernando",
       "apellidos": "Martínez Enríquez",
       "correo": "fernando@scrum.test",
-      "password": "scrum123",
+      "password": "scrypt$2988be3af22509d6c631fd309d99cc31$f11302df20577cb38f8086fd61cfca83adcd677afab50780d8d92a85321278acfc3e2910a2f6c363bb4917597fd29a5ab330c5e8e899bb6399e4987b5bcca7b5",
       "rolGlobal": "usuario",
       "estado": "activo"
     },
@@ -122,7 +122,7 @@
       "nombre": "Diego",
       "apellidos": "Aburto Lara",
       "correo": "diego@scrum.test",
-      "password": "scrum123",
+      "password": "scrypt$a8eb8a00f2ccc912e9734d96954ef871$fff78554f5202488d441367a3eb34976b32d00d068d3e82a1d5813c2ac522bfeb4e93347c2920a52c1dbc8e8a8148300bb7462220ae53a08dace66cbe948a3d8",
       "rolGlobal": "usuario",
       "estado": "activo"
     },
@@ -757,6 +757,36 @@
       "campo": "creacion",
       "valorAnterior": null,
       "valorNuevo": "HU-01 Organizacion"
+    },
+    {
+      "id": "HIS-038",
+      "fecha": "2026-11-02T03:04:56.529Z",
+      "idUsuario": "USR-014",
+      "entidad": "sprint",
+      "idEntidad": "SPR-001",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "Sprint 1 - Organización"
+    },
+    {
+      "id": "HIS-039",
+      "fecha": "2026-11-02T03:20:16.227Z",
+      "idUsuario": "USR-002",
+      "entidad": "historia_usuario",
+      "idEntidad": "HU-002",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "HU-02 Trabajar"
+    },
+    {
+      "id": "HIS-040",
+      "fecha": "2026-11-02T03:21:01.563Z",
+      "idUsuario": "USR-002",
+      "entidad": "sprint",
+      "idEntidad": "SPR-002",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "Sprint 2 - Trabajar"
     }
   ],
   "tokens": [
@@ -845,6 +875,43 @@
       "titulo": "HU-01 Organizacion",
       "descripcion": "Como Scrum master quiero que se organicen para poder empezar",
       "criterios": []
+    },
+    {
+      "id": "HU-002",
+      "idProyecto": "PRJ-001",
+      "titulo": "HU-02 Trabajar",
+      "descripcion": "Como Scrum Master quiero que apliquen lo organizado y trabajen",
+      "criterios": [],
+      "estimacion": "M",
+      "responsableOrganizativo": null,
+      "dependencias": [],
+      "orden": 2,
+      "comentarios": []
+    }
+  ],
+  "sprints": [
+    {
+      "id": "SPR-001",
+      "idProyecto": "PRJ-001",
+      "nombre": "Sprint 1 - Organización",
+      "objetivo": "Realizar la HU-01 Organizacion",
+      "fechaInicio": "2026-11-02",
+      "fechaFin": "2026-11-03",
+      "historiasAsignadas": [
+        "HU-001"
+      ]
+    },
+    {
+      "id": "SPR-002",
+      "idProyecto": "PRJ-001",
+      "nombre": "Sprint 2 - Trabajar",
+      "objetivo": "Volver a organizarse y ponerse a trabajar",
+      "fechaInicio": "2026-11-05",
+      "fechaFin": "2026-11-12",
+      "historiasAsignadas": [
+        "HU-001",
+        "HU-002"
+      ]
     }
   ]
 }

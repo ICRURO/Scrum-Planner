@@ -36,6 +36,49 @@ function siguienteIdHistoria(historias) {
   return `HU-${String(max + 1).padStart(3, '0')}`;
 }
 
+function siguienteIdSprint(sprints = []) {
+  const max = sprints.reduce((m, s) => Math.max(m, parseInt(String(s.id).replace(/^SPR-/, ''), 10) || 0), 0);
+  return `SPR-${String(max + 1).padStart(3, '0')}`;
+}
+
+function fechaActualLocal() {
+  const hoy = new Date();
+  const anio = hoy.getFullYear();
+  const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoy.getDate()).padStart(2, '0');
+  return `${anio}-${mes}-${dia}`;
+}
+
+function validarSprint(db, idProyecto, datos) {
+  if (!datos || typeof datos !== 'object' || Array.isArray(datos)) return 'Los datos del sprint no son válidos.';
+  if (typeof datos.nombre !== 'string' || !datos.nombre.trim()) return 'El nombre del sprint es obligatorio.';
+  if (typeof datos.objetivo !== 'string' || !datos.objetivo.trim()) return 'El objetivo del sprint es obligatorio.';
+  if (!FECHA.test(datos.fechaInicio || '') || !FECHA.test(datos.fechaFin || '')) {
+    return 'Debes seleccionar una fecha de inicio y una fecha de fin válidas (formato AAAA-MM-DD).';
+  }
+  const hoy = fechaActualLocal();
+  if (datos.fechaInicio < hoy || datos.fechaFin < hoy) {
+    return 'Las fechas de inicio y fin deben encontrarse como mínimo en la fecha actual.';
+  }
+  if (datos.fechaFin < datos.fechaInicio) {
+    return 'La fecha de fin no puede ser anterior a la fecha de inicio.';
+  }
+  if (datos.historiasAsignadas !== undefined) {
+    if (!Array.isArray(datos.historiasAsignadas)
+      || datos.historiasAsignadas.some((id) => typeof id !== 'string')
+      || new Set(datos.historiasAsignadas).size !== datos.historiasAsignadas.length) {
+      return 'Las historias asignadas deben enviarse como una lista válida sin duplicados.';
+    }
+    const idsProyecto = new Set(
+      (db.historiasUsuario || []).filter((h) => h.idProyecto === idProyecto).map((h) => h.id)
+    );
+    if (datos.historiasAsignadas.some((id) => !idsProyecto.has(id))) {
+      return 'Todas las historias asignadas deben pertenecer a este proyecto.';
+    }
+  }
+  return null;
+}
+
 function siguienteIdCriterio(historias) {
   const max = historias.reduce((m, h) =>
     (h.criterios || []).reduce((n, c) => Math.max(n, parseInt(String(c.id).replace(/^CA-/, ''), 10) || 0), m), 0);
@@ -136,6 +179,9 @@ function textoCambio(h) {
     if (h.campo === 'orden') return `Prioridad actualizada: ${h.valorAnterior} → ${h.valorNuevo}`;
     if (h.campo === 'comentario') return 'Comentario agregado a una historia';
   }
+  if (h.entidad === 'sprint') {
+    if (h.campo === 'creacion') return `Sprint definido: ${h.valorNuevo}`;
+  }
   if (h.valorNuevo && typeof h.valorNuevo === 'object') return `Información editada (${Object.keys(h.valorNuevo).join(', ')})`;
   return 'Información editada';
 }
@@ -200,16 +246,19 @@ router.get('/:id', (req, res) => {
       })
     }))
     .sort((a, b) => a.orden - b.orden);
+  const sprints = (db.sprints || []).filter((s) => s.idProyecto === proyecto.id);
   const idsHistorias = new Set(historiasUsuario.map((h) => h.id));
+  const idsSprints = new Set(sprints.map((s) => s.id));
   const historial = (db.historial || [])
     .filter((h) => (h.entidad === 'proyecto' && h.idEntidad === proyecto.id)
-      || (h.entidad === 'historia_usuario' && idsHistorias.has(h.idEntidad)))
+      || (h.entidad === 'historia_usuario' && idsHistorias.has(h.idEntidad))
+      || (h.entidad === 'sprint' && idsSprints.has(h.idEntidad)))
     .sort((a, b) => b.fecha.localeCompare(a.fecha))
     .map((h) => {
       const autor = db.usuarios.find((x) => x.id === h.idUsuario);
       return { fecha: h.fecha, usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido', cambio: textoCambio(h) };
     });
-  res.json({ proyecto, miRol: rolEnProyecto(u, proyecto.id, db), permisos: permisosProyecto(u, proyecto, db), historial, historiasUsuario, siguienteId: siguienteId(db) });
+  res.json({ proyecto, miRol: rolEnProyecto(u, proyecto.id, db), permisos: permisosProyecto(u, proyecto, db), historial, historiasUsuario, sprints, siguienteId: siguienteId(db) });
 });
 
 // ---------- HU-18, HU-19, HU-20 y HU-21 Historias, prioridad y comentarios ----------
@@ -451,6 +500,39 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'historia_usuario', idEntidad: historia.id, campo: 'refinamiento', valorAnterior, valorNuevo });
   writeDB(db);
   res.json({ mensaje: 'Historia de usuario actualizada.', historia });
+});
+
+// ---------- Sprint Backlog: Definir sprint ----------
+router.post('/:id/sprints', apiConPermiso('definir_sprint', (req) => req.params.id), (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const db = ctx.db;
+  const datos = req.body || {};
+
+  const error = validarSprint(db, ctx.proyecto.id, datos);
+  if (error) return res.status(400).json({ mensaje: error });
+
+  if (!db.sprints) db.sprints = [];
+  const sprint = {
+    id: siguienteIdSprint(db.sprints),
+    idProyecto: ctx.proyecto.id,
+    nombre: String(datos.nombre).trim(),
+    objetivo: String(datos.objetivo).trim(),
+    fechaInicio: datos.fechaInicio,
+    fechaFin: datos.fechaFin,
+    historiasAsignadas: Array.isArray(datos.historiasAsignadas) ? datos.historiasAsignadas : []
+  };
+
+  db.sprints.push(sprint);
+  registrarHistorial(db, {
+    idUsuario: req.usuario.id,
+    entidad: 'sprint',
+    idEntidad: sprint.id,
+    campo: 'creacion',
+    valorNuevo: sprint.nombre
+  });
+  writeDB(db);
+  res.status(201).json({ mensaje: 'Sprint definido correctamente.', sprint });
 });
 
 // ---------- HU-08 Crear proyecto ----------
