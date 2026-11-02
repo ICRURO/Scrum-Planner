@@ -40,3 +40,11 @@
 @media (max-width: 760px) {
   .historia-criterio__campos { grid-template-columns: 1fr; gap: 0; }
 }
+
+/* Apartado Sprint Backlog */
+.sprint-periodo { white-space: nowrap; min-width: 140px; }
+.sprint-historias-selector { display: grid; gap: 8px; max-height: 240px; overflow-y: auto; padding: 12px; border: 1.5px solid #C9CFCB; border-radius: var(--radio-m); background: #fff; }
+.sprint-historia-opcion { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--c-linea); border-radius: var(--radio-s); color: var(--c-tinta); background: var(--c-papel); transition: border-color .15s, background .15s; }
+.sprint-historia-opcion:hover { border-color: var(--c-hoja); background: #fff; }
+.sprint-historia-opcion--activa { border-color: var(--c-hoja); background: var(--t-hoja); }
+.sprint-historia-opcion__titulo { flex: 1; font-weight: 500; overflow-wrap: anywhere; }

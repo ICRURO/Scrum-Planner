@@ -172,6 +172,55 @@
           </table>
         </div>
       </section>
+
+      <section class="tarjeta historias-proyecto" id="seccion-sprint-backlog">
+        <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="calendario"></span>Sprint Backlog: definición y lista de sprints</h2>
+        <div id="formulario-sprint-contenedor" hidden>
+          <form id="formulario-sprint" novalidate>
+            <div class="campo">
+              <label for="sprint-nombre">Nombre del sprint</label>
+              <input class="control" id="sprint-nombre" name="nombre" maxlength="160" placeholder="Ej.: Sprint 1 · Autenticación y gestión de usuarios" required>
+            </div>
+            <div class="campo">
+              <label for="sprint-objetivo">Objetivo del sprint</label>
+              <textarea class="control" id="sprint-objetivo" name="objetivo" maxlength="1000" placeholder="Describe la meta principal que el equipo alcanzará en este sprint." required></textarea>
+            </div>
+            <div class="rejilla-doble">
+              <div class="campo">
+                <label for="sprint-inicio">Fecha de inicio</label>
+                <input class="control" type="date" id="sprint-inicio" name="fechaInicio" required>
+              </div>
+              <div class="campo">
+                <label for="sprint-fin">Fecha de fin</label>
+                <input class="control" type="date" id="sprint-fin" name="fechaFin" required>
+              </div>
+            </div>
+            <div class="campo">
+              <label>Historias de usuario del Sprint</label>
+              <div id="sprint-historias-lista" class="sprint-historias-selector" role="group" aria-label="Seleccionar historias de usuario para el sprint"></div>
+              <span class="campo__ayuda" id="sprint-historias-resumen">Historias seleccionadas (0): ninguna</span>
+            </div>
+            <div class="historias-acciones">
+              <button class="btn btn-primario" type="submit" id="guardar-sprint">Definir sprint</button>
+            </div>
+          </form>
+        </div>
+        <div class="tabla-contenedor">
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Identificador</th>
+                <th>Nombre del sprint</th>
+                <th>Objetivo del sprint</th>
+                <th>Fecha de inicio</th>
+                <th>Fecha de fin</th>
+                <th>Historias asignadas</th>
+              </tr>
+            </thead>
+            <tbody id="lista-sprints"></tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </main>
 

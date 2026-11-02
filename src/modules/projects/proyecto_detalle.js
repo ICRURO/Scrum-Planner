@@ -25,6 +25,17 @@
   const criteriosFormulario = document.getElementById('criterios-formulario');
   const dependenciasFormulario = document.getElementById('historia-dependencias');
   const listaHistorias = document.getElementById('lista-historias');
+  const formularioSprintContenedor = document.getElementById('formulario-sprint-contenedor');
+  const formularioSprint = document.getElementById('formulario-sprint');
+  const sprintNombreInput = document.getElementById('sprint-nombre');
+  const sprintObjetivoInput = document.getElementById('sprint-objetivo');
+  const sprintInicioInput = document.getElementById('sprint-inicio');
+  const sprintFinInput = document.getElementById('sprint-fin');
+  const sprintHistoriasLista = document.getElementById('sprint-historias-lista');
+  const sprintHistoriasResumen = document.getElementById('sprint-historias-resumen');
+  const botonGuardarSprint = document.getElementById('guardar-sprint');
+  const listaSprints = document.getElementById('lista-sprints');
+  let historiasAsignadasSprint = [];
   const divisionContenedor = document.getElementById('division-contenedor');
   const historiasDivision = document.getElementById('historias-division');
   let historiaParaDividir = null;
@@ -164,6 +175,169 @@
           </tr>`;
       }).join('')
       : '<tr><td colspan="11" class="historia-vacio">Todavía no hay historias registradas en este proyecto.</td></tr>';
+  }
+
+  const ROLES_DEFINIR_SPRINT = ['administrador', 'Product Owner', 'Developer'];
+
+  function fechaActualLocal() {
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoy.getDate()).padStart(2, '0');
+    return `${anio}-${mes}-${dia}`;
+  }
+
+  function actualizarResumenHistoriasSprint() {
+    if (!sprintHistoriasResumen) return;
+    sprintHistoriasResumen.textContent = historiasAsignadasSprint.length
+      ? `Historias seleccionadas (${historiasAsignadasSprint.length}): ${historiasAsignadasSprint.join(', ')}`
+      : 'Historias seleccionadas (0): ninguna';
+  }
+
+  function actualizarOpcionesHistoriasSprint() {
+    if (!sprintHistoriasLista) return;
+    const idsValidos = new Set(historiasActuales.map((h) => h.id));
+    historiasAsignadasSprint = historiasAsignadasSprint.filter((idHistoria) => idsValidos.has(idHistoria));
+
+    if (!historiasActuales.length) {
+      sprintHistoriasLista.innerHTML = '<p class="historia-vacio">Todavía no hay historias en el Product Backlog de este proyecto para seleccionar.</p>';
+      actualizarResumenHistoriasSprint();
+      return;
+    }
+
+    sprintHistoriasLista.innerHTML = historiasActuales.map((historia) => {
+      const marcada = historiasAsignadasSprint.includes(historia.id);
+      return `
+        <label class="casilla sprint-historia-opcion ${marcada ? 'sprint-historia-opcion--activa' : ''}">
+          <input type="checkbox" value="${UI.escapar(historia.id)}" data-historia-sprint="${UI.escapar(historia.id)}" ${marcada ? 'checked' : ''}>
+          <span class="insignia">${UI.escapar(historia.id)}</span>
+          <span class="sprint-historia-opcion__titulo">${UI.escapar(historia.titulo)}</span>
+          ${historia.estimacion ? `<span class="insignia historia-estimacion">Talla ${UI.escapar(historia.estimacion)}</span>` : ''}
+        </label>`;
+    }).join('');
+    actualizarResumenHistoriasSprint();
+  }
+
+  if (sprintHistoriasLista) {
+    sprintHistoriasLista.addEventListener('change', (e) => {
+      const casilla = e.target.closest('input[data-historia-sprint]');
+      if (!casilla) return;
+      const idHistoria = casilla.dataset.historiaSprint;
+      if (casilla.checked) {
+        if (!historiasAsignadasSprint.includes(idHistoria)) {
+          historiasAsignadasSprint.push(idHistoria);
+        }
+      } else {
+        historiasAsignadasSprint = historiasAsignadasSprint.filter((idItem) => idItem !== idHistoria);
+      }
+      const etiqueta = casilla.closest('.sprint-historia-opcion');
+      if (etiqueta) etiqueta.classList.toggle('sprint-historia-opcion--activa', casilla.checked);
+      actualizarResumenHistoriasSprint();
+    });
+  }
+
+  function fijarMinimoFechasSprint() {
+    const hoy = fechaActualLocal();
+    if (sprintInicioInput) sprintInicioInput.min = hoy;
+    if (sprintFinInput) sprintFinInput.min = sprintInicioInput?.value && sprintInicioInput.value > hoy ? sprintInicioInput.value : hoy;
+  }
+
+  if (sprintInicioInput) {
+    sprintInicioInput.addEventListener('change', fijarMinimoFechasSprint);
+  }
+
+  function dibujarSprints(sprints = [], miRol = null, permisos = {}, archivado = false) {
+    if (!formularioSprintContenedor || !listaSprints) return;
+    const puedeDefinirSprint = (permisos.definirSprint !== undefined
+      ? permisos.definirSprint
+      : ROLES_DEFINIR_SPRINT.includes(miRol)) && !archivado;
+
+    formularioSprintContenedor.hidden = !puedeDefinirSprint;
+    fijarMinimoFechasSprint();
+    actualizarOpcionesHistoriasSprint();
+
+    listaSprints.innerHTML = sprints.length
+      ? sprints.map((sprint) => {
+        const historiasAsignadas = sprint.historiasAsignadas || [];
+        return `
+          <tr>
+            <td><span class="insignia">${UI.escapar(sprint.id)}</span></td>
+            <td><strong>${UI.escapar(sprint.nombre)}</strong></td>
+            <td class="historia-tabla__descripcion">${UI.escapar(sprint.objetivo)}</td>
+            <td class="sprint-periodo">${UI.formatoFecha(sprint.fechaInicio)}</td>
+            <td class="sprint-periodo">${UI.formatoFecha(sprint.fechaFin)}</td>
+            <td>${historiasAsignadas.length
+              ? `<details class="historia-tabla__criterios">
+                  <summary>Ver ${historiasAsignadas.length} ${historiasAsignadas.length === 1 ? 'historia' : 'historias'}</summary>
+                  <ul class="historia-criterios-lista">${historiasAsignadas.map((idHistoria) => {
+                    const h = historiasActuales.find((item) => item.id === idHistoria);
+                    return `<li><strong>${UI.escapar(idHistoria)}</strong>${h ? ` · ${UI.escapar(h.titulo)}` : ''}</li>`;
+                  }).join('')}</ul>
+                </details>`
+              : '<span class="historia-vacio">Sin historias asignadas</span>'}</td>
+          </tr>`;
+      }).join('')
+      : '<tr><td colspan="6" class="historia-vacio">Todavía no hay sprints registrados en este proyecto.</td></tr>';
+  }
+
+  if (formularioSprint) {
+    formularioSprint.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!actual) return;
+      UI.limpiarErrores(formularioSprint);
+
+      const nombre = sprintNombreInput.value.trim();
+      const objetivo = sprintObjetivoInput.value.trim();
+      const fechaInicio = sprintInicioInput.value;
+      const fechaFin = sprintFinInput.value;
+      const hoy = fechaActualLocal();
+
+      let valido = true;
+      if (!nombre) {
+        UI.marcarError(sprintNombreInput, 'El nombre del sprint es obligatorio.');
+        valido = false;
+      }
+      if (!objetivo) {
+        UI.marcarError(sprintObjetivoInput, 'El objetivo del sprint es obligatorio.');
+        valido = false;
+      }
+      if (!fechaInicio) {
+        UI.marcarError(sprintInicioInput, 'Selecciona la fecha de inicio.');
+        valido = false;
+      } else if (fechaInicio < hoy) {
+        UI.marcarError(sprintInicioInput, 'La fecha de inicio debe ser como mínimo la fecha actual.');
+        valido = false;
+      }
+      if (!fechaFin) {
+        UI.marcarError(sprintFinInput, 'Selecciona la fecha de fin.');
+        valido = false;
+      } else if (fechaFin < hoy) {
+        UI.marcarError(sprintFinInput, 'La fecha de fin debe ser como mínimo la fecha actual.');
+        valido = false;
+      } else if (fechaInicio && fechaFin < fechaInicio) {
+        UI.marcarError(sprintFinInput, 'La fecha de fin no puede ser anterior a la fecha de inicio.');
+        valido = false;
+      }
+
+      if (!valido) return;
+
+      UI.cargando(botonGuardarSprint, true);
+      const r = await Api.post(`/api/projects/${encodeURIComponent(actual.id)}/sprints`, {
+        nombre,
+        objetivo,
+        fechaInicio,
+        fechaFin,
+        historiasAsignadas: [...historiasAsignadasSprint]
+      });
+      UI.cargando(botonGuardarSprint, false);
+
+      if (!r.ok) return UI.toast(r.datos?.mensaje || 'No se pudo definir el sprint.', 'error');
+      formularioSprint.reset();
+      historiasAsignadasSprint = [];
+      fijarMinimoFechasSprint();
+      await pintar();
+      UI.toast(r.datos.mensaje, 'exito');
+    });
   }
 
   function agregarHistoriaDivision() {
@@ -390,6 +564,7 @@
       <div><dt>Tu rol</dt><dd>${UI.insigniaRol(miRol === 'administrador' ? 'Administrador general' : miRol)}</dd></div>`;
 
     dibujarHistorias(historiasUsuario, permisos, p.archivado);
+    dibujarSprints(r.datos.sprints || [], miRol, permisos, p.archivado);
 
     // Historial
     document.getElementById('historial').innerHTML = historial.length

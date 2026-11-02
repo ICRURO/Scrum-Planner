@@ -29,6 +29,7 @@ const MATRIZ = [
   { accion: 'refinar_historias', texto: 'Refinar historias de usuario', roles: ['administrador', 'Product Owner', 'Scrum Master', 'Developer'] },
   { accion: 'priorizar_historias', texto: 'Modificar el orden del Product Backlog', roles: ADMIN_Y_PO },
   { accion: 'comentar_historias', texto: 'Comentar historias de usuario', roles: TODOS },
+  { accion: 'definir_sprint', texto: 'Definir sprints en el Sprint Backlog', roles: ['administrador', 'Product Owner', 'Developer'] },
   { accion: 'administrar_usuarios', texto: 'Administrar usuarios', roles: ['administrador'] }
 ];
 
@@ -64,7 +65,8 @@ function permisosProyecto(usuario, proyecto, db = readDB()) {
     gestionarHistorias: puede(usuario, 'gestionar_historias', proyecto.id, db),
     refinarHistorias: puede(usuario, 'refinar_historias', proyecto.id, db),
     priorizarHistorias: puede(usuario, 'priorizar_historias', proyecto.id, db),
-    comentarHistorias: puede(usuario, 'comentar_historias', proyecto.id, db)
+    comentarHistorias: puede(usuario, 'comentar_historias', proyecto.id, db),
+    definirSprint: puede(usuario, 'definir_sprint', proyecto.id, db)
   };
 }
 
