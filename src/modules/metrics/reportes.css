@@ -1,0 +1,167 @@
+    /* src/modules/metrics/reportes.css */
+
+    main.pagina.pagina--fluida {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 16px 20px 40px 20px;
+    }
+
+    /* Encabezado */
+    .encabezado-reportes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+    }
+
+    .encabezado-reportes h1 {
+    margin: 0;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--c-texto, #1e293b);
+    }
+
+    /* Controles de filtro adaptables (evita que el nombre del proyecto se amontone) */
+    .controles-filtro {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    }
+
+    #select-proyecto {
+    width: auto;
+    min-width: 260px;
+    max-width: 460px;
+    padding: 6px 12px;
+    background-color: #ffffff;
+    border: 1px solid var(--c-borde, #cbd5e1);
+    border-radius: var(--radio, 6px);
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    }
+
+    #select-sprint {
+    width: auto;
+    min-width: 130px;
+    padding: 6px 12px;
+    background-color: #ffffff;
+    border: 1px solid var(--c-borde, #cbd5e1);
+    border-radius: var(--radio, 6px);
+    font-size: 0.9rem;
+    }
+
+    /* Alerta compacta */
+    #alerta-datos-insuficientes {
+    margin-bottom: 20px;
+    padding: 10px 14px;
+    }
+
+    /* Rejilla 2x2 fija */
+    .rejilla-metricas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    align-items: stretch;
+    }
+
+    @media (max-width: 900px) {
+    .rejilla-metricas {
+        grid-template-columns: 1fr;
+    }
+    }
+
+    .tarjeta-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    }
+
+    .leyenda-grafica {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    }
+
+    .leyenda-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    }
+
+    .indicador {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    }
+
+    .indicador--ideal {
+    background-color: #94a3b8;
+    }
+
+    .indicador--actual {
+    background-color: #10b981;
+    }
+
+    /* Altura balanceada para el gráfico */
+    .contenedor-svg {
+    width: 100%;
+    height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fbfcfd;
+    border-radius: 6px;
+    }
+
+    /* Cuadrícula de Tallas */
+    .cuadricula-tallas {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+    }
+
+    .tarjeta-talla {
+    border: 1px solid var(--c-borde, #e2e8f0);
+    border-radius: var(--radio, 8px);
+    padding: 10px 4px;
+    text-align: center;
+    background: var(--c-blanco, #ffffff);
+    }
+
+    .talla-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px;
+    margin-bottom: 6px;
+    }
+
+    .talla-nombre {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--c-texto, #334155);
+    }
+
+    .talla-icono-svg {
+    width: 16px;
+    height: 16px;
+    stroke: #166534;
+    fill: none;
+    }
+
+    .talla-valor {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #166534;
+    }
+
+    .tabla-contenedor {
+    margin-top: 8px;
+    }

@@ -50,6 +50,9 @@ app.get('/proyectos/editar', requierePagina, paginaConPermiso('editar_proyecto',
   (req, res) => res.sendFile(pagina('projects', 'proyecto_form.html')));
 app.get('/equipos', requierePagina, (req, res) => res.sendFile(pagina('equipos', 'equipos.html')));
 
+// ---------- Reportes ----------
+app.get('/reportes', requierePagina, (req, res) => res.sendFile(pagina('metrics', 'reportes.html')));
+
 // ---------- API ----------
 // Cada módulo monta aquí sus rutas con una sola línea.
 app.use('/api/auth', require('./src/modules/auth/auth.routes'));
@@ -58,6 +61,10 @@ app.use('/api/projects', require('./src/modules/projects/projects.routes'));
 // Apartado equipos
 app.use('/api/equipos', require('./src/modules/equipos/equipos.routes'));
 
+// ---------- API de métricas ----------
+app.use('/api/metrics', require('./src/modules/metrics/metrics.routes'));
+
+// ---------- Página 404 ----------
 app.use((req, res) => res.status(404).send('Página no encontrada'));
 
 app.listen(PORT, () => {

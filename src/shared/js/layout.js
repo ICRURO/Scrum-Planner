@@ -6,9 +6,10 @@ const Layout = (() => {
     { id: 'panel', texto: 'Panel', icono: 'panel', href: '/panel', descripcion: 'Resumen de tu actividad' },
     { id: 'proyectos', texto: 'Proyectos', icono: 'carpeta', href: '/proyectos', descripcion: 'Consulta y administra tus proyectos' },
     { id: 'equipos', texto: 'Equipos', icono: 'equipo', href: '/equipos', descripcion: 'Participantes y roles Scrum' },
-    { id: 'reportes', texto: 'Reportes', icono: 'reportes', href: '/proximamente?s=Reportes', descripcion: 'Métricas y avance de los sprints' },
+    { id: 'reportes', texto: 'Reportes', icono: 'reportes', href: '/reportes', descripcion: 'Métricas y avance de los sprints' },
     { id: 'usuarios', texto: 'Usuarios', icono: 'escudo', href: '/usuarios', descripcion: 'Cuentas, invitaciones y estados', roles: ['administrador'] }
   ];
+  
   const PERFIL_HREF = '/perfil';
 
   const menuPara = (usuario) => MENU.filter((i) => !i.roles || i.roles.includes(usuario.rolGlobal));

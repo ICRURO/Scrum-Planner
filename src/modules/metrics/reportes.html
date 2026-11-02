@@ -1,0 +1,127 @@
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Métricas y Reportes · Scrum Manager</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <link rel="stylesheet" href="/modules/metrics/reportes.css">
+    </head>
+    <body data-volver="/panel" data-volver-texto="panel" data-seccion="reportes" data-protegida>
+    
+    <div id="app-header"></div>
+
+    <main class="pagina pagina--fluida">
+        <!-- Encabezado con título y filtros alineados -->
+        <div class="encabezado-reportes">
+        <h1>Métricas y Reportes del Proyecto</h1>
+        <div class="controles-filtro">
+            <select id="select-proyecto" class="control" aria-label="Seleccionar proyecto"></select>
+            <select id="select-sprint" class="control" aria-label="Seleccionar sprint"></select>
+        </div>
+        </div>
+
+        <!-- HU-43 Criterio 4: Banner compacto de datos insuficientes -->
+        <div class="alerta alerta--info" id="alerta-datos-insuficientes" hidden>
+        <span class="icono-ficha" data-icon="info"></span>
+        <span>No hay suficientes tareas registradas ni tiempo transcurrido para trazar una curva confiable en este Sprint.</span>
+        </div>
+
+        <!-- Cuadrante 2x2 exacto del prototipo -->
+        <div class="rejilla-metricas" id="contenedor-metricas">
+        
+        <!-- Arriba Izquierda: Burndown Chart (HU-43) -->
+        <section class="tarjeta">
+            <div class="tarjeta-encabezado">
+            <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="bandera"></span>Burndown Chart</h2>
+            <div class="leyenda-grafica">
+                <span class="leyenda-item"><span class="indicador indicador--ideal"></span> Ideal</span>
+                <span class="leyenda-item"><span class="indicador indicador--actual"></span> Actual</span>
+            </div>
+            </div>
+            <div class="contenedor-svg" id="grafico-burndown"></div>
+        </section>
+
+        <!-- Arriba Derecha: Historias por Talla (HU-44) -->
+        <section class="tarjeta">
+            <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="reloj"></span>Historias por Talla de Estimación</h2>
+            <div class="cuadricula-tallas">
+            <div class="tarjeta-talla">
+                <div class="talla-header">
+                <span class="talla-nombre">XS</span>
+                <svg class="talla-icono-svg" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                </div>
+                <span class="talla-valor" id="talla-xs">0</span>
+            </div>
+            <div class="tarjeta-talla">
+                <div class="talla-header">
+                <span class="talla-nombre">S</span>
+                <svg class="talla-icono-svg" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                </div>
+                <span class="talla-valor" id="talla-s">0</span>
+            </div>
+            <div class="tarjeta-talla">
+                <div class="talla-header">
+                <span class="talla-nombre">M</span>
+                <svg class="talla-icono-svg" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                </div>
+                <span class="talla-valor" id="talla-m">0</span>
+            </div>
+            <div class="tarjeta-talla">
+                <div class="talla-header">
+                <span class="talla-nombre">L</span>
+                <svg class="talla-icono-svg" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                </div>
+                <span class="talla-valor" id="talla-l">0</span>
+            </div>
+            <div class="tarjeta-talla">
+                <div class="talla-header">
+                <span class="talla-nombre">XL</span>
+                <svg class="talla-icono-svg" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                </div>
+                <span class="talla-valor" id="talla-xl">0</span>
+            </div>
+            </div>
+        </section>
+
+        <!-- Abajo Izquierda: Tareas en Progreso -->
+        <section class="tarjeta">
+            <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="equipo"></span>Equipo · Tareas en Progreso</h2>
+            <div class="tabla-contenedor">
+            <table class="tabla">
+                <thead>
+                <tr><th>Integrante</th><th>Tarea</th><th>Estado</th></tr>
+                </thead>
+                <tbody id="tabla-tareas-progreso"></tbody>
+            </table>
+            </div>
+        </section>
+
+        <!-- Abajo Derecha: Reportes de Estado -->
+        <section class="tarjeta">
+            <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="carpeta"></span>Reportes de Estado</h2>
+            <div class="tabla-contenedor">
+            <table class="tabla">
+                <thead>
+                <tr><th>Reporte</th><th>Tipo</th><th>Fecha</th></tr>
+                </thead>
+                <tbody>
+                <tr><td>Sprint 1 Retrospectiva</td><td><span class="insignia insignia--activo">PDF</span></td><td>10 Oct 2026</td></tr>
+                <tr><td>Notas de Lanzamiento v1.0</td><td><span class="insignia insignia--activo">PDF</span></td><td>08 Oct 2026</td></tr>
+                <tr><td>Matriz de Impedimentos</td><td><span class="insignia insignia--activo">PDF</span></td><td>05 Oct 2026</td></tr>
+                </tbody>
+            </table>
+            </div>
+        </section>
+        </div>
+    </main>
+
+    <script src="/shared/js/icons.js"></script>
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/ui.js"></script>
+    <script src="/shared/js/layout.js"></script>
+    <script src="/modules/metrics/reportes.js"></script>
+    </body>
+    </html>
