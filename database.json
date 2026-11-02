@@ -872,20 +872,53 @@
     {
       "id": "HU-001",
       "idProyecto": "PRJ-001",
+      "idSprint": "SPR-001",
       "titulo": "HU-01 Organizacion",
       "descripcion": "Como Scrum master quiero que se organicen para poder empezar",
-      "criterios": []
+      "estimacion": "S",
+      "criterios": [],
+      "responsableOrganizativo": "USR-009",
+      "dependencias": [],
+      "orden": 1,
+      "comentarios": []
     },
     {
       "id": "HU-002",
       "idProyecto": "PRJ-001",
+      "idSprint": "SPR-002",
       "titulo": "HU-02 Trabajar",
       "descripcion": "Como Scrum Master quiero que apliquen lo organizado y trabajen",
-      "criterios": [],
       "estimacion": "M",
+      "criterios": [],
+      "responsableOrganizativo": null,
+      "dependencias": ["HU-001"],
+      "orden": 2,
+      "comentarios": []
+    },
+    {
+      "id": "HU-003",
+      "idProyecto": "PRJ-001",
+      "idSprint": "SPR-002",
+      "titulo": "HU-03 Tablero Kanban",
+      "descripcion": "Como dev quiero ver las tareas",
+      "estimacion": "L",
+      "criterios": [],
+      "responsableOrganizativo": "USR-014",
+      "dependencias": [],
+      "orden": 3,
+      "comentarios": []
+    },
+    {
+      "id": "HU-P2-01",
+      "idProyecto": "PRJ-002",
+      "idSprint": "SPRINT-P2-01",
+      "titulo": "Registro de horas de servicio",
+      "descripcion": "Como alumno quiero registrar mis horas",
+      "estimacion": "M",
+      "criterios": [],
       "responsableOrganizativo": null,
       "dependencias": [],
-      "orden": 2,
+      "orden": 1,
       "comentarios": []
     }
   ],
@@ -895,8 +928,9 @@
       "idProyecto": "PRJ-001",
       "nombre": "Sprint 1 - Organización",
       "objetivo": "Realizar la HU-01 Organizacion",
-      "fechaInicio": "2026-11-02",
-      "fechaFin": "2026-11-03",
+      "fechaInicio": "2026-10-12",
+      "fechaFin": "2026-10-23",
+      "estado": "finalizado",
       "historiasAsignadas": [
         "HU-001"
       ]
@@ -906,12 +940,95 @@
       "idProyecto": "PRJ-001",
       "nombre": "Sprint 2 - Trabajar",
       "objetivo": "Volver a organizarse y ponerse a trabajar",
-      "fechaInicio": "2026-11-05",
-      "fechaFin": "2026-11-12",
+      "fechaInicio": "2026-10-26",
+      "fechaFin": "2026-11-06",
+      "estado": "activo",
       "historiasAsignadas": [
-        "HU-001",
-        "HU-002"
+        "HU-002",
+        "HU-003"
       ]
+    },
+    {
+      "id": "SPRINT-P2-01",
+      "idProyecto": "PRJ-002",
+      "nombre": "Sprint 1",
+      "objetivo": "Registro inicial de servicio social",
+      "fechaInicio": "2026-02-02",
+      "fechaFin": "2026-02-13",
+      "estado": "finalizado",
+      "historiasAsignadas": [
+        "HU-P2-01"
+      ]
+    }
+  ],
+  "tareas": [
+    {
+      "id": "TK-001",
+      "idSprint": "SPR-001",
+      "idHistoria": "HU-001",
+      "titulo": "Definir arquitectura y base de datos inicial",
+      "horasEstimadas": 12,
+      "estado": "terminado",
+      "fechaTerminado": "2026-10-15",
+      "idResponsable": "USR-009"
+    },
+    {
+      "id": "TK-002",
+      "idSprint": "SPR-001",
+      "idHistoria": "HU-001",
+      "titulo": "Configurar rutas de autenticación y sesiones",
+      "horasEstimadas": 16,
+      "estado": "terminado",
+      "fechaTerminado": "2026-10-20",
+      "idResponsable": "USR-010"
+    },
+    {
+      "id": "TK-003",
+      "idSprint": "SPR-002",
+      "idHistoria": "HU-002",
+      "titulo": "Creación del módulo de proyectos y detalle",
+      "horasEstimadas": 14,
+      "estado": "terminado",
+      "fechaTerminado": "2026-10-28",
+      "idResponsable": "USR-010"
+    },
+    {
+      "id": "TK-004",
+      "idSprint": "SPR-002",
+      "idHistoria": "HU-002",
+      "titulo": "Asignación de roles y selección de historias",
+      "horasEstimadas": 12,
+      "estado": "terminado",
+      "fechaTerminado": "2026-10-30",
+      "idResponsable": "USR-008"
+    },
+    {
+      "id": "TK-005",
+      "idSprint": "SPR-002",
+      "idHistoria": "HU-003",
+      "titulo": "Construir columnas y tarjetas del tablero Kanban",
+      "horasEstimadas": 16,
+      "estado": "en_progreso",
+      "idResponsable": "USR-014"
+    },
+    {
+      "id": "TK-006",
+      "idSprint": "SPR-002",
+      "idHistoria": "HU-003",
+      "titulo": "Validar transiciones de estado y Definition of Done",
+      "horasEstimadas": 10,
+      "estado": "en_progreso",
+      "idResponsable": "USR-012"
+    },
+    {
+      "id": "TK-P2-01",
+      "idSprint": "SPRINT-P2-01",
+      "idHistoria": "HU-P2-01",
+      "titulo": "Formulario de registro de horas",
+      "horasEstimadas": 15,
+      "estado": "terminado",
+      "fechaTerminado": "2026-02-10",
+      "idResponsable": "USR-004"
     }
   ]
 }

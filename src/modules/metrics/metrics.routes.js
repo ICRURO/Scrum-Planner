@@ -32,10 +32,13 @@
     const sprintsProyecto = (db.sprints || []).filter((s) => s.idProyecto === idProyecto);
     const sprint = sprintsProyecto.find((s) => s.id === idSprint);
 
-    // 2. Historias exclusivas de este proyecto y sprint
-    const historias = (db.historiasUsuario || []).filter(
-        (h) => h.idProyecto === idProyecto && (sprint ? h.idSprint === sprint.id : false)
-    );
+    // 2. Historias exclusivas de este proyecto y sprint (soporta idSprint o historiasAsignadas)
+    const historias = (db.historiasUsuario || []).filter((h) => {
+        if (h.idProyecto !== idProyecto) return false;
+        if (!sprint) return false;
+        const asignadaEnSprint = Array.isArray(sprint.historiasAsignadas) && sprint.historiasAsignadas.includes(h.id);
+        return h.idSprint === sprint.id || asignadaEnSprint;
+    });
 
     // 3. Tareas exclusivas: si el sprint no pertenece a este proyecto, no se cargan tareas
     const tareas = sprint
