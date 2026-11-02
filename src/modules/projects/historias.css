@@ -48,3 +48,4 @@
 .sprint-historia-opcion:hover { border-color: var(--c-hoja); background: #fff; }
 .sprint-historia-opcion--activa { border-color: var(--c-hoja); background: var(--t-hoja); }
 .sprint-historia-opcion__titulo { flex: 1; font-weight: 500; overflow-wrap: anywhere; }
+.sprint-historia-tareas { margin: 4px 0 6px; padding-left: 18px; color: var(--c-piedra); font-size: 0.9rem; list-style: disc; }

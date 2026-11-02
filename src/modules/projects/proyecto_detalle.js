@@ -23,18 +23,23 @@
   const formularioHistoria = document.getElementById('formulario-historia');
   const formularioContenedor = document.getElementById('formulario-historia-contenedor');
   const criteriosFormulario = document.getElementById('criterios-formulario');
+  const tareasFormulario = document.getElementById('tareas-formulario');
   const dependenciasFormulario = document.getElementById('historia-dependencias');
   const listaHistorias = document.getElementById('lista-historias');
   const formularioSprintContenedor = document.getElementById('formulario-sprint-contenedor');
   const formularioSprint = document.getElementById('formulario-sprint');
   const sprintNombreInput = document.getElementById('sprint-nombre');
+  const sprintEstadoSelect = document.getElementById('sprint-estado');
   const sprintObjetivoInput = document.getElementById('sprint-objetivo');
   const sprintInicioInput = document.getElementById('sprint-inicio');
   const sprintFinInput = document.getElementById('sprint-fin');
   const sprintHistoriasLista = document.getElementById('sprint-historias-lista');
   const sprintHistoriasResumen = document.getElementById('sprint-historias-resumen');
   const botonGuardarSprint = document.getElementById('guardar-sprint');
+  const botonCancelarSprint = document.getElementById('cancelar-edicion-sprint');
   const listaSprints = document.getElementById('lista-sprints');
+  let sprintsActuales = [];
+  let sprintEditando = null;
   let historiasAsignadasSprint = [];
   const divisionContenedor = document.getElementById('division-contenedor');
   const historiasDivision = document.getElementById('historias-division');
@@ -67,9 +72,42 @@
     criteriosFormulario.appendChild(fila);
   }
 
+  function agregarTarea(tarea = {}) {
+    const numero = tareasFormulario.children.length + 1;
+    const estadoActual = tarea.estado || 'Pendiente';
+    const fila = document.createElement('div');
+    fila.className = 'historia-criterio historia-tarea';
+    fila.dataset.id = tarea.id || '';
+    fila.innerHTML = `
+      <div class="historia-criterio__encabezado">
+        <div class="historia-criterio__titulo">Tarea ${numero}${tarea.id ? ` (${UI.escapar(tarea.id)})` : ''}</div>
+        ${tarea.id ? '' : '<button class="btn btn-texto btn-chico" type="button" data-quitar-tarea>Quitar tarea</button>'}
+      </div>
+      <div class="historia-criterio__campos">
+        <div class="campo">
+          <label for="tarea-${numero}-titulo">Título de la tarea</label>
+          <input class="control" id="tarea-${numero}-titulo" data-campo-tarea="titulo" maxlength="160" placeholder="Ej.: Diseñar tabla o endpoint" value="${UI.escapar(tarea.titulo || '')}" required>
+        </div>
+        <div class="campo">
+          <label for="tarea-${numero}-descripcion">Descripción</label>
+          <textarea class="control" id="tarea-${numero}-descripcion" data-campo-tarea="descripcion" placeholder="Detalle de la tarea a realizar" required>${UI.escapar(tarea.descripcion || '')}</textarea>
+        </div>
+        <div class="campo">
+          <label for="tarea-${numero}-estado">Estado</label>
+          <select class="control" id="tarea-${numero}-estado" data-campo-tarea="estado">
+            <option value="Pendiente" ${estadoActual === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+            <option value="En progreso" ${estadoActual === 'En progreso' ? 'selected' : ''}>En progreso</option>
+            <option value="Completada" ${estadoActual === 'Completada' ? 'selected' : ''}>Completada</option>
+          </select>
+        </div>
+      </div>`;
+    tareasFormulario.appendChild(fila);
+  }
+
   function reiniciarFormularioHistoria() {
     formularioHistoria.reset();
     criteriosFormulario.replaceChildren();
+    tareasFormulario.replaceChildren();
     historiaEditando = null;
     document.getElementById('historia-aclaracion').value = '';
     document.getElementById('aclaracion-refinamiento').hidden = true;
@@ -97,6 +135,7 @@
     listaHistorias.innerHTML = historiasActuales.length
       ? historiasActuales.map((historia, indice) => {
         const criterios = historia.criterios || [];
+        const tareas = historia.tareas || [];
         const comentarios = historia.comentarios || [];
         const aclaraciones = historia.aclaraciones || [];
         const relacion = historia.idHistoriaOrigen
@@ -134,6 +173,14 @@
                   `).join('')}</ol>
                 </details>`
               : '<span class="historia-vacio">Sin criterios</span>'}</td>
+            <td>${tareas.length
+              ? `<details class="historia-tabla__criterios">
+                  <summary>Ver ${tareas.length} ${tareas.length === 1 ? 'tarea' : 'tareas'}</summary>
+                  <ol class="historia-criterios-lista">${tareas.map((tarea) => `
+                  <li><strong>${UI.escapar(tarea.id ? `${tarea.id} · ` : '')}${UI.escapar(tarea.titulo)}</strong> (${UI.escapar(tarea.estado || 'Pendiente')}): ${UI.escapar(tarea.descripcion)}</li>
+                  `).join('')}</ol>
+                </details>`
+              : '<span class="historia-vacio">Sin tareas</span>'}</td>
             <td class="historia-comentarios">
               ${comentarios.length
                 ? `<details>
@@ -174,10 +221,23 @@
             </td>
           </tr>`;
       }).join('')
-      : '<tr><td colspan="11" class="historia-vacio">Todavía no hay historias registradas en este proyecto.</td></tr>';
+      : '<tr><td colspan="12" class="historia-vacio">Todavía no hay historias registradas en este proyecto.</td></tr>';
   }
 
   const ROLES_DEFINIR_SPRINT = ['administrador', 'Product Owner', 'Developer'];
+  const ESTADOS_SPRINT_VALIDOS = ['Planificado', 'En curso', 'Finalizado', 'Cancelado'];
+  const CLASE_ESTADO_SPRINT = {
+    'Planificado': 'preparacion',
+    'En curso': 'activo',
+    'Finalizado': 'finalizado',
+    'Cancelado': 'suspendido'
+  };
+
+  function insigniaEstadoSprint(estado) {
+    const valor = ESTADOS_SPRINT_VALIDOS.includes(estado) ? estado : 'Planificado';
+    const clase = CLASE_ESTADO_SPRINT[valor] || 'preparacion';
+    return `<span class="insignia insignia--${clase}">${UI.escapar(valor)}</span>`;
+  }
 
   function fechaActualLocal() {
     const hoy = new Date();
@@ -246,8 +306,20 @@
     sprintInicioInput.addEventListener('change', fijarMinimoFechasSprint);
   }
 
+  function reiniciarFormularioSprint() {
+    if (!formularioSprint) return;
+    formularioSprint.reset();
+    sprintEditando = null;
+    historiasAsignadasSprint = [];
+    fijarMinimoFechasSprint();
+    actualizarOpcionesHistoriasSprint();
+    if (botonGuardarSprint) botonGuardarSprint.textContent = 'Definir sprint';
+    if (botonCancelarSprint) botonCancelarSprint.hidden = true;
+  }
+
   function dibujarSprints(sprints = [], miRol = null, permisos = {}, archivado = false) {
     if (!formularioSprintContenedor || !listaSprints) return;
+    sprintsActuales = sprints || [];
     const puedeDefinirSprint = (permisos.definirSprint !== undefined
       ? permisos.definirSprint
       : ROLES_DEFINIR_SPRINT.includes(miRol)) && !archivado;
@@ -256,8 +328,8 @@
     fijarMinimoFechasSprint();
     actualizarOpcionesHistoriasSprint();
 
-    listaSprints.innerHTML = sprints.length
-      ? sprints.map((sprint) => {
+    listaSprints.innerHTML = sprintsActuales.length
+      ? sprintsActuales.map((sprint) => {
         const historiasAsignadas = sprint.historiasAsignadas || [];
         return `
           <tr>
@@ -266,18 +338,28 @@
             <td class="historia-tabla__descripcion">${UI.escapar(sprint.objetivo)}</td>
             <td class="sprint-periodo">${UI.formatoFecha(sprint.fechaInicio)}</td>
             <td class="sprint-periodo">${UI.formatoFecha(sprint.fechaFin)}</td>
+            <td>${insigniaEstadoSprint(sprint.estado)}</td>
             <td>${historiasAsignadas.length
               ? `<details class="historia-tabla__criterios">
                   <summary>Ver ${historiasAsignadas.length} ${historiasAsignadas.length === 1 ? 'historia' : 'historias'}</summary>
                   <ul class="historia-criterios-lista">${historiasAsignadas.map((idHistoria) => {
                     const h = historiasActuales.find((item) => item.id === idHistoria);
-                    return `<li><strong>${UI.escapar(idHistoria)}</strong>${h ? ` · ${UI.escapar(h.titulo)}` : ''}</li>`;
+                    const tareasHistoria = h?.tareas || [];
+                    const listaTareas = tareasHistoria.length
+                      ? `<ul class="sprint-historia-tareas">${tareasHistoria.map((t) => `<li>${UI.escapar(typeof t === 'string' ? t : t.titulo)}</li>`).join('')}</ul>`
+                      : '';
+                    return `<li><strong>${UI.escapar(idHistoria)}</strong>${h ? ` · ${UI.escapar(h.titulo)}` : ''}${listaTareas}</li>`;
                   }).join('')}</ul>
                 </details>`
               : '<span class="historia-vacio">Sin historias asignadas</span>'}</td>
+            <td class="historia-acciones">
+              ${puedeDefinirSprint
+                ? `<button class="btn btn-secundario btn-chico" type="button" data-editar-sprint="${UI.escapar(sprint.id)}">Editar</button>`
+                : '—'}
+            </td>
           </tr>`;
       }).join('')
-      : '<tr><td colspan="6" class="historia-vacio">Todavía no hay sprints registrados en este proyecto.</td></tr>';
+      : '<tr><td colspan="8" class="historia-vacio">Todavía no hay sprints registrados en este proyecto.</td></tr>';
   }
 
   if (formularioSprint) {
@@ -287,6 +369,7 @@
       UI.limpiarErrores(formularioSprint);
 
       const nombre = sprintNombreInput.value.trim();
+      const estado = sprintEstadoSelect ? sprintEstadoSelect.value : 'Planificado';
       const objetivo = sprintObjetivoInput.value.trim();
       const fechaInicio = sprintInicioInput.value;
       const fechaFin = sprintFinInput.value;
@@ -296,6 +379,18 @@
       if (!nombre) {
         UI.marcarError(sprintNombreInput, 'El nombre del sprint es obligatorio.');
         valido = false;
+      }
+      if (!ESTADOS_SPRINT_VALIDOS.includes(estado)) {
+        UI.marcarError(sprintEstadoSelect, 'Selecciona un estado válido.');
+        valido = false;
+      } else if (estado === 'En curso') {
+        const hayOtroEnCurso = sprintsActuales.some(
+          (s) => s.estado === 'En curso' && (!sprintEditando || s.id !== sprintEditando)
+        );
+        if (hayOtroEnCurso) {
+          UI.marcarError(sprintEstadoSelect, 'Ya existe un sprint en curso en este proyecto. Solo puede haber uno a la vez.');
+          valido = false;
+        }
       }
       if (!objetivo) {
         UI.marcarError(sprintObjetivoInput, 'El objetivo del sprint es obligatorio.');
@@ -322,21 +417,50 @@
       if (!valido) return;
 
       UI.cargando(botonGuardarSprint, true);
-      const r = await Api.post(`/api/projects/${encodeURIComponent(actual.id)}/sprints`, {
+      const datosSprint = {
         nombre,
         objetivo,
         fechaInicio,
         fechaFin,
+        estado,
         historiasAsignadas: [...historiasAsignadasSprint]
-      });
+      };
+
+      const url = `/api/projects/${encodeURIComponent(actual.id)}/sprints${sprintEditando ? `/${encodeURIComponent(sprintEditando)}` : ''}`;
+      const r = sprintEditando ? await Api.put(url, datosSprint) : await Api.post(url, datosSprint);
       UI.cargando(botonGuardarSprint, false);
 
-      if (!r.ok) return UI.toast(r.datos?.mensaje || 'No se pudo definir el sprint.', 'error');
-      formularioSprint.reset();
-      historiasAsignadasSprint = [];
-      fijarMinimoFechasSprint();
+      if (!r.ok) return UI.toast(r.datos?.mensaje || 'No se pudo guardar el sprint.', 'error');
+      reiniciarFormularioSprint();
       await pintar();
       UI.toast(r.datos.mensaje, 'exito');
+    });
+  }
+
+  if (botonCancelarSprint) {
+    botonCancelarSprint.addEventListener('click', reiniciarFormularioSprint);
+  }
+
+  if (listaSprints) {
+    listaSprints.addEventListener('click', (e) => {
+      const botonEditar = e.target.closest('[data-editar-sprint]');
+      if (!botonEditar || !actual) return;
+      const sprint = sprintsActuales.find((s) => s.id === botonEditar.dataset.editarSprint);
+      if (!sprint) return;
+
+      sprintEditando = sprint.id;
+      sprintNombreInput.value = sprint.nombre;
+      sprintEstadoSelect.value = sprint.estado || 'Planificado';
+      sprintObjetivoInput.value = sprint.objetivo;
+      sprintInicioInput.value = sprint.fechaInicio;
+      sprintFinInput.value = sprint.fechaFin;
+      historiasAsignadasSprint = [...(sprint.historiasAsignadas || [])];
+
+      actualizarOpcionesHistoriasSprint();
+      if (botonGuardarSprint) botonGuardarSprint.textContent = 'Guardar cambios';
+      if (botonCancelarSprint) botonCancelarSprint.hidden = false;
+      formularioSprintContenedor.hidden = false;
+      formularioSprint.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
 
@@ -415,6 +539,11 @@
     const boton = e.target.closest('[data-quitar-criterio]');
     if (boton) boton.closest('.historia-criterio').remove();
   });
+  document.getElementById('agregar-tarea').addEventListener('click', () => agregarTarea());
+  tareasFormulario.addEventListener('click', (e) => {
+    const boton = e.target.closest('[data-quitar-tarea]');
+    if (boton) boton.closest('.historia-tarea').remove();
+  });
   document.getElementById('cancelar-edicion-historia').addEventListener('click', reiniciarFormularioHistoria);
 
   formularioHistoria.addEventListener('submit', async (e) => {
@@ -427,6 +556,14 @@
         entonces: fila.querySelector('[data-campo="entonces"]').value.trim()
       }))
       .filter((criterio) => criterio.dado || criterio.cuando || criterio.entonces);
+    const tareas = [...tareasFormulario.querySelectorAll('.historia-tarea')]
+      .map((fila) => ({
+        ...(fila.dataset.id ? { id: fila.dataset.id } : {}),
+        titulo: fila.querySelector('[data-campo-tarea="titulo"]').value.trim(),
+        descripcion: fila.querySelector('[data-campo-tarea="descripcion"]').value.trim(),
+        estado: fila.querySelector('[data-campo-tarea="estado"]').value
+      }))
+      .filter((tarea) => tarea.titulo || tarea.descripcion);
     const datos = {
       titulo: document.getElementById('historia-titulo').value.trim(),
       descripcion: document.getElementById('historia-descripcion').value.trim(),
@@ -434,7 +571,8 @@
       dependencias: [...dependenciasFormulario.selectedOptions].map((opcion) => opcion.value),
       responsableOrganizativo: document.getElementById('historia-responsable').value.trim(),
       ...(historiaEditando ? { aclaracion: document.getElementById('historia-aclaracion').value.trim() } : {}),
-      criterios
+      criterios,
+      tareas
     };
     const url = `/api/projects/${encodeURIComponent(actual.id)}/historias${historiaEditando ? `/${encodeURIComponent(historiaEditando)}` : ''}`;
     const r = historiaEditando ? await Api.put(url, datos) : await Api.post(url, datos);
@@ -487,6 +625,8 @@
     document.getElementById('aclaracion-refinamiento').hidden = false;
     criteriosFormulario.replaceChildren();
     (historia.criterios || []).forEach((criterio) => agregarCriterio(criterio));
+    tareasFormulario.replaceChildren();
+    (historia.tareas || []).forEach((tarea) => agregarTarea(tarea));
     document.getElementById('guardar-historia').textContent = 'Guardar cambios';
     document.getElementById('cancelar-edicion-historia').hidden = false;
     formularioContenedor.hidden = false;

@@ -131,6 +131,11 @@
               <button class="btn btn-secundario btn-chico" type="button" id="agregar-criterio">Agregar criterio</button>
             </div>
             <div id="criterios-formulario" class="historias-criterios"></div>
+            <div class="historias-criterios-encabezado">
+              <h3>Tareas de la historia</h3>
+              <button class="btn btn-secundario btn-chico" type="button" id="agregar-tarea">Agregar tarea</button>
+            </div>
+            <div id="tareas-formulario" class="historias-criterios"></div>
             <div class="historias-acciones">
               <button class="btn btn-primario" type="submit" id="guardar-historia">Registrar historia</button>
               <button class="btn btn-secundario" type="button" id="cancelar-edicion-historia" hidden>Cancelar edición</button>
@@ -163,6 +168,7 @@
                 <th>Dependencias</th>
                 <th>Responsable organizativo</th>
                 <th>Criterios de aceptación</th>
+                <th>Tareas</th>
                 <th>Comentarios</th>
                 <th>Aclaraciones</th>
                 <th>Acciones</th>
@@ -177,9 +183,20 @@
         <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="calendario"></span>Sprint Backlog: definición y lista de sprints</h2>
         <div id="formulario-sprint-contenedor" hidden>
           <form id="formulario-sprint" novalidate>
-            <div class="campo">
-              <label for="sprint-nombre">Nombre del sprint</label>
-              <input class="control" id="sprint-nombre" name="nombre" maxlength="160" placeholder="Ej.: Sprint 1 · Autenticación y gestión de usuarios" required>
+            <div class="rejilla-doble">
+              <div class="campo">
+                <label for="sprint-nombre">Nombre del sprint</label>
+                <input class="control" id="sprint-nombre" name="nombre" maxlength="160" placeholder="Ej.: Sprint 1 · Autenticación y gestión de usuarios" required>
+              </div>
+              <div class="campo">
+                <label for="sprint-estado">Estado del sprint</label>
+                <select class="control" id="sprint-estado" name="estado" required>
+                  <option value="Planificado">Planificado</option>
+                  <option value="En curso">En curso</option>
+                  <option value="Finalizado">Finalizado</option>
+                  <option value="Cancelado">Cancelado</option>
+                </select>
+              </div>
             </div>
             <div class="campo">
               <label for="sprint-objetivo">Objetivo del sprint</label>
@@ -202,6 +219,7 @@
             </div>
             <div class="historias-acciones">
               <button class="btn btn-primario" type="submit" id="guardar-sprint">Definir sprint</button>
+              <button class="btn btn-secundario" type="button" id="cancelar-edicion-sprint" hidden>Cancelar edición</button>
             </div>
           </form>
         </div>
@@ -214,7 +232,9 @@
                 <th>Objetivo del sprint</th>
                 <th>Fecha de inicio</th>
                 <th>Fecha de fin</th>
+                <th>Estado</th>
                 <th>Historias asignadas</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="lista-sprints"></tbody>

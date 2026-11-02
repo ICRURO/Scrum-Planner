@@ -36,6 +36,21 @@ function siguienteIdHistoria(historias) {
   return `HU-${String(max + 1).padStart(3, '0')}`;
 }
 
+function siguienteIdCriterio(historias) {
+  const max = historias.reduce((m, h) =>
+    (h.criterios || []).reduce((n, c) => Math.max(n, parseInt(String(c.id).replace(/^CA-/, ''), 10) || 0), m), 0);
+  return `CA-${String(max + 1).padStart(3, '0')}`;
+}
+
+const ESTADOS_TAREA = ['Pendiente', 'En progreso', 'Completada'];
+const ESTADOS_SPRINT = ['Planificado', 'En curso', 'Finalizado', 'Cancelado'];
+
+function siguienteIdTarea(historias) {
+  const max = (historias || []).reduce((m, h) =>
+    (h.tareas || []).reduce((n, t) => Math.max(n, parseInt(String(t.id).replace(/^TAR-/, ''), 10) || 0), m), 0);
+  return `TAR-${String(max + 1).padStart(3, '0')}`;
+}
+
 function siguienteIdSprint(sprints = []) {
   const max = sprints.reduce((m, s) => Math.max(m, parseInt(String(s.id).replace(/^SPR-/, ''), 10) || 0), 0);
   return `SPR-${String(max + 1).padStart(3, '0')}`;
@@ -49,7 +64,7 @@ function fechaActualLocal() {
   return `${anio}-${mes}-${dia}`;
 }
 
-function validarSprint(db, idProyecto, datos) {
+function validarSprint(db, idProyecto, datos, sprintExistente = null) {
   if (!datos || typeof datos !== 'object' || Array.isArray(datos)) return 'Los datos del sprint no son válidos.';
   if (typeof datos.nombre !== 'string' || !datos.nombre.trim()) return 'El nombre del sprint es obligatorio.';
   if (typeof datos.objetivo !== 'string' || !datos.objetivo.trim()) return 'El objetivo del sprint es obligatorio.';
@@ -57,11 +72,29 @@ function validarSprint(db, idProyecto, datos) {
     return 'Debes seleccionar una fecha de inicio y una fecha de fin válidas (formato AAAA-MM-DD).';
   }
   const hoy = fechaActualLocal();
-  if (datos.fechaInicio < hoy || datos.fechaFin < hoy) {
-    return 'Las fechas de inicio y fin deben encontrarse como mínimo en la fecha actual.';
+  const inicioModificado = !sprintExistente || datos.fechaInicio !== sprintExistente.fechaInicio;
+  const finModificada = !sprintExistente || datos.fechaFin !== sprintExistente.fechaFin;
+
+  if (inicioModificado && datos.fechaInicio < hoy) {
+    return 'La fecha de inicio debe encontrarse como mínimo en la fecha actual.';
+  }
+  if (finModificada && datos.fechaFin < hoy) {
+    return 'La fecha de fin debe encontrarse como mínimo en la fecha actual.';
   }
   if (datos.fechaFin < datos.fechaInicio) {
     return 'La fecha de fin no puede ser anterior a la fecha de inicio.';
+  }
+  const estado = datos.estado === undefined ? 'Planificado' : datos.estado;
+  if (!ESTADOS_SPRINT.includes(estado)) {
+    return 'El estado del sprint debe ser Planificado, En curso, Finalizado o Cancelado.';
+  }
+  if (estado === 'En curso') {
+    const hayOtroEnCurso = (db.sprints || []).some(
+      (s) => s.idProyecto === idProyecto && s.estado === 'En curso' && (!sprintExistente || s.id !== sprintExistente.id)
+    );
+    if (hayOtroEnCurso) {
+      return 'Ya existe un sprint en curso en este proyecto. Solo puede haber uno a la vez.';
+    }
   }
   if (datos.historiasAsignadas !== undefined) {
     if (!Array.isArray(datos.historiasAsignadas)
@@ -79,12 +112,6 @@ function validarSprint(db, idProyecto, datos) {
   return null;
 }
 
-function siguienteIdCriterio(historias) {
-  const max = historias.reduce((m, h) =>
-    (h.criterios || []).reduce((n, c) => Math.max(n, parseInt(String(c.id).replace(/^CA-/, ''), 10) || 0), m), 0);
-  return `CA-${String(max + 1).padStart(3, '0')}`;
-}
-
 function validarHistoria(datos) {
   if (!datos || typeof datos !== 'object' || Array.isArray(datos)) return 'Los datos de la historia no son válidos.';
   if (typeof datos.titulo !== 'string' || !datos.titulo.trim()) return 'El título de la historia es obligatorio.';
@@ -97,6 +124,15 @@ function validarHistoria(datos) {
     if (!criterio || typeof criterio !== 'object' || Array.isArray(criterio)) return 'Cada criterio debe incluir Dado, Cuando y Entonces.';
     for (const campo of ['dado', 'cuando', 'entonces']) {
       if (typeof criterio[campo] !== 'string' || !criterio[campo].trim()) return 'Cada criterio debe incluir Dado, Cuando y Entonces.';
+    }
+  }
+  if (datos.tareas !== undefined && !Array.isArray(datos.tareas)) return 'Las tareas deben enviarse como una lista.';
+  for (const tarea of datos.tareas || []) {
+    if (!tarea || typeof tarea !== 'object' || Array.isArray(tarea)) return 'Cada tarea debe incluir título y descripción.';
+    if (typeof tarea.titulo !== 'string' || !tarea.titulo.trim()) return 'Cada tarea debe incluir un título.';
+    if (typeof tarea.descripcion !== 'string' || !tarea.descripcion.trim()) return 'Cada tarea debe incluir una descripción.';
+    if (tarea.estado !== undefined && !ESTADOS_TAREA.includes(tarea.estado)) {
+      return 'El estado de cada tarea debe ser Pendiente, En progreso o Completada.';
     }
   }
   return null;
@@ -167,6 +203,33 @@ function normalizarCriterios(db, historia, criterios) {
   return { lista };
 }
 
+function normalizarTareas(db, historia, tareas) {
+  const actuales = historia ? historia.tareas || [] : [];
+  const idsActuales = new Set(actuales.map((t) => t.id));
+  const idsRecibidos = new Set();
+  const lista = [];
+  let siguienteNumero = parseInt(siguienteIdTarea(db.historiasUsuario).slice(4), 10);
+
+  for (const tarea of tareas || []) {
+    if (tarea.id && (!idsActuales.has(tarea.id) || idsRecibidos.has(tarea.id))) {
+      return { error: 'Una de las tareas no pertenece a esta historia o está duplicada.' };
+    }
+    const id = tarea.id || `TAR-${String(siguienteNumero++).padStart(3, '0')}`;
+    idsRecibidos.add(id);
+    lista.push({
+      id,
+      titulo: String(tarea.titulo).trim(),
+      descripcion: String(tarea.descripcion).trim(),
+      estado: tarea.estado || 'Pendiente'
+    });
+  }
+
+  if (historia && actuales.some((tarea) => !idsRecibidos.has(tarea.id))) {
+    return { error: 'No se pueden quitar tareas existentes; modifica su contenido o agrega otra.' };
+  }
+  return { lista };
+}
+
 function textoCambio(h) {
   if (h.campo === 'creacion') return 'Proyecto creado';
   if (h.campo === 'estado') return `Estado: ${ETIQUETAS[h.valorAnterior] || h.valorAnterior} → ${ETIQUETAS[h.valorNuevo] || h.valorNuevo}`;
@@ -181,6 +244,7 @@ function textoCambio(h) {
   }
   if (h.entidad === 'sprint') {
     if (h.campo === 'creacion') return `Sprint definido: ${h.valorNuevo}`;
+    if (h.campo === 'edicion') return `Sprint modificado: ${h.idEntidad}`;
   }
   if (h.valorNuevo && typeof h.valorNuevo === 'object') return `Información editada (${Object.keys(h.valorNuevo).join(', ')})`;
   return 'Información editada';
@@ -275,6 +339,8 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
   if (!db.historiasUsuario) db.historiasUsuario = [];
   const criterios = normalizarCriterios(db, null, datos.criterios);
   if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
+  const tareas = normalizarTareas(db, null, datos.tareas);
+  if (tareas.error) return res.status(400).json({ mensaje: tareas.error });
 
   const historia = {
     id: siguienteIdHistoria(db.historiasUsuario),
@@ -282,6 +348,7 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
     titulo: String(datos.titulo).trim(),
     descripcion: String(datos.descripcion).trim(),
     criterios: criterios.lista,
+    tareas: tareas.lista,
     estimacion: datos.estimacion || null,
     responsableOrganizativo: datos.responsableOrganizativo?.trim() || null,
     dependencias: datos.dependencias || [],
@@ -315,6 +382,8 @@ router.post('/:id/historias/:idHistoria/divisiones', apiConPermiso('gestionar_hi
   const creadas = historias.map((datos) => {
     const criterios = normalizarCriterios(db, null, datos.criterios);
     if (criterios.error) return { error: criterios.error };
+    const tareas = normalizarTareas(db, null, datos.tareas);
+    if (tareas.error) return { error: tareas.error };
     const historia = {
       id: siguienteIdHistoria(db.historiasUsuario),
       idProyecto: ctx.proyecto.id,
@@ -322,6 +391,7 @@ router.post('/:id/historias/:idHistoria/divisiones', apiConPermiso('gestionar_hi
       titulo: String(datos.titulo).trim(),
       descripcion: String(datos.descripcion).trim(),
       criterios: criterios.lista,
+      tareas: tareas.lista,
       estimacion: datos.estimacion || null,
       responsableOrganizativo: null,
       dependencias: [],
@@ -443,6 +513,8 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   if (errorPlanificacion) return res.status(400).json({ mensaje: errorPlanificacion });
   const criterios = normalizarCriterios(db, historia, datos.criterios === undefined ? historia.criterios : datos.criterios);
   if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
+  const tareas = normalizarTareas(db, historia, datos.tareas === undefined ? historia.tareas : datos.tareas);
+  if (tareas.error) return res.status(400).json({ mensaje: tareas.error });
 
   const titulo = String(datos.titulo).trim();
   const descripcion = String(datos.descripcion).trim();
@@ -460,6 +532,7 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
     || responsableOrganizativo !== (historia.responsableOrganizativo || null)
     || JSON.stringify(dependencias) !== JSON.stringify(historia.dependencias || [])
     || JSON.stringify(criterios.lista) !== JSON.stringify(historia.criterios || [])
+    || JSON.stringify(tareas.lista) !== JSON.stringify(historia.tareas || [])
     || !!aclaracion.trim();
   if (!cambios) return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
 
@@ -467,6 +540,7 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
     titulo: historia.titulo,
     descripcion: historia.descripcion,
     criterios: historia.criterios || [],
+    tareas: historia.tareas || [],
     estimacion: historia.estimacion || null,
     responsableOrganizativo: historia.responsableOrganizativo || null,
     dependencias: historia.dependencias || []
@@ -474,6 +548,7 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   historia.titulo = titulo;
   historia.descripcion = descripcion;
   historia.criterios = criterios.lista;
+  historia.tareas = tareas.lista;
   historia.estimacion = estimacion;
   historia.responsableOrganizativo = responsableOrganizativo;
   historia.dependencias = dependencias;
@@ -481,6 +556,7 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
     titulo,
     descripcion,
     criterios: historia.criterios,
+    tareas: historia.tareas,
     estimacion,
     responsableOrganizativo,
     dependencias
@@ -503,10 +579,16 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
 });
 
 // ---------- Sprint Backlog: Definir sprint ----------
-router.post('/:id/sprints', apiConPermiso('definir_sprint', (req) => req.params.id), (req, res) => {
+const ROLES_DEFINIR_SPRINT = ['administrador', 'Product Owner', 'Developer'];
+
+router.post('/:id/sprints', (req, res) => {
   const ctx = cargar(req, res);
   if (!ctx) return;
   const db = ctx.db;
+  const miRol = rolEnProyecto(req.usuario, ctx.proyecto.id, db);
+  if (!miRol || !ROLES_DEFINIR_SPRINT.includes(miRol)) {
+    return res.status(403).json({ mensaje: 'No tienes permisos para realizar esta acción.' });
+  }
   const datos = req.body || {};
 
   const error = validarSprint(db, ctx.proyecto.id, datos);
@@ -520,6 +602,7 @@ router.post('/:id/sprints', apiConPermiso('definir_sprint', (req) => req.params.
     objetivo: String(datos.objetivo).trim(),
     fechaInicio: datos.fechaInicio,
     fechaFin: datos.fechaFin,
+    estado: datos.estado || 'Planificado',
     historiasAsignadas: Array.isArray(datos.historiasAsignadas) ? datos.historiasAsignadas : []
   };
 
@@ -533,6 +616,76 @@ router.post('/:id/sprints', apiConPermiso('definir_sprint', (req) => req.params.
   });
   writeDB(db);
   res.status(201).json({ mensaje: 'Sprint definido correctamente.', sprint });
+});
+
+router.put('/:id/sprints/:idSprint', (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const db = ctx.db;
+  const miRol = rolEnProyecto(req.usuario, ctx.proyecto.id, db);
+  if (!miRol || !ROLES_DEFINIR_SPRINT.includes(miRol)) {
+    return res.status(403).json({ mensaje: 'No tienes permisos para realizar esta acción.' });
+  }
+
+  const sprint = (db.sprints || []).find((s) => s.id === req.params.idSprint && s.idProyecto === ctx.proyecto.id);
+  if (!sprint) return res.status(404).json({ mensaje: 'No se encontró el sprint en este proyecto.' });
+
+  const datos = req.body || {};
+  const error = validarSprint(db, ctx.proyecto.id, datos, sprint);
+  if (error) return res.status(400).json({ mensaje: error });
+
+  const nombre = String(datos.nombre).trim();
+  const objetivo = String(datos.objetivo).trim();
+  const fechaInicio = datos.fechaInicio;
+  const fechaFin = datos.fechaFin;
+  const estado = datos.estado || 'Planificado';
+  const historiasAsignadas = Array.isArray(datos.historiasAsignadas) ? datos.historiasAsignadas : [];
+
+  const cambios = nombre !== sprint.nombre
+    || objetivo !== sprint.objetivo
+    || fechaInicio !== sprint.fechaInicio
+    || fechaFin !== sprint.fechaFin
+    || estado !== sprint.estado
+    || JSON.stringify(historiasAsignadas) !== JSON.stringify(sprint.historiasAsignadas || []);
+
+  if (!cambios) return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
+
+  const valorAnterior = {
+    nombre: sprint.nombre,
+    objetivo: sprint.objetivo,
+    fechaInicio: sprint.fechaInicio,
+    fechaFin: sprint.fechaFin,
+    estado: sprint.estado,
+    historiasAsignadas: sprint.historiasAsignadas || []
+  };
+
+  sprint.nombre = nombre;
+  sprint.objetivo = objetivo;
+  sprint.fechaInicio = fechaInicio;
+  sprint.fechaFin = fechaFin;
+  sprint.estado = estado;
+  sprint.historiasAsignadas = historiasAsignadas;
+
+  const valorNuevo = {
+    nombre,
+    objetivo,
+    fechaInicio,
+    fechaFin,
+    estado,
+    historiasAsignadas
+  };
+
+  registrarHistorial(db, {
+    idUsuario: req.usuario.id,
+    entidad: 'sprint',
+    idEntidad: sprint.id,
+    campo: 'edicion',
+    valorAnterior,
+    valorNuevo
+  });
+
+  writeDB(db);
+  res.json({ mensaje: 'Sprint actualizado correctamente.', sprint });
 });
 
 // ---------- HU-08 Crear proyecto ----------
