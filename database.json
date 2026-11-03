@@ -787,6 +787,379 @@
       "campo": "creacion",
       "valorAnterior": null,
       "valorNuevo": "Sprint 2 - Trabajar"
+    },
+    {
+      "id": "HIS-041",
+      "fecha": "2026-11-03T13:58:26.776Z",
+      "idUsuario": "USR-010",
+      "entidad": "historia_usuario",
+      "idEntidad": "HU-001",
+      "campo": "refinamiento",
+      "valorAnterior": {
+        "titulo": "HU-01 Organizacion",
+        "descripcion": "Como Scrum master quiero que se organicen para poder empezar",
+        "criterios": [],
+        "tareas": [],
+        "estimacion": "S",
+        "responsableOrganizativo": "USR-009",
+        "dependencias": []
+      },
+      "valorNuevo": {
+        "titulo": "HU-01 Organizacion",
+        "descripcion": "Como Scrum master quiero que se organicen para poder empezar",
+        "criterios": [],
+        "tareas": [
+          {
+            "id": "TK-001",
+            "idSprint": "SPR-001",
+            "idHistoria": "HU-001",
+            "titulo": "Definir arquitectura y base de datos inicial",
+            "descripcion": "vx",
+            "horasEstimadas": 12,
+            "estado": "Terminado",
+            "fechaTerminado": "2026-11-03",
+            "idResponsable": "USR-004",
+            "idUsuarioResponsable": "USR-004"
+          },
+          {
+            "id": "TK-002",
+            "idSprint": "SPR-001",
+            "idHistoria": "HU-001",
+            "titulo": "Configurar rutas de autenticación y sesiones",
+            "descripcion": "dfsq",
+            "horasEstimadas": 16,
+            "estado": "Terminado",
+            "fechaTerminado": "2026-11-03",
+            "idResponsable": "USR-010",
+            "idUsuarioResponsable": "USR-010"
+          }
+        ],
+        "estimacion": "S",
+        "responsableOrganizativo": "USR-009",
+        "dependencias": []
+      }
+    },
+    {
+      "id": "HIS-042",
+      "fecha": "2026-11-03T13:58:35.411Z",
+      "idUsuario": "USR-010",
+      "entidad": "tarea",
+      "idEntidad": "TK-001",
+      "campo": "estado",
+      "valorAnterior": "Terminado",
+      "valorNuevo": {
+        "estado": "En progreso",
+        "titulo": "Definir arquitectura y base de datos inicial",
+        "idHistoria": "HU-001"
+      }
+    },
+    {
+      "id": "HIS-043",
+      "fecha": "2026-11-03T14:07:24.492Z",
+      "idUsuario": "USR-010",
+      "entidad": "tarea",
+      "idEntidad": "TK-001",
+      "campo": "estado",
+      "valorAnterior": "En progreso",
+      "valorNuevo": {
+        "estado": "En revisión",
+        "titulo": "Definir arquitectura y base de datos inicial",
+        "idHistoria": "HU-001"
+      }
+    },
+    {
+      "id": "HIS-044",
+      "fecha": "2026-11-03T14:07:26.153Z",
+      "idUsuario": "USR-010",
+      "entidad": "tarea",
+      "idEntidad": "TK-001",
+      "campo": "estado",
+      "valorAnterior": "En revisión",
+      "valorNuevo": {
+        "estado": "Por hacer",
+        "titulo": "Definir arquitectura y base de datos inicial",
+        "idHistoria": "HU-001"
+      }
+    },
+    {
+      "id": "HIS-045",
+      "fecha": "2026-11-03T14:07:28.105Z",
+      "idUsuario": "USR-010",
+      "entidad": "tarea",
+      "idEntidad": "TK-001",
+      "campo": "estado",
+      "valorAnterior": "Por hacer",
+      "valorNuevo": {
+        "estado": "Terminado",
+        "titulo": "Definir arquitectura y base de datos inicial",
+        "idHistoria": "HU-001"
+      }
+    },
+    {
+      "id": "HIS-046",
+      "fecha": "2026-11-03T14:07:31.050Z",
+      "idUsuario": "USR-010",
+      "entidad": "tarea",
+      "idEntidad": "TK-002",
+      "campo": "estado",
+      "valorAnterior": "Terminado",
+      "valorNuevo": {
+        "estado": "Por hacer",
+        "titulo": "Configurar rutas de autenticación y sesiones",
+        "idHistoria": "HU-001"
+      }
+    },
+    {
+      "id": "HIS-047",
+      "fecha": "2026-11-03T14:07:33.130Z",
+      "idUsuario": "USR-010",
+      "entidad": "tarea",
+      "idEntidad": "TK-002",
+      "campo": "estado",
+      "valorAnterior": "Por hacer",
+      "valorNuevo": {
+        "estado": "En progreso",
+        "titulo": "Configurar rutas de autenticación y sesiones",
+        "idHistoria": "HU-001"
+      }
+    },
+    {
+      "id": "HIS-048",
+      "fecha": "2026-11-03T14:09:53.729Z",
+      "idUsuario": "USR-010",
+      "entidad": "historia_usuario",
+      "idEntidad": "HU-001",
+      "campo": "refinamiento",
+      "valorAnterior": {
+        "titulo": "HU-01 Organizacion",
+        "descripcion": "Como Scrum master quiero que se organicen para poder empezar",
+        "criterios": [],
+        "tareas": [
+          {
+            "id": "TK-001",
+            "idSprint": "SPR-001",
+            "idHistoria": "HU-001",
+            "titulo": "Definir arquitectura y base de datos inicial",
+            "descripcion": "vx",
+            "horasEstimadas": 12,
+            "estado": "Terminado",
+            "fechaTerminado": "2026-11-03",
+            "idResponsable": "USR-004",
+            "idUsuarioResponsable": "USR-004"
+          },
+          {
+            "id": "TK-002",
+            "idSprint": "SPR-001",
+            "idHistoria": "HU-001",
+            "titulo": "Configurar rutas de autenticación y sesiones",
+            "descripcion": "dfsq",
+            "horasEstimadas": 16,
+            "estado": "En progreso",
+            "fechaTerminado": null,
+            "idResponsable": "USR-010",
+            "idUsuarioResponsable": "USR-010"
+          }
+        ],
+        "estimacion": "S",
+        "responsableOrganizativo": "USR-009",
+        "dependencias": []
+      },
+      "valorNuevo": {
+        "titulo": "HU-01 Organizacion",
+        "descripcion": "Como Scrum master quiero que se organicen para poder empezar",
+        "criterios": [],
+        "tareas": [
+          {
+            "id": "TK-001",
+            "idSprint": "SPR-001",
+            "idHistoria": "HU-001",
+            "titulo": "Definir arquitectura y base de datos inicial",
+            "descripcion": "Definir la arquitectura que tendrá el proyecto y la base de datos inicial",
+            "horasEstimadas": 12,
+            "estado": "Terminado",
+            "fechaTerminado": "2026-11-03",
+            "idResponsable": "USR-004",
+            "idUsuarioResponsable": "USR-004"
+          },
+          {
+            "id": "TK-002",
+            "idSprint": "SPR-001",
+            "idHistoria": "HU-001",
+            "titulo": "Configurar rutas de autenticación y sesiones",
+            "descripcion": "Configurar las rutas que se usaran para autenticación e inicio de sesiones",
+            "horasEstimadas": 16,
+            "estado": "En progreso",
+            "fechaTerminado": null,
+            "idResponsable": "USR-010",
+            "idUsuarioResponsable": "USR-010"
+          }
+        ],
+        "estimacion": "S",
+        "responsableOrganizativo": "USR-009",
+        "dependencias": []
+      }
+    },
+    {
+      "id": "HIS-049",
+      "fecha": "2026-11-03T14:10:55.563Z",
+      "idUsuario": "USR-010",
+      "entidad": "historia_usuario",
+      "idEntidad": "HU-002",
+      "campo": "refinamiento",
+      "valorAnterior": {
+        "titulo": "HU-02 Trabajar",
+        "descripcion": "Como Scrum Master quiero que apliquen lo organizado y trabajen",
+        "criterios": [],
+        "tareas": [],
+        "estimacion": "M",
+        "responsableOrganizativo": null,
+        "dependencias": [
+          "HU-001"
+        ]
+      },
+      "valorNuevo": {
+        "titulo": "HU-02 Trabajar",
+        "descripcion": "Como Scrum Master quiero que apliquen lo organizado y trabajen",
+        "criterios": [],
+        "tareas": [
+          {
+            "id": "TK-003",
+            "idSprint": "SPR-002",
+            "idHistoria": "HU-002",
+            "titulo": "Creación del módulo de proyectos y detalle",
+            "descripcion": "Crear los módulos que tendrá el proyecto y sus detalles",
+            "horasEstimadas": 14,
+            "estado": "Terminado",
+            "fechaTerminado": "2026-11-03",
+            "idResponsable": "USR-010",
+            "idUsuarioResponsable": "USR-010"
+          },
+          {
+            "id": "TK-004",
+            "idSprint": "SPR-002",
+            "idHistoria": "HU-002",
+            "titulo": "Asignación de roles y selección de historias",
+            "descripcion": "Asignar roles y seleccionar historias de usuario que tendrá que hacer cada quien",
+            "horasEstimadas": 12,
+            "estado": "Terminado",
+            "fechaTerminado": "2026-11-03",
+            "idResponsable": "USR-014",
+            "idUsuarioResponsable": "USR-014"
+          }
+        ],
+        "estimacion": "M",
+        "responsableOrganizativo": null,
+        "dependencias": [
+          "HU-001"
+        ]
+      }
+    },
+    {
+      "id": "HIS-050",
+      "fecha": "2026-11-03T14:11:49.824Z",
+      "idUsuario": "USR-010",
+      "entidad": "historia_usuario",
+      "idEntidad": "HU-003",
+      "campo": "refinamiento",
+      "valorAnterior": {
+        "titulo": "HU-03 Tablero Kanban",
+        "descripcion": "Como dev quiero ver las tareas",
+        "criterios": [],
+        "tareas": [],
+        "estimacion": "L",
+        "responsableOrganizativo": "USR-014",
+        "dependencias": []
+      },
+      "valorNuevo": {
+        "titulo": "HU-03 Tablero Kanban",
+        "descripcion": "Como dev quiero ver las tareas",
+        "criterios": [],
+        "tareas": [
+          {
+            "id": "TK-005",
+            "idSprint": "SPR-002",
+            "idHistoria": "HU-003",
+            "titulo": "Construir columnas y tarjetas del tablero Kanban",
+            "descripcion": "Construir las columnas y tarjetas que se usarán en el tablero Kanban",
+            "horasEstimadas": 16,
+            "estado": "En progreso",
+            "fechaTerminado": null,
+            "idResponsable": "USR-014",
+            "idUsuarioResponsable": "USR-014"
+          },
+          {
+            "id": "TK-006",
+            "idSprint": "SPR-002",
+            "idHistoria": "HU-003",
+            "titulo": "Validar transiciones de estado y Definition of Done",
+            "descripcion": "Implementar la validación de transacciones de estado y la Definition of Done",
+            "horasEstimadas": 10,
+            "estado": "En progreso",
+            "fechaTerminado": null,
+            "idResponsable": "USR-012",
+            "idUsuarioResponsable": "USR-012"
+          }
+        ],
+        "estimacion": "L",
+        "responsableOrganizativo": "USR-014",
+        "dependencias": []
+      }
+    },
+    {
+      "id": "HIS-051",
+      "fecha": "2026-11-03T14:11:56.780Z",
+      "idUsuario": "USR-010",
+      "entidad": "tarea",
+      "idEntidad": "TK-002",
+      "campo": "estado",
+      "valorAnterior": "En progreso",
+      "valorNuevo": {
+        "estado": "Por hacer",
+        "titulo": "Configurar rutas de autenticación y sesiones",
+        "idHistoria": "HU-001"
+      }
+    },
+    {
+      "id": "HIS-052",
+      "fecha": "2026-11-03T14:11:58.372Z",
+      "idUsuario": "USR-010",
+      "entidad": "tarea",
+      "idEntidad": "TK-005",
+      "campo": "estado",
+      "valorAnterior": "En progreso",
+      "valorNuevo": {
+        "estado": "En revisión",
+        "titulo": "Construir columnas y tarjetas del tablero Kanban",
+        "idHistoria": "HU-003"
+      }
+    },
+    {
+      "id": "HIS-053",
+      "fecha": "2026-11-03T14:12:00.600Z",
+      "idUsuario": "USR-010",
+      "entidad": "tarea",
+      "idEntidad": "TK-005",
+      "campo": "estado",
+      "valorAnterior": "En revisión",
+      "valorNuevo": {
+        "estado": "En progreso",
+        "titulo": "Construir columnas y tarjetas del tablero Kanban",
+        "idHistoria": "HU-003"
+      }
+    },
+    {
+      "id": "HIS-054",
+      "fecha": "2026-11-03T14:12:02.296Z",
+      "idUsuario": "USR-010",
+      "entidad": "tarea",
+      "idEntidad": "TK-002",
+      "campo": "estado",
+      "valorAnterior": "Por hacer",
+      "valorNuevo": {
+        "estado": "En progreso",
+        "titulo": "Configurar rutas de autenticación y sesiones",
+        "idHistoria": "HU-001"
+      }
     }
   ],
   "tokens": [
@@ -880,7 +1253,33 @@
       "responsableOrganizativo": "USR-009",
       "dependencias": [],
       "orden": 1,
-      "comentarios": []
+      "comentarios": [],
+      "tareas": [
+        {
+          "id": "TK-001",
+          "idSprint": "SPR-001",
+          "idHistoria": "HU-001",
+          "titulo": "Definir arquitectura y base de datos inicial",
+          "descripcion": "Definir la arquitectura que tendrá el proyecto y la base de datos inicial",
+          "horasEstimadas": 12,
+          "estado": "Terminado",
+          "fechaTerminado": "2026-11-03",
+          "idResponsable": "USR-004",
+          "idUsuarioResponsable": "USR-004"
+        },
+        {
+          "id": "TK-002",
+          "idSprint": "SPR-001",
+          "idHistoria": "HU-001",
+          "titulo": "Configurar rutas de autenticación y sesiones",
+          "descripcion": "Configurar las rutas que se usaran para autenticación e inicio de sesiones",
+          "horasEstimadas": 16,
+          "estado": "En progreso",
+          "fechaTerminado": null,
+          "idResponsable": "USR-010",
+          "idUsuarioResponsable": "USR-010"
+        }
+      ]
     },
     {
       "id": "HU-002",
@@ -891,9 +1290,37 @@
       "estimacion": "M",
       "criterios": [],
       "responsableOrganizativo": null,
-      "dependencias": ["HU-001"],
+      "dependencias": [
+        "HU-001"
+      ],
       "orden": 2,
-      "comentarios": []
+      "comentarios": [],
+      "tareas": [
+        {
+          "id": "TK-003",
+          "idSprint": "SPR-002",
+          "idHistoria": "HU-002",
+          "titulo": "Creación del módulo de proyectos y detalle",
+          "descripcion": "Crear los módulos que tendrá el proyecto y sus detalles",
+          "horasEstimadas": 14,
+          "estado": "Terminado",
+          "fechaTerminado": "2026-11-03",
+          "idResponsable": "USR-010",
+          "idUsuarioResponsable": "USR-010"
+        },
+        {
+          "id": "TK-004",
+          "idSprint": "SPR-002",
+          "idHistoria": "HU-002",
+          "titulo": "Asignación de roles y selección de historias",
+          "descripcion": "Asignar roles y seleccionar historias de usuario que tendrá que hacer cada quien",
+          "horasEstimadas": 12,
+          "estado": "Terminado",
+          "fechaTerminado": "2026-11-03",
+          "idResponsable": "USR-014",
+          "idUsuarioResponsable": "USR-014"
+        }
+      ]
     },
     {
       "id": "HU-003",
@@ -906,7 +1333,33 @@
       "responsableOrganizativo": "USR-014",
       "dependencias": [],
       "orden": 3,
-      "comentarios": []
+      "comentarios": [],
+      "tareas": [
+        {
+          "id": "TK-005",
+          "idSprint": "SPR-002",
+          "idHistoria": "HU-003",
+          "titulo": "Construir columnas y tarjetas del tablero Kanban",
+          "descripcion": "Construir las columnas y tarjetas que se usarán en el tablero Kanban",
+          "horasEstimadas": 16,
+          "estado": "En progreso",
+          "fechaTerminado": null,
+          "idResponsable": "USR-014",
+          "idUsuarioResponsable": "USR-014"
+        },
+        {
+          "id": "TK-006",
+          "idSprint": "SPR-002",
+          "idHistoria": "HU-003",
+          "titulo": "Validar transiciones de estado y Definition of Done",
+          "descripcion": "Implementar la validación de transacciones de estado y la Definition of Done",
+          "horasEstimadas": 10,
+          "estado": "En progreso",
+          "fechaTerminado": null,
+          "idResponsable": "USR-012",
+          "idUsuarioResponsable": "USR-012"
+        }
+      ]
     },
     {
       "id": "HU-P2-01",
@@ -968,9 +1421,11 @@
       "idHistoria": "HU-001",
       "titulo": "Definir arquitectura y base de datos inicial",
       "horasEstimadas": 12,
-      "estado": "terminado",
-      "fechaTerminado": "2026-10-15",
-      "idResponsable": "USR-009"
+      "estado": "Terminado",
+      "fechaTerminado": "2026-11-03",
+      "idResponsable": "USR-004",
+      "descripcion": "Definir la arquitectura que tendrá el proyecto y la base de datos inicial",
+      "idUsuarioResponsable": "USR-004"
     },
     {
       "id": "TK-002",
@@ -978,9 +1433,11 @@
       "idHistoria": "HU-001",
       "titulo": "Configurar rutas de autenticación y sesiones",
       "horasEstimadas": 16,
-      "estado": "terminado",
-      "fechaTerminado": "2026-10-20",
-      "idResponsable": "USR-010"
+      "estado": "en_progreso",
+      "fechaTerminado": null,
+      "idResponsable": "USR-010",
+      "descripcion": "Configurar las rutas que se usaran para autenticación e inicio de sesiones",
+      "idUsuarioResponsable": "USR-010"
     },
     {
       "id": "TK-003",
@@ -988,9 +1445,11 @@
       "idHistoria": "HU-002",
       "titulo": "Creación del módulo de proyectos y detalle",
       "horasEstimadas": 14,
-      "estado": "terminado",
-      "fechaTerminado": "2026-10-28",
-      "idResponsable": "USR-010"
+      "estado": "Terminado",
+      "fechaTerminado": "2026-11-03",
+      "idResponsable": "USR-010",
+      "descripcion": "Crear los módulos que tendrá el proyecto y sus detalles",
+      "idUsuarioResponsable": "USR-010"
     },
     {
       "id": "TK-004",
@@ -998,9 +1457,11 @@
       "idHistoria": "HU-002",
       "titulo": "Asignación de roles y selección de historias",
       "horasEstimadas": 12,
-      "estado": "terminado",
-      "fechaTerminado": "2026-10-30",
-      "idResponsable": "USR-008"
+      "estado": "Terminado",
+      "fechaTerminado": "2026-11-03",
+      "idResponsable": "USR-014",
+      "descripcion": "Asignar roles y seleccionar historias de usuario que tendrá que hacer cada quien",
+      "idUsuarioResponsable": "USR-014"
     },
     {
       "id": "TK-005",
@@ -1009,7 +1470,10 @@
       "titulo": "Construir columnas y tarjetas del tablero Kanban",
       "horasEstimadas": 16,
       "estado": "en_progreso",
-      "idResponsable": "USR-014"
+      "idResponsable": "USR-014",
+      "descripcion": "Construir las columnas y tarjetas que se usarán en el tablero Kanban",
+      "fechaTerminado": null,
+      "idUsuarioResponsable": "USR-014"
     },
     {
       "id": "TK-006",
@@ -1017,18 +1481,11 @@
       "idHistoria": "HU-003",
       "titulo": "Validar transiciones de estado y Definition of Done",
       "horasEstimadas": 10,
-      "estado": "en_progreso",
-      "idResponsable": "USR-012"
-    },
-    {
-      "id": "TK-P2-01",
-      "idSprint": "SPRINT-P2-01",
-      "idHistoria": "HU-P2-01",
-      "titulo": "Formulario de registro de horas",
-      "horasEstimadas": 15,
-      "estado": "terminado",
-      "fechaTerminado": "2026-02-10",
-      "idResponsable": "USR-004"
+      "estado": "En progreso",
+      "idResponsable": "USR-012",
+      "descripcion": "Implementar la validación de transacciones de estado y la Definition of Done",
+      "fechaTerminado": null,
+      "idUsuarioResponsable": "USR-012"
     }
   ]
 }
