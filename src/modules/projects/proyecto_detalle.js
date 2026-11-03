@@ -225,6 +225,8 @@
   }
 
   const ROLES_DEFINIR_SPRINT = ['administrador', 'Product Owner', 'Developer'];
+  const ROLES_FINALIZAR_SPRINT = ['administrador', 'Product Owner', 'Developer'];
+  const ROLES_CANCELAR_SPRINT = ['administrador', 'Product Owner'];
   const ESTADOS_SPRINT_VALIDOS = ['Planificado', 'En curso', 'Finalizado', 'Cancelado'];
   const CLASE_ESTADO_SPRINT = {
     'Planificado': 'preparacion',
@@ -323,6 +325,8 @@
     const puedeDefinirSprint = (permisos.definirSprint !== undefined
       ? permisos.definirSprint
       : ROLES_DEFINIR_SPRINT.includes(miRol)) && !archivado;
+    const puedeFinalizarSprint = ROLES_FINALIZAR_SPRINT.includes(miRol) && !archivado;
+    const puedeCancelarSprint = ROLES_CANCELAR_SPRINT.includes(miRol) && !archivado;
 
     formularioSprintContenedor.hidden = !puedeDefinirSprint;
     fijarMinimoFechasSprint();
@@ -353,9 +357,16 @@
                 </details>`
               : '<span class="historia-vacio">Sin historias asignadas</span>'}</td>
             <td class="historia-acciones">
-              ${puedeDefinirSprint
+              ${puedeDefinirSprint && !archivado
                 ? `<button class="btn btn-secundario btn-chico" type="button" data-editar-sprint="${UI.escapar(sprint.id)}">Editar</button>`
-                : '—'}
+                : ''}
+              ${puedeFinalizarSprint && sprint.estado !== 'Finalizado' && sprint.estado !== 'Cancelado' && !archivado
+                ? `<button class="btn btn-secundario btn-chico" type="button" data-finalizar-sprint="${UI.escapar(sprint.id)}">Finalizar</button>`
+                : ''}
+              ${puedeCancelarSprint && sprint.estado !== 'Cancelado' && sprint.estado !== 'Finalizado' && !archivado
+                ? `<button class="btn btn-peligro btn-chico" type="button" data-cancelar-sprint="${UI.escapar(sprint.id)}">Cancelar</button>`
+                : ''}
+              ${(!puedeDefinirSprint && !puedeFinalizarSprint && !puedeCancelarSprint) || ((sprint.estado === 'Finalizado' || sprint.estado === 'Cancelado') && !puedeDefinirSprint) ? '—' : ''}
             </td>
           </tr>`;
       }).join('')
@@ -441,8 +452,104 @@
     botonCancelarSprint.addEventListener('click', reiniciarFormularioSprint);
   }
 
+  function pedirRazonCancelacion(nombreSprint) {
+    return new Promise((resolver) => {
+      const fondo = document.createElement('div');
+      fondo.className = 'modal-fondo';
+      fondo.innerHTML = `
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo-cancelar">
+          <h2 id="modal-titulo-cancelar">Cancelar sprint</h2>
+          <p>Indica la razón por la que se decide cancelar el sprint <strong>${UI.escapar(nombreSprint)}</strong>. Este motivo quedará registrado en el historial.</p>
+          <div class="campo">
+            <label for="razon-cancelacion">Razón de la cancelación</label>
+            <textarea class="control" id="razon-cancelacion" placeholder="Escribe el motivo de la cancelación..." maxlength="1000" rows="3" required></textarea>
+            <span class="campo__error" id="error-razon-cancelacion" hidden></span>
+          </div>
+          <div class="modal__acciones">
+            <button class="btn btn-secundario" type="button" data-r="cancelar">Volver</button>
+            <button class="btn btn-peligro-solido" type="button" data-r="confirmar">Confirmar cancelación</button>
+          </div>
+        </div>`;
+
+      const textarea = fondo.querySelector('#razon-cancelacion');
+      const errorAviso = fondo.querySelector('#error-razon-cancelacion');
+
+      const cerrar = (valor) => {
+        document.removeEventListener('keydown', alTeclear);
+        fondo.remove();
+        resolver(valor);
+      };
+
+      const alTeclear = (e) => {
+        if (e.key === 'Escape') cerrar(null);
+      };
+
+      fondo.addEventListener('click', (e) => {
+        if (e.target === fondo) return cerrar(null);
+        const boton = e.target.closest('[data-r]');
+        if (!boton) return;
+        if (boton.dataset.r === 'cancelar') return cerrar(null);
+        if (boton.dataset.r === 'confirmar') {
+          const razon = textarea.value.trim();
+          if (!razon) {
+            errorAviso.textContent = 'Debes escribir una razón para cancelar el sprint.';
+            errorAviso.hidden = false;
+            textarea.classList.add('invalido');
+            textarea.focus();
+            return;
+          }
+          cerrar(razon);
+        }
+      });
+
+      document.addEventListener('keydown', alTeclear);
+      document.body.appendChild(fondo);
+      textarea.focus();
+    });
+  }
+
   if (listaSprints) {
-    listaSprints.addEventListener('click', (e) => {
+    listaSprints.addEventListener('click', async (e) => {
+      const botonCancelar = e.target.closest('[data-cancelar-sprint]');
+      if (botonCancelar && actual) {
+        const sprint = sprintsActuales.find((s) => s.id === botonCancelar.dataset.cancelarSprint);
+        if (!sprint) return;
+
+        const razon = await pedirRazonCancelacion(sprint.nombre);
+        if (!razon) return;
+
+        UI.cargando(botonCancelar, true);
+        const r = await Api.put(`/api/projects/${encodeURIComponent(actual.id)}/sprints/${encodeURIComponent(sprint.id)}/cancelar`, { razon });
+        UI.cargando(botonCancelar, false);
+
+        if (!r.ok) return UI.toast(r.datos?.mensaje || 'No se pudo cancelar el sprint.', 'error');
+        await pintar();
+        UI.toast(r.datos.mensaje, 'exito');
+        return;
+      }
+      const botonFinalizar = e.target.closest('[data-finalizar-sprint]');
+      if (botonFinalizar && actual) {
+        const sprint = sprintsActuales.find((s) => s.id === botonFinalizar.dataset.finalizarSprint);
+        if (!sprint) return;
+
+        const ok = await UI.confirmar({
+          titulo: 'Finalizar sprint',
+          mensaje: `¿Deseas finalizar el sprint "${sprint.nombre}"? Su estado cambiará a Finalizado y se registrará en el historial el conteo de tareas completadas.`,
+          textoOk: 'Finalizar',
+          peligro: true
+        });
+        if (!ok) return;
+
+        UI.cargando(botonFinalizar, true);
+        const r = await Api.put(`/api/projects/${encodeURIComponent(actual.id)}/sprints/${encodeURIComponent(sprint.id)}/finalizar`);
+        UI.cargando(botonFinalizar, false);
+
+        if (!r.ok) return UI.toast(r.datos?.mensaje || 'No se pudo finalizar el sprint.', 'error');
+        await pintar();
+        UI.toast(r.datos.mensaje, 'exito');
+        return;
+      }
+
       const botonEditar = e.target.closest('[data-editar-sprint]');
       if (!botonEditar || !actual) return;
       const sprint = sprintsActuales.find((s) => s.id === botonEditar.dataset.editarSprint);

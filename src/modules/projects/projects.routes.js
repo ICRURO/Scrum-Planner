@@ -231,9 +231,24 @@ function normalizarTareas(db, historia, tareas) {
 }
 
 function textoCambio(h) {
-  if (h.campo === 'creacion') return 'Proyecto creado';
-  if (h.campo === 'estado') return `Estado: ${ETIQUETAS[h.valorAnterior] || h.valorAnterior} → ${ETIQUETAS[h.valorNuevo] || h.valorNuevo}`;
-  if (h.campo === 'archivado') return h.valorNuevo ? 'Proyecto archivado' : 'Proyecto desarchivado';
+  if (h.entidad === 'sprint') {
+    if (h.campo === 'creacion') return `Sprint definido: ${h.valorNuevo}`;
+    if (h.campo === 'edicion') return `Sprint modificado: ${h.idEntidad}`;
+    if (h.campo === 'estado' || h.campo === 'finalizacion' || h.campo === 'cancelacion') {
+      if (typeof h.valorNuevo === 'object' && h.valorNuevo !== null) {
+        if (h.valorNuevo.estado === 'Cancelado' || h.valorNuevo.razon) {
+          return `Estado del sprint: ${h.valorAnterior} → Cancelado. Razón: ${h.valorNuevo.razon}`;
+        }
+        const cantidad = h.valorNuevo.tareasCompletadas ?? 0;
+        return `Sprint finalizado: ${cantidad} tareas completadas`;
+      }
+      if (h.valorNuevo === 'Cancelado') {
+        return `Estado del sprint: ${h.valorAnterior} → Cancelado`;
+      }
+      const cantidad = typeof h.valorNuevo === 'number' ? h.valorNuevo : 0;
+      return `Sprint finalizado: ${cantidad} tareas completadas`;
+    }
+  }
   if (h.entidad === 'historia_usuario') {
     if (h.campo === 'creacion') return `Historia creada: ${h.valorNuevo}`;
     if (h.campo === 'edicion') return 'Historia editada';
@@ -242,10 +257,9 @@ function textoCambio(h) {
     if (h.campo === 'orden') return `Prioridad actualizada: ${h.valorAnterior} → ${h.valorNuevo}`;
     if (h.campo === 'comentario') return 'Comentario agregado a una historia';
   }
-  if (h.entidad === 'sprint') {
-    if (h.campo === 'creacion') return `Sprint definido: ${h.valorNuevo}`;
-    if (h.campo === 'edicion') return `Sprint modificado: ${h.idEntidad}`;
-  }
+  if (h.campo === 'creacion') return 'Proyecto creado';
+  if (h.campo === 'estado') return `Estado: ${ETIQUETAS[h.valorAnterior] || h.valorAnterior} → ${ETIQUETAS[h.valorNuevo] || h.valorNuevo}`;
+  if (h.campo === 'archivado') return h.valorNuevo ? 'Proyecto archivado' : 'Proyecto desarchivado';
   if (h.valorNuevo && typeof h.valorNuevo === 'object') return `Información editada (${Object.keys(h.valorNuevo).join(', ')})`;
   return 'Información editada';
 }
@@ -686,6 +700,116 @@ router.put('/:id/sprints/:idSprint', (req, res) => {
 
   writeDB(db);
   res.json({ mensaje: 'Sprint actualizado correctamente.', sprint });
+});
+
+// Finalizar sprint (Solo administrador y Product Owner)
+const ROLES_FINALIZAR_SPRINT = ['administrador', 'Product Owner'];
+
+router.put('/:id/sprints/:idSprint/finalizar', (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const db = ctx.db;
+  const miRol = rolEnProyecto(req.usuario, ctx.proyecto.id, db);
+  if (!miRol || !ROLES_FINALIZAR_SPRINT.includes(miRol)) {
+    return res.status(403).json({ mensaje: 'Solo el administrador y el Product Owner pueden finalizar un sprint.' });
+  }
+
+  const sprint = (db.sprints || []).find((s) => s.id === req.params.idSprint && s.idProyecto === ctx.proyecto.id);
+  if (!sprint) return res.status(404).json({ mensaje: 'No se encontró el sprint en este proyecto.' });
+
+  if (sprint.estado === 'Finalizado') {
+    return res.status(409).json({ mensaje: 'El sprint ya se encuentra finalizado.' });
+  }
+
+  // Contar tareas con valor "Completada" en las historias asignadas al sprint
+  const historiasDelSprint = (db.historiasUsuario || []).filter((h) =>
+    h.idProyecto === ctx.proyecto.id && (sprint.historiasAsignadas || []).includes(h.id)
+  );
+
+  let tareasCompletadas = 0;
+  historiasDelSprint.forEach((historia) => {
+    (historia.tareas || []).forEach((tarea) => {
+      if (tarea.estado === 'Completada') {
+        tareasCompletadas++;
+      }
+    });
+  });
+
+  const estadoAnterior = sprint.estado;
+  sprint.estado = 'Finalizado';
+
+  registrarHistorial(db, {
+    idUsuario: req.usuario.id,
+    entidad: 'sprint',
+    idEntidad: sprint.id,
+    campo: 'estado',
+    valorAnterior: estadoAnterior,
+    valorNuevo: {
+      estado: 'Finalizado',
+      tareasCompletadas
+    }
+  });
+
+  writeDB(db);
+  res.json({
+    mensaje: `Sprint finalizado correctamente con ${tareasCompletadas} tarea(s) completada(s).`,
+    sprint,
+    tareasCompletadas
+  });
+});
+
+// Cancelar sprint (Solo administrador y Product Owner)
+const ROLES_CANCELAR_SPRINT = ['administrador', 'Product Owner'];
+
+router.put('/:id/sprints/:idSprint/cancelar', (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const db = ctx.db;
+  const miRol = rolEnProyecto(req.usuario, ctx.proyecto.id, db);
+  if (!miRol || !ROLES_CANCELAR_SPRINT.includes(miRol)) {
+    return res.status(403).json({ mensaje: 'Solo el administrador y el Product Owner pueden cancelar un sprint.' });
+  }
+
+  const sprint = (db.sprints || []).find((s) => s.id === req.params.idSprint && s.idProyecto === ctx.proyecto.id);
+  if (!sprint) return res.status(404).json({ mensaje: 'No se encontró el sprint en este proyecto.' });
+
+  if (sprint.estado === 'Cancelado') {
+    return res.status(409).json({ mensaje: 'El sprint ya se encuentra cancelado.' });
+  }
+  if (sprint.estado === 'Finalizado') {
+    return res.status(409).json({ mensaje: 'No se puede cancelar un sprint que ya ha sido finalizado.' });
+  }
+
+  const razon = String(req.body?.razon || '').trim();
+  if (!razon) {
+    return res.status(400).json({ mensaje: 'Debes indicar una razón para cancelar el sprint.' });
+  }
+  if (razon.length > 1000) {
+    return res.status(400).json({ mensaje: 'La razón no puede superar los 1000 caracteres.' });
+  }
+
+  const estadoAnterior = sprint.estado;
+  sprint.estado = 'Cancelado';
+  sprint.razonCancelacion = razon;
+
+  registrarHistorial(db, {
+    idUsuario: req.usuario.id,
+    entidad: 'sprint',
+    idEntidad: sprint.id,
+    campo: 'estado',
+    valorAnterior: estadoAnterior,
+    valorNuevo: {
+      estado: 'Cancelado',
+      razon
+    }
+  });
+
+  writeDB(db);
+  res.json({
+    mensaje: 'Sprint cancelado correctamente.',
+    sprint,
+    razon
+  });
 });
 
 // ---------- HU-08 Crear proyecto ----------
