@@ -241,6 +241,55 @@
           </table>
         </div>
       </section>
+
+      <section class="tarjeta historias-proyecto" id="seccion-tablero-scrum">
+        <div class="tablero-encabezado">
+          <div class="tablero-encabezado__titulo">
+            <h2 class="tarjeta__titulo" style="margin-bottom: 4px;"><span class="icono-ficha" data-icon="panel"></span>Tablero Scrum</h2>
+            <p class="nota">Visualización del flujo de trabajo de las tareas según su estado.</p>
+          </div>
+          <div class="tablero-encabezado__controles">
+            <label for="filtro-sprint-tablero" class="solo-lectores">Filtrar por sprint</label>
+            <select class="control" id="filtro-sprint-tablero" aria-label="Filtrar tablero por sprint">
+              <option value="todos">Todas las historias del proyecto</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="tablero-scrum" id="tablero-scrum">
+          <div class="tablero-columna" data-columna="Por hacer">
+            <div class="tablero-columna__cabecera tablero-columna__cabecera--por-hacer">
+              <span class="tablero-columna__titulo">Por hacer</span>
+              <span class="tablero-columna__contador" id="contador-por-hacer">0</span>
+            </div>
+            <div class="tablero-columna__cuerpo" id="columna-por-hacer"></div>
+          </div>
+
+          <div class="tablero-columna" data-columna="En progreso">
+            <div class="tablero-columna__cabecera tablero-columna__cabecera--en-progreso">
+              <span class="tablero-columna__titulo">En progreso</span>
+              <span class="tablero-columna__contador" id="contador-en-progreso">0</span>
+            </div>
+            <div class="tablero-columna__cuerpo" id="columna-en-progreso"></div>
+          </div>
+
+          <div class="tablero-columna" data-columna="En revisión">
+            <div class="tablero-columna__cabecera tablero-columna__cabecera--en-revision">
+              <span class="tablero-columna__titulo">En revisión</span>
+              <span class="tablero-columna__contador" id="contador-en-revision">0</span>
+            </div>
+            <div class="tablero-columna__cuerpo" id="columna-en-revision"></div>
+          </div>
+
+          <div class="tablero-columna" data-columna="Terminado">
+            <div class="tablero-columna__cabecera tablero-columna__cabecera--terminado">
+              <span class="tablero-columna__titulo">Terminado</span>
+              <span class="tablero-columna__contador" id="contador-terminado">0</span>
+            </div>
+            <div class="tablero-columna__cuerpo" id="columna-terminado"></div>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 

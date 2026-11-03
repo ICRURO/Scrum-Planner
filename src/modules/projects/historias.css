@@ -49,3 +49,26 @@
 .sprint-historia-opcion--activa { border-color: var(--c-hoja); background: var(--t-hoja); }
 .sprint-historia-opcion__titulo { flex: 1; font-weight: 500; overflow-wrap: anywhere; }
 .sprint-historia-tareas { margin: 4px 0 6px; padding-left: 18px; color: var(--c-piedra); font-size: 0.9rem; list-style: disc; }
+
+/* Tablero Scrum */
+.tablero-encabezado { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding-bottom: 6px; }
+.tablero-encabezado__controles { min-width: 250px; }
+.tablero-scrum { display: grid; grid-template-columns: repeat(4, minmax(230px, 1fr)); gap: 16px; overflow-x: auto; padding-bottom: 12px; }
+.tablero-columna { display: flex; flex-direction: column; background: var(--c-papel); border: 1px solid var(--c-linea); border-radius: var(--radio-m); min-height: 380px; }
+.tablero-columna__cabecera { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; font-weight: 700; border-bottom: 3px solid var(--c-linea); border-top-left-radius: var(--radio-m); border-top-right-radius: var(--radio-m); background: #fff; }
+.tablero-columna__cabecera--por-hacer { border-bottom-color: var(--c-miel); }
+.tablero-columna__cabecera--en-progreso { border-bottom-color: #1976D2; }
+.tablero-columna__cabecera--en-revision { border-bottom-color: #8E24AA; }
+.tablero-columna__cabecera--terminado { border-bottom-color: var(--c-hoja); }
+.tablero-columna__contador { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 999px; background: var(--c-papel); color: var(--c-piedra); font-size: 0.8rem; font-weight: 700; }
+.tablero-columna__cuerpo { display: flex; flex-direction: column; gap: 12px; padding: 12px; flex: 1; }
+.tablero-tarjeta { display: flex; flex-direction: column; gap: 8px; padding: 14px; background: #fff; border: 1px solid var(--c-linea); border-radius: var(--radio-s); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); transition: border-color .15s, box-shadow .15s; }
+.tablero-tarjeta:hover { border-color: var(--c-hoja); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
+.tablero-tarjeta__meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.8rem; }
+.tablero-tarjeta__historia { color: var(--c-piedra); font-size: 0.78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tablero-tarjeta__titulo { font-weight: 600; font-size: 0.95rem; color: var(--c-tinta); line-height: 1.35; }
+.tablero-tarjeta__descripcion { font-size: 0.85rem; color: var(--c-piedra); white-space: pre-wrap; overflow-wrap: anywhere; }
+.tablero-vacio { margin: auto 0; text-align: center; color: var(--c-piedra); font-size: 0.85rem; padding: 24px 8px; }
+
+.control--chico { min-height: 32px; padding: 4px 8px; font-size: 0.82rem; border-radius: var(--radio-s); }
+.tablero-tarjeta__estado { margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--c-linea); }

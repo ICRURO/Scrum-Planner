@@ -74,7 +74,7 @@
 
   function agregarTarea(tarea = {}) {
     const numero = tareasFormulario.children.length + 1;
-    const estadoActual = tarea.estado || 'Pendiente';
+    const estadoActual = tarea.estado || 'Por hacer';
     const fila = document.createElement('div');
     fila.className = 'historia-criterio historia-tarea';
     fila.dataset.id = tarea.id || '';
@@ -95,9 +95,10 @@
         <div class="campo">
           <label for="tarea-${numero}-estado">Estado</label>
           <select class="control" id="tarea-${numero}-estado" data-campo-tarea="estado">
-            <option value="Pendiente" ${estadoActual === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+            <option value="Por hacer" ${estadoActual === 'Por hacer' ? 'selected' : ''}>Por hacer</option>
             <option value="En progreso" ${estadoActual === 'En progreso' ? 'selected' : ''}>En progreso</option>
-            <option value="Completada" ${estadoActual === 'Completada' ? 'selected' : ''}>Completada</option>
+            <option value="En revisión" ${estadoActual === 'En revisión' ? 'selected' : ''}>En revisión</option>
+            <option value="Terminado" ${estadoActual === 'Terminado' ? 'selected' : ''}>Terminado</option>
           </select>
         </div>
       </div>`;
@@ -177,7 +178,7 @@
               ? `<details class="historia-tabla__criterios">
                   <summary>Ver ${tareas.length} ${tareas.length === 1 ? 'tarea' : 'tareas'}</summary>
                   <ol class="historia-criterios-lista">${tareas.map((tarea) => `
-                  <li><strong>${UI.escapar(tarea.id ? `${tarea.id} · ` : '')}${UI.escapar(tarea.titulo)}</strong> (${UI.escapar(tarea.estado || 'Pendiente')}): ${UI.escapar(tarea.descripcion)}</li>
+                  <li><strong>${UI.escapar(tarea.id ? `${tarea.id} · ` : '')}${UI.escapar(tarea.titulo)}</strong> (${UI.escapar(tarea.estado || 'Por hacer')}): ${UI.escapar(tarea.descripcion)}</li>
                   `).join('')}</ol>
                 </details>`
               : '<span class="historia-vacio">Sin tareas</span>'}</td>
@@ -752,6 +753,155 @@
     UI.toast(r.datos.mensaje, 'exito');
   });
 
+  // ---------- Tablero Scrum ----------
+  const filtroSprintTablero = document.getElementById('filtro-sprint-tablero');
+  const columnasTablero = {
+    'Por hacer': document.getElementById('columna-por-hacer'),
+    'En progreso': document.getElementById('columna-en-progreso'),
+    'En revisión': document.getElementById('columna-en-revision'),
+    'Terminado': document.getElementById('columna-terminado')
+  };
+  const contadoresTablero = {
+    'Por hacer': document.getElementById('contador-por-hacer'),
+    'En progreso': document.getElementById('contador-en-progreso'),
+    'En revisión': document.getElementById('contador-en-revision'),
+    'Terminado': document.getElementById('contador-terminado')
+  };
+  const ROLES_MODIFICAR_TAREA = ['administrador', 'Developer'];
+  let filtroSprintSeleccionado = 'todos';
+  let miRolActual = null;
+  let proyectoArchivadoActual = false;
+
+  function renderizarTareasTablero() {
+    const puedeModificarTarea = ROLES_MODIFICAR_TAREA.includes(miRolActual) && !proyectoArchivadoActual;
+    if (!columnasTablero['Por hacer']) return;
+
+    let historiasFiltradas = historiasActuales;
+    if (filtroSprintSeleccionado !== 'todos') {
+      const sprintActual = sprintsActuales.find((s) => s.id === filtroSprintSeleccionado);
+      const idsAsignadas = new Set(sprintActual ? (sprintActual.historiasAsignadas || []) : []);
+      historiasFiltradas = historiasActuales.filter((h) => idsAsignadas.has(h.id));
+    }
+
+    const tareasPorEstado = {
+      'Por hacer': [],
+      'En progreso': [],
+      'En revisión': [],
+      'Terminado': []
+    };
+
+    historiasFiltradas.forEach((historia) => {
+      (historia.tareas || []).forEach((tarea) => {
+        let estadoNormalizado = tarea.estado || 'Por hacer';
+        if (estadoNormalizado === 'Pendiente') estadoNormalizado = 'Por hacer';
+        if (estadoNormalizado === 'Completada') estadoNormalizado = 'Terminado';
+        if (!tareasPorEstado[estadoNormalizado]) estadoNormalizado = 'Por hacer';
+        tareasPorEstado[estadoNormalizado].push({
+          ...tarea,
+          idHistoria: historia.id,
+          tituloHistoria: historia.titulo
+        });
+      });
+    });
+
+    Object.keys(tareasPorEstado).forEach((estado) => {
+      const contenedor = columnasTablero[estado];
+      const contador = contadoresTablero[estado];
+      const tareas = tareasPorEstado[estado];
+
+      if (contador) contador.textContent = String(tareas.length);
+      if (contenedor) {
+        if (!tareas.length) {
+          contenedor.innerHTML = '<div class="tablero-vacio">Sin tareas</div>';
+        } else {
+          contenedor.innerHTML = tareas.map((t) => {
+            const selectorEstado = puedeModificarTarea ? `
+              <div class="tablero-tarjeta__estado">
+                <select class="control control--chico selector-estado-tarea" data-id-historia="${UI.escapar(t.idHistoria)}" data-id-tarea="${UI.escapar(t.id)}" aria-label="Cambiar estado de ${UI.escapar(t.id || t.titulo)}">
+                  <option value="Por hacer" ${t.estado === 'Por hacer' ? 'selected' : ''}>Mover a: Por hacer</option>
+                  <option value="En progreso" ${t.estado === 'En progreso' ? 'selected' : ''}>Mover a: En progreso</option>
+                  <option value="En revisión" ${t.estado === 'En revisión' ? 'selected' : ''}>Mover a: En revisión</option>
+                  <option value="Terminado" ${t.estado === 'Terminado' ? 'selected' : ''}>Mover a: Terminado</option>
+                </select>
+              </div>` : '';
+            return `
+            <article class="tablero-tarjeta" data-tarea-id="${UI.escapar(t.id || '')}">
+              <div class="tablero-tarjeta__meta">
+                <span class="insignia">${UI.escapar(t.id || 'Tarea')}</span>
+                <span class="tablero-tarjeta__historia" title="${UI.escapar(t.idHistoria)} · ${UI.escapar(t.tituloHistoria)}">${UI.escapar(t.idHistoria)}</span>
+              </div>
+              <div class="tablero-tarjeta__titulo">${UI.escapar(t.titulo)}</div>
+              ${t.descripcion ? `<div class="tablero-tarjeta__descripcion">${UI.escapar(t.descripcion)}</div>` : ''}
+              ${selectorEstado}
+            </article>`;
+          }).join('');
+        }
+      }
+    });
+  }
+
+  function dibujarTableroScrum(sprints = [], miRol = null, archivado = false) {
+    miRolActual = miRol;
+    proyectoArchivadoActual = archivado;
+    if (!filtroSprintTablero) return;
+
+    const valorPrevio = filtroSprintSeleccionado;
+    const sprintEnCurso = sprints.find((s) => s.estado === 'En curso');
+
+    filtroSprintTablero.innerHTML = `
+      <option value="todos">Todas las historias del proyecto</option>
+      ${sprints.map((s) => `
+        <option value="${UI.escapar(s.id)}">${UI.escapar(s.id)} · ${UI.escapar(s.nombre)} (${UI.escapar(s.estado)})</option>
+      `).join('')}
+    `;
+
+    if (valorPrevio && (valorPrevio === 'todos' || sprints.some((s) => s.id === valorPrevio))) {
+      filtroSprintSeleccionado = valorPrevio;
+    } else if (sprintEnCurso) {
+      filtroSprintSeleccionado = sprintEnCurso.id;
+    } else {
+      filtroSprintSeleccionado = 'todos';
+    }
+    filtroSprintTablero.value = filtroSprintSeleccionado;
+
+    renderizarTareasTablero();
+  }
+
+  if (filtroSprintTablero) {
+    filtroSprintTablero.addEventListener('change', () => {
+      filtroSprintSeleccionado = filtroSprintTablero.value;
+      renderizarTareasTablero();
+    });
+  }
+
+  const contenedorTablero = document.getElementById('tablero-scrum');
+  if (contenedorTablero) {
+    contenedorTablero.addEventListener('change', async (e) => {
+      const selector = e.target.closest('.selector-estado-tarea');
+      if (!selector || !actual) return;
+
+      const idHistoria = selector.dataset.idHistoria;
+      const idTarea = selector.dataset.idTarea;
+      const nuevoEstado = selector.value;
+
+      selector.disabled = true;
+      const r = await Api.put(
+        `/api/projects/${encodeURIComponent(actual.id)}/historias/${encodeURIComponent(idHistoria)}/tareas/${encodeURIComponent(idTarea)}/estado`,
+        { estado: nuevoEstado }
+      );
+      selector.disabled = false;
+
+      if (!r.ok) {
+        UI.toast(r.datos?.mensaje || 'No se pudo actualizar el estado de la tarea.', 'error');
+        await pintar();
+        return;
+      }
+
+      await pintar();
+      UI.toast(r.datos.mensaje, 'exito');
+    });
+  }
+
   // Carga el proyecto y dibuja la pantalla. Se vuelve a llamar después de cada acción.
   async function pintar() {
     const r = id ? await Api.get(`/api/projects/${encodeURIComponent(id)}`) : { ok: false, status: 404, datos: { mensaje: 'Falta indicar el proyecto.' } };
@@ -812,6 +962,7 @@
 
     dibujarHistorias(historiasUsuario, permisos, p.archivado);
     dibujarSprints(r.datos.sprints || [], miRol, permisos, p.archivado);
+    dibujarTableroScrum(r.datos.sprints || [], miRol, p.archivado);
 
     // Historial
     document.getElementById('historial').innerHTML = historial.length

@@ -42,7 +42,7 @@ function siguienteIdCriterio(historias) {
   return `CA-${String(max + 1).padStart(3, '0')}`;
 }
 
-const ESTADOS_TAREA = ['Pendiente', 'En progreso', 'Completada'];
+const ESTADOS_TAREA = ['Por hacer', 'En progreso', 'En revisión', 'Terminado'];
 const ESTADOS_SPRINT = ['Planificado', 'En curso', 'Finalizado', 'Cancelado'];
 
 function siguienteIdTarea(historias) {
@@ -132,7 +132,7 @@ function validarHistoria(datos) {
     if (typeof tarea.titulo !== 'string' || !tarea.titulo.trim()) return 'Cada tarea debe incluir un título.';
     if (typeof tarea.descripcion !== 'string' || !tarea.descripcion.trim()) return 'Cada tarea debe incluir una descripción.';
     if (tarea.estado !== undefined && !ESTADOS_TAREA.includes(tarea.estado)) {
-      return 'El estado de cada tarea debe ser Pendiente, En progreso o Completada.';
+      return 'El estado de cada tarea debe ser Por hacer, En progreso, En revisión o Terminado.';
     }
   }
   return null;
@@ -220,7 +220,7 @@ function normalizarTareas(db, historia, tareas) {
       id,
       titulo: String(tarea.titulo).trim(),
       descripcion: String(tarea.descripcion).trim(),
-      estado: tarea.estado || 'Pendiente'
+      estado: tarea.estado || 'Por hacer'
     });
   }
 
@@ -231,6 +231,13 @@ function normalizarTareas(db, historia, tareas) {
 }
 
 function textoCambio(h) {
+  if (h.entidad === 'tarea') {
+    if (h.campo === 'estado') {
+      const nuevo = typeof h.valorNuevo === 'object' && h.valorNuevo !== null ? h.valorNuevo.estado : h.valorNuevo;
+      const titulo = typeof h.valorNuevo === 'object' && h.valorNuevo?.titulo ? ` (${h.valorNuevo.titulo})` : '';
+      return `Estado de tarea ${h.idEntidad}${titulo}: ${h.valorAnterior} → ${nuevo}`;
+    }
+  }
   if (h.entidad === 'sprint') {
     if (h.campo === 'creacion') return `Sprint definido: ${h.valorNuevo}`;
     if (h.campo === 'edicion') return `Sprint modificado: ${h.idEntidad}`;
@@ -330,7 +337,8 @@ router.get('/:id', (req, res) => {
   const historial = (db.historial || [])
     .filter((h) => (h.entidad === 'proyecto' && h.idEntidad === proyecto.id)
       || (h.entidad === 'historia_usuario' && idsHistorias.has(h.idEntidad))
-      || (h.entidad === 'sprint' && idsSprints.has(h.idEntidad)))
+      || (h.entidad === 'sprint' && idsSprints.has(h.idEntidad))
+      || (h.entidad === 'tarea'))
     .sort((a, b) => b.fecha.localeCompare(a.fecha))
     .map((h) => {
       const autor = db.usuarios.find((x) => x.id === h.idUsuario);
@@ -729,7 +737,7 @@ router.put('/:id/sprints/:idSprint/finalizar', (req, res) => {
   let tareasCompletadas = 0;
   historiasDelSprint.forEach((historia) => {
     (historia.tareas || []).forEach((tarea) => {
-      if (tarea.estado === 'Completada') {
+      if (tarea.estado === 'Terminado' || tarea.estado === 'Completada') {
         tareasCompletadas++;
       }
     });
@@ -755,6 +763,56 @@ router.put('/:id/sprints/:idSprint/finalizar', (req, res) => {
     mensaje: `Sprint finalizado correctamente con ${tareasCompletadas} tarea(s) completada(s).`,
     sprint,
     tareasCompletadas
+  });
+});
+
+// Cambiar estado de una tarea (Solo administrador y Developer)
+const ROLES_MODIFICAR_TAREA = ['administrador', 'Developer'];
+
+router.put('/:id/historias/:idHistoria/tareas/:idTarea/estado', (req, res) => {
+  const ctx = cargar(req, res);
+  if (!ctx) return;
+  const db = ctx.db;
+  const miRol = rolEnProyecto(req.usuario, ctx.proyecto.id, db);
+  if (!miRol || !ROLES_MODIFICAR_TAREA.includes(miRol)) {
+    return res.status(403).json({ mensaje: 'Solo el administrador y los developers pueden modificar el estado de una tarea.' });
+  }
+
+  const historia = (db.historiasUsuario || []).find((h) => h.id === req.params.idHistoria && h.idProyecto === ctx.proyecto.id);
+  if (!historia) return res.status(404).json({ mensaje: 'No se encontró la historia de usuario en este proyecto.' });
+
+  const tarea = (historia.tareas || []).find((t) => t.id === req.params.idTarea);
+  if (!tarea) return res.status(404).json({ mensaje: 'No se encontró la tarea en esta historia de usuario.' });
+
+  const nuevoEstado = String(req.body?.estado || '').trim();
+  if (!ESTADOS_TAREA.includes(nuevoEstado)) {
+    return res.status(400).json({ mensaje: 'Estado de tarea no válido.' });
+  }
+
+  const estadoAnterior = tarea.estado || 'Por hacer';
+  if (estadoAnterior === nuevoEstado) {
+    return res.status(400).json({ mensaje: 'La tarea ya se encuentra en ese estado.' });
+  }
+
+  tarea.estado = nuevoEstado;
+
+  registrarHistorial(db, {
+    idUsuario: req.usuario.id,
+    entidad: 'tarea',
+    idEntidad: tarea.id,
+    campo: 'estado',
+    valorAnterior: estadoAnterior,
+    valorNuevo: {
+      estado: nuevoEstado,
+      titulo: tarea.titulo,
+      idHistoria: historia.id
+    }
+  });
+
+  writeDB(db);
+  res.json({
+    mensaje: `Estado de la tarea actualizado a "${nuevoEstado}".`,
+    tarea
   });
 });
 
