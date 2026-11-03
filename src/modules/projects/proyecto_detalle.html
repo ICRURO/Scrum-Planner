@@ -251,7 +251,26 @@
           <div class="tablero-encabezado__controles">
             <label for="filtro-sprint-tablero" class="solo-lectores">Filtrar por sprint</label>
             <select class="control" id="filtro-sprint-tablero" aria-label="Filtrar tablero por sprint">
-              <option value="todos">Todas las historias del proyecto</option>
+              <option value="todos">Todos los sprints del proyecto</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="tablero-filtros barra">
+          <div class="barra__buscar entrada entrada--icono">
+            <span class="entrada__icono" data-icon="buscar"></span>
+            <input class="control" id="filtro-tablero-titulo" type="search" placeholder="Filtrar tareas por título..." aria-label="Filtrar tareas por título">
+          </div>
+          <div class="barra__filtro">
+            <label for="filtro-tablero-responsable" class="solo-lectores">Filtrar por responsable</label>
+            <select class="control" id="filtro-tablero-responsable" aria-label="Filtrar por responsable">
+              <option value="todos">Todos los responsables</option>
+            </select>
+          </div>
+          <div class="barra__filtro">
+            <label for="filtro-tablero-historia" class="solo-lectores">Filtrar por historia</label>
+            <select class="control" id="filtro-tablero-historia" aria-label="Filtrar por historia de usuario">
+              <option value="todas">Todas las historias</option>
             </select>
           </div>
         </div>

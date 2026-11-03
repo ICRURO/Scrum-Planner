@@ -45,10 +45,17 @@ function siguienteIdCriterio(historias) {
 const ESTADOS_TAREA = ['Por hacer', 'En progreso', 'En revisión', 'Terminado'];
 const ESTADOS_SPRINT = ['Planificado', 'En curso', 'Finalizado', 'Cancelado'];
 
-function siguienteIdTarea(historias) {
-  const max = (historias || []).reduce((m, h) =>
-    (h.tareas || []).reduce((n, t) => Math.max(n, parseInt(String(t.id).replace(/^TAR-/, ''), 10) || 0), m), 0);
-  return `TAR-${String(max + 1).padStart(3, '0')}`;
+function siguienteIdTarea(db) {
+  const todasTareas = [
+    ...(db.tareas || []),
+    ...((db.historiasUsuario || []).flatMap((h) => h.tareas || []))
+  ];
+  const max = todasTareas.reduce((m, t) => {
+    const rawNum = String(t.id || '').replace(/^TK-/, '').replace(/^TAR-/, '');
+    const num = parseInt(rawNum, 10);
+    return Math.max(m, isNaN(num) ? 0 : num);
+  }, 0);
+  return `TK-${String(max + 1).padStart(3, '0')}`;
 }
 
 function siguienteIdSprint(sprints = []) {
@@ -128,9 +135,15 @@ function validarHistoria(datos) {
   }
   if (datos.tareas !== undefined && !Array.isArray(datos.tareas)) return 'Las tareas deben enviarse como una lista.';
   for (const tarea of datos.tareas || []) {
-    if (!tarea || typeof tarea !== 'object' || Array.isArray(tarea)) return 'Cada tarea debe incluir título y descripción.';
+    if (!tarea || typeof tarea !== 'object' || Array.isArray(tarea)) return 'Cada tarea debe incluir título, descripción y responsable.';
     if (typeof tarea.titulo !== 'string' || !tarea.titulo.trim()) return 'Cada tarea debe incluir un título.';
     if (typeof tarea.descripcion !== 'string' || !tarea.descripcion.trim()) return 'Cada tarea debe incluir una descripción.';
+    const idResp = tarea.idResponsable || tarea.idUsuarioResponsable;
+    if (typeof idResp !== 'string' || !idResp.trim()) return 'Cada tarea debe tener asignado el ID de un developer responsable.';
+    const horas = Number(tarea.horasEstimadas);
+    if (tarea.horasEstimadas === undefined || isNaN(horas) || horas <= 0) {
+      return 'Las horas estimadas de cada tarea deben ser un número mayor a 0.';
+    }
     if (tarea.estado !== undefined && !ESTADOS_TAREA.includes(tarea.estado)) {
       return 'El estado de cada tarea debe ser Por hacer, En progreso, En revisión o Terminado.';
     }
@@ -203,31 +216,77 @@ function normalizarCriterios(db, historia, criterios) {
   return { lista };
 }
 
-function normalizarTareas(db, historia, tareas) {
-  const actuales = historia ? historia.tareas || [] : [];
-  const idsActuales = new Set(actuales.map((t) => t.id));
+function normalizarTareas(db, idProyecto, historia, tareas, idSprintHistoria = null) {
+  if (!db.tareas) db.tareas = [];
+  const idHistoria = historia ? historia.id : null;
+  const actualesHistoria = historia ? (historia.tareas || []) : [];
+  const actualesRaiz = idHistoria ? (db.tareas || []).filter((t) => t.idHistoria === idHistoria) : [];
+  const idsActuales = new Set([...actualesHistoria.map((t) => t.id), ...actualesRaiz.map((t) => t.id)]);
   const idsRecibidos = new Set();
   const lista = [];
-  let siguienteNumero = parseInt(siguienteIdTarea(db.historiasUsuario).slice(4), 10);
+
+  const developersValidos = new Set(
+    (db.participantes || [])
+      .filter((p) => p.idProyecto === idProyecto && p.rol === 'Developer')
+      .map((p) => p.idUsuario)
+  );
 
   for (const tarea of tareas || []) {
     if (tarea.id && (!idsActuales.has(tarea.id) || idsRecibidos.has(tarea.id))) {
       return { error: 'Una de las tareas no pertenece a esta historia o está duplicada.' };
     }
-    const id = tarea.id || `TAR-${String(siguienteNumero++).padStart(3, '0')}`;
+    const idResponsable = String(tarea.idResponsable || tarea.idUsuarioResponsable || '').trim();
+    if (!idResponsable) {
+      return { error: 'Cada tarea debe tener asignado un responsable.' };
+    }
+    if (!developersValidos.has(idResponsable)) {
+      return { error: 'El responsable asignado a la tarea debe tener el rol de Developer en este proyecto.' };
+    }
+    const horasEstimadas = Math.max(1, Math.round(Number(tarea.horasEstimadas) || 1));
+    const estado = tarea.estado || 'Por hacer';
+    const esTerminado = estado === 'Terminado' || estado === 'terminado';
+    const fechaTerminado = esTerminado ? (tarea.fechaTerminado || fechaActualLocal()) : null;
+
+    let id = tarea.id;
+    if (!id) {
+      id = siguienteIdTarea(db);
+    }
     idsRecibidos.add(id);
-    lista.push({
+
+    const objetoTarea = {
       id,
+      idSprint: idSprintHistoria || tarea.idSprint || (historia ? historia.idSprint : null) || null,
+      idHistoria: idHistoria || null,
       titulo: String(tarea.titulo).trim(),
       descripcion: String(tarea.descripcion).trim(),
-      estado: tarea.estado || 'Por hacer'
-    });
+      horasEstimadas,
+      estado,
+      fechaTerminado,
+      idResponsable,
+      idUsuarioResponsable: idResponsable
+    };
+    lista.push(objetoTarea);
   }
 
-  if (historia && actuales.some((tarea) => !idsRecibidos.has(tarea.id))) {
+  if (historia && [...idsActuales].some((idExistente) => !idsRecibidos.has(idExistente))) {
     return { error: 'No se pueden quitar tareas existentes; modifica su contenido o agrega otra.' };
   }
   return { lista };
+}
+
+function sincronizarTareasRaiz(db, idHistoria, tareasNormalizadas, idSprintHistoria = null) {
+  if (!db.tareas) db.tareas = [];
+  // Actualizar o agregar tareas en db.tareas
+  tareasNormalizadas.forEach((tn) => {
+    tn.idHistoria = idHistoria;
+    if (idSprintHistoria && !tn.idSprint) tn.idSprint = idSprintHistoria;
+    const indice = db.tareas.findIndex((t) => t.id === tn.id);
+    if (indice >= 0) {
+      db.tareas[indice] = { ...db.tareas[indice], ...tn };
+    } else {
+      db.tareas.push(tn);
+    }
+  });
 }
 
 function textoCambio(h) {
@@ -312,6 +371,16 @@ router.get('/:id', (req, res) => {
   if (!puede(u, 'consultar_proyecto', proyecto.id, db)) {
     return res.status(403).json({ mensaje: 'No tienes permisos para realizar esta acción.' });
   }
+  const developers = (db.participantes || [])
+    .filter((p) => p.idProyecto === proyecto.id && p.rol === 'Developer')
+    .map((p) => {
+      const u = (db.usuarios || []).find((x) => x.id === p.idUsuario);
+      return {
+        id: p.idUsuario,
+        nombre: u ? `${u.nombre} ${u.apellidos}` : p.idUsuario
+      };
+    });
+
   const historiasUsuario = (db.historiasUsuario || [])
     .filter((h) => h.idProyecto === proyecto.id)
     .map((h, indice) => ({
@@ -328,7 +397,29 @@ router.get('/:id', (req, res) => {
       aclaraciones: (h.aclaraciones || []).map((aclaracion) => {
         const autor = db.usuarios.find((x) => x.id === aclaracion.idUsuario);
         return { ...aclaracion, usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido' };
-      })
+      }),
+      tareas: (() => {
+        const tareasRaiz = (db.tareas || []).filter((t) => t.idHistoria === h.id);
+        const combinadas = tareasRaiz.length > 0 ? tareasRaiz : (h.tareas || []);
+        return combinadas.map((tarea) => {
+          const idResp = tarea.idResponsable || tarea.idUsuarioResponsable;
+          const resp = db.usuarios.find((x) => x.id === idResp);
+          let estadoLegible = tarea.estado || 'Por hacer';
+          if (estadoLegible === 'por_hacer') estadoLegible = 'Por hacer';
+          if (estadoLegible === 'en_progreso') estadoLegible = 'En progreso';
+          if (estadoLegible === 'en_revision') estadoLegible = 'En revisión';
+          if (estadoLegible === 'terminado') estadoLegible = 'Terminado';
+          return {
+            ...tarea,
+            idSprint: tarea.idSprint || h.idSprint || null,
+            horasEstimadas: Number(tarea.horasEstimadas) || 1,
+            estado: estadoLegible,
+            idResponsable: idResp || null,
+            idUsuarioResponsable: idResp || null,
+            nombreResponsable: resp ? `${resp.nombre} ${resp.apellidos}` : (idResp || 'Sin asignar')
+          };
+        });
+      })()
     }))
     .sort((a, b) => a.orden - b.orden);
   const sprints = (db.sprints || []).filter((s) => s.idProyecto === proyecto.id);
@@ -344,7 +435,7 @@ router.get('/:id', (req, res) => {
       const autor = db.usuarios.find((x) => x.id === h.idUsuario);
       return { fecha: h.fecha, usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido', cambio: textoCambio(h) };
     });
-  res.json({ proyecto, miRol: rolEnProyecto(u, proyecto.id, db), permisos: permisosProyecto(u, proyecto, db), historial, historiasUsuario, sprints, siguienteId: siguienteId(db) });
+  res.json({ proyecto, miRol: rolEnProyecto(u, proyecto.id, db), permisos: permisosProyecto(u, proyecto, db), historial, historiasUsuario, sprints, developers, siguienteId: siguienteId(db) });
 });
 
 // ---------- HU-18, HU-19, HU-20 y HU-21 Historias, prioridad y comentarios ----------
@@ -361,12 +452,14 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
   if (!db.historiasUsuario) db.historiasUsuario = [];
   const criterios = normalizarCriterios(db, null, datos.criterios);
   if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
-  const tareas = normalizarTareas(db, null, datos.tareas);
+  const idHistoriaNueva = siguienteIdHistoria(db.historiasUsuario);
+  const tareas = normalizarTareas(db, ctx.proyecto.id, null, datos.tareas);
   if (tareas.error) return res.status(400).json({ mensaje: tareas.error });
 
   const historia = {
-    id: siguienteIdHistoria(db.historiasUsuario),
+    id: idHistoriaNueva,
     idProyecto: ctx.proyecto.id,
+    idSprint: null,
     titulo: String(datos.titulo).trim(),
     descripcion: String(datos.descripcion).trim(),
     criterios: criterios.lista,
@@ -377,6 +470,7 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
     orden: db.historiasUsuario.filter((h) => h.idProyecto === ctx.proyecto.id).length + 1,
     comentarios: []
   };
+  sincronizarTareasRaiz(db, historia.id, tareas.lista, null);
   db.historiasUsuario.push(historia);
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'historia_usuario', idEntidad: historia.id, campo: 'creacion', valorNuevo: historia.titulo });
   writeDB(db);
@@ -404,7 +498,7 @@ router.post('/:id/historias/:idHistoria/divisiones', apiConPermiso('gestionar_hi
   const creadas = historias.map((datos) => {
     const criterios = normalizarCriterios(db, null, datos.criterios);
     if (criterios.error) return { error: criterios.error };
-    const tareas = normalizarTareas(db, null, datos.tareas);
+    const tareas = normalizarTareas(db, ctx.proyecto.id, null, datos.tareas);
     if (tareas.error) return { error: tareas.error };
     const historia = {
       id: siguienteIdHistoria(db.historiasUsuario),
@@ -535,8 +629,9 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   if (errorPlanificacion) return res.status(400).json({ mensaje: errorPlanificacion });
   const criterios = normalizarCriterios(db, historia, datos.criterios === undefined ? historia.criterios : datos.criterios);
   if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
-  const tareas = normalizarTareas(db, historia, datos.tareas === undefined ? historia.tareas : datos.tareas);
+  const tareas = normalizarTareas(db, ctx.proyecto.id, historia, datos.tareas === undefined ? historia.tareas : datos.tareas, historia.idSprint);
   if (tareas.error) return res.status(400).json({ mensaje: tareas.error });
+  sincronizarTareasRaiz(db, historia.id, tareas.lista, historia.idSprint);
 
   const titulo = String(datos.titulo).trim();
   const descripcion = String(datos.descripcion).trim();
@@ -729,19 +824,31 @@ router.put('/:id/sprints/:idSprint/finalizar', (req, res) => {
     return res.status(409).json({ mensaje: 'El sprint ya se encuentra finalizado.' });
   }
 
-  // Contar tareas con valor "Completada" en las historias asignadas al sprint
-  const historiasDelSprint = (db.historiasUsuario || []).filter((h) =>
-    h.idProyecto === ctx.proyecto.id && (sprint.historiasAsignadas || []).includes(h.id)
+  // Contar tareas terminadas pertenecientes a este sprint (en db.tareas y en historias)
+  const idsHistoriasSprint = new Set(sprint.historiasAsignadas || []);
+  const tareasDelSprint = (db.tareas || []).filter((t) =>
+    t.idSprint === sprint.id || idsHistoriasSprint.has(t.idHistoria)
   );
 
-  let tareasCompletadas = 0;
-  historiasDelSprint.forEach((historia) => {
-    (historia.tareas || []).forEach((tarea) => {
-      if (tarea.estado === 'Terminado' || tarea.estado === 'Completada') {
-        tareasCompletadas++;
-      }
+  let tareasCompletadas = tareasDelSprint.filter((t) => {
+    const est = String(t.estado || '').toLowerCase();
+    return est === 'terminado' || est === 'completada' || t.estado === 'Terminado';
+  }).length;
+
+  // Respaldo en historiasUsuario si aún no estaban en db.tareas
+  if (tareasDelSprint.length === 0) {
+    const historiasDelSprint = (db.historiasUsuario || []).filter((h) =>
+      h.idProyecto === ctx.proyecto.id && idsHistoriasSprint.has(h.id)
+    );
+    historiasDelSprint.forEach((historia) => {
+      (historia.tareas || []).forEach((tarea) => {
+        const est = String(tarea.estado || '').toLowerCase();
+        if (est === 'terminado' || est === 'completada' || tarea.estado === 'Terminado') {
+          tareasCompletadas++;
+        }
+      });
     });
-  });
+  }
 
   const estadoAnterior = sprint.estado;
   sprint.estado = 'Finalizado';
@@ -785,16 +892,44 @@ router.put('/:id/historias/:idHistoria/tareas/:idTarea/estado', (req, res) => {
   if (!tarea) return res.status(404).json({ mensaje: 'No se encontró la tarea en esta historia de usuario.' });
 
   const nuevoEstado = String(req.body?.estado || '').trim();
-  if (!ESTADOS_TAREA.includes(nuevoEstado)) {
+  if (!ESTADOS_TAREA.includes(nuevoEstado) && !['por_hacer', 'en_progreso', 'en_revision', 'terminado'].includes(nuevoEstado)) {
     return res.status(400).json({ mensaje: 'Estado de tarea no válido.' });
   }
 
+  let estadoNormalizado = nuevoEstado;
+  if (estadoNormalizado === 'por_hacer') estadoNormalizado = 'Por hacer';
+  if (estadoNormalizado === 'en_progreso') estadoNormalizado = 'En progreso';
+  if (estadoNormalizado === 'en_revision') estadoNormalizado = 'En revisión';
+  if (estadoNormalizado === 'terminado') estadoNormalizado = 'Terminado';
+
   const estadoAnterior = tarea.estado || 'Por hacer';
-  if (estadoAnterior === nuevoEstado) {
+  if (estadoAnterior === estadoNormalizado) {
     return res.status(400).json({ mensaje: 'La tarea ya se encuentra en ese estado.' });
   }
 
-  tarea.estado = nuevoEstado;
+  tarea.estado = estadoNormalizado;
+
+  // Si se modifica el estado a "Terminado", se establece la fecha en la que se terminó
+  const esTerminado = estadoNormalizado === 'Terminado';
+  if (esTerminado) {
+    tarea.fechaTerminado = fechaActualLocal();
+  } else {
+    tarea.fechaTerminado = null;
+  }
+
+  // Sincronizar en db.tareas
+  if (!db.tareas) db.tareas = [];
+  const idxRaiz = db.tareas.findIndex((t) => t.id === tarea.id);
+  if (idxRaiz >= 0) {
+    db.tareas[idxRaiz].estado = estadoNormalizado.toLowerCase() === 'terminado' ? 'terminado' : (estadoNormalizado === 'En progreso' ? 'en_progreso' : estadoNormalizado);
+    db.tareas[idxRaiz].fechaTerminado = tarea.fechaTerminado;
+  } else {
+    db.tareas.push({
+      ...tarea,
+      idHistoria: historia.id,
+      idSprint: historia.idSprint || null
+    });
+  }
 
   registrarHistorial(db, {
     idUsuario: req.usuario.id,

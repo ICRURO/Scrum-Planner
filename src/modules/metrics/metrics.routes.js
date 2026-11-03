@@ -83,7 +83,7 @@
         serieIdeal.push(Math.max(0, parseFloat((totalHoras - (reduccionIdeal * i)).toFixed(1))));
 
         const completadas = tareas
-            .filter((t) => (t.estado === 'terminado' || t.estado === 'Finalizado') && t.fechaTerminado && t.fechaTerminado <= corteISO)
+            .filter((t) => (t.estado === 'terminado' || t.estado === 'Finalizado' || t.estado === 'Terminado') && t.fechaTerminado && t.fechaTerminado <= corteISO)
             .reduce((acc, t) => acc + (Number(t.horasEstimadas) || 1), 0);
 
         if (corteISO <= hoyISO) {

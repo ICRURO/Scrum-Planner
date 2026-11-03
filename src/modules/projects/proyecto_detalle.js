@@ -19,6 +19,7 @@
   let actual = null; // proyecto mostrado en pantalla
   let historiasActuales = [];
   let historiaEditando = null;
+  let developersProyecto = [];
 
   const formularioHistoria = document.getElementById('formulario-historia');
   const formularioContenedor = document.getElementById('formulario-historia-contenedor');
@@ -75,6 +76,16 @@
   function agregarTarea(tarea = {}) {
     const numero = tareasFormulario.children.length + 1;
     const estadoActual = tarea.estado || 'Por hacer';
+    const idRespActual = tarea.idResponsable || tarea.idUsuarioResponsable || '';
+
+    const opcionesDev = developersProyecto.length
+      ? developersProyecto.map((d) => `
+          <option value="${UI.escapar(d.id)}" ${idRespActual === d.id ? 'selected' : ''}>
+            ${UI.escapar(d.nombre)} (${UI.escapar(d.id)})
+          </option>
+        `).join('')
+      : '<option value="" disabled>No hay developers en el equipo de este proyecto</option>';
+
     const fila = document.createElement('div');
     fila.className = 'historia-criterio historia-tarea';
     fila.dataset.id = tarea.id || '';
@@ -89,6 +100,17 @@
           <input class="control" id="tarea-${numero}-titulo" data-campo-tarea="titulo" maxlength="160" placeholder="Ej.: Diseñar tabla o endpoint" value="${UI.escapar(tarea.titulo || '')}" required>
         </div>
         <div class="campo">
+          <label for="tarea-${numero}-responsable">Responsable (Developer)</label>
+          <select class="control" id="tarea-${numero}-responsable" data-campo-tarea="idResponsable" required>
+            <option value="">Selecciona un developer...</option>
+            ${opcionesDev}
+          </select>
+        </div>
+        <div class="campo">
+          <label for="tarea-${numero}-horas">Horas estimadas</label>
+          <input class="control" type="number" min="1" step="1" id="tarea-${numero}-horas" data-campo-tarea="horasEstimadas" placeholder="Ej.: 12" value="${tarea.horasEstimadas ? Number(tarea.horasEstimadas) : ''}" required>
+        </div>
+        <div class="campo" style="grid-column: 1 / -1;">
           <label for="tarea-${numero}-descripcion">Descripción</label>
           <textarea class="control" id="tarea-${numero}-descripcion" data-campo-tarea="descripcion" placeholder="Detalle de la tarea a realizar" required>${UI.escapar(tarea.descripcion || '')}</textarea>
         </div>
@@ -177,9 +199,10 @@
             <td>${tareas.length
               ? `<details class="historia-tabla__criterios">
                   <summary>Ver ${tareas.length} ${tareas.length === 1 ? 'tarea' : 'tareas'}</summary>
-                  <ol class="historia-criterios-lista">${tareas.map((tarea) => `
-                  <li><strong>${UI.escapar(tarea.id ? `${tarea.id} · ` : '')}${UI.escapar(tarea.titulo)}</strong> (${UI.escapar(tarea.estado || 'Por hacer')}): ${UI.escapar(tarea.descripcion)}</li>
-                  `).join('')}</ol>
+                  <ol class="historia-criterios-lista">${tareas.map((tarea) => {
+                    const respTexto = tarea.nombreResponsable || tarea.idResponsable ? ` · Resp: ${UI.escapar(tarea.nombreResponsable || tarea.idResponsable)}` : '';
+                    return `<li><strong>${UI.escapar(tarea.id ? `${tarea.id} · ` : '')}${UI.escapar(tarea.titulo)}</strong> <span class="insignia insignia--chica">${tarea.horasEstimadas || 1}h</span> (${UI.escapar(tarea.estado || 'Por hacer')}${respTexto}${tarea.fechaTerminado ? ` · Terminado: ${UI.formatoFecha(tarea.fechaTerminado)}` : ''}): ${UI.escapar(tarea.descripcion)}</li>`;
+                  }).join('')}</ol>
                 </details>`
               : '<span class="historia-vacio">Sin tareas</span>'}</td>
             <td class="historia-comentarios">
@@ -226,7 +249,7 @@
   }
 
   const ROLES_DEFINIR_SPRINT = ['administrador', 'Product Owner', 'Developer'];
-  const ROLES_FINALIZAR_SPRINT = ['administrador', 'Product Owner', 'Developer'];
+  const ROLES_FINALIZAR_SPRINT = ['administrador', 'Product Owner','Developer'];
   const ROLES_CANCELAR_SPRINT = ['administrador', 'Product Owner'];
   const ESTADOS_SPRINT_VALIDOS = ['Planificado', 'En curso', 'Finalizado', 'Cancelado'];
   const CLASE_ESTADO_SPRINT = {
@@ -669,9 +692,18 @@
         ...(fila.dataset.id ? { id: fila.dataset.id } : {}),
         titulo: fila.querySelector('[data-campo-tarea="titulo"]').value.trim(),
         descripcion: fila.querySelector('[data-campo-tarea="descripcion"]').value.trim(),
-        estado: fila.querySelector('[data-campo-tarea="estado"]').value
+        estado: fila.querySelector('[data-campo-tarea="estado"]').value,
+        horasEstimadas: Number(fila.querySelector('[data-campo-tarea="horasEstimadas"]').value) || 1,
+        idResponsable: fila.querySelector('[data-campo-tarea="idResponsable"]').value
       }))
-      .filter((tarea) => tarea.titulo || tarea.descripcion);
+      .filter((tarea) => tarea.titulo || tarea.descripcion || tarea.idResponsable);
+
+    for (const t of tareas) {
+      if (!t.titulo || !t.descripcion || !t.idResponsable || isNaN(t.horasEstimadas) || t.horasEstimadas <= 0) {
+        UI.toast('Cada tarea debe incluir título, descripción y tener asignado un developer responsable.', 'error');
+        return;
+      }
+    }
     const datos = {
       titulo: document.getElementById('historia-titulo').value.trim(),
       descripcion: document.getElementById('historia-descripcion').value.trim(),
@@ -755,6 +787,10 @@
 
   // ---------- Tablero Scrum ----------
   const filtroSprintTablero = document.getElementById('filtro-sprint-tablero');
+  const filtroTableroTitulo = document.getElementById('filtro-tablero-titulo');
+  const filtroTableroResponsable = document.getElementById('filtro-tablero-responsable');
+  const filtroTableroHistoria = document.getElementById('filtro-tablero-historia');
+
   const columnasTablero = {
     'Por hacer': document.getElementById('columna-por-hacer'),
     'En progreso': document.getElementById('columna-en-progreso'),
@@ -776,6 +812,10 @@
     const puedeModificarTarea = ROLES_MODIFICAR_TAREA.includes(miRolActual) && !proyectoArchivadoActual;
     if (!columnasTablero['Por hacer']) return;
 
+    const textoTitulo = filtroTableroTitulo ? filtroTableroTitulo.value.trim().toLowerCase() : '';
+    const filtroResp = filtroTableroResponsable ? filtroTableroResponsable.value : 'todos';
+    const filtroHist = filtroTableroHistoria ? filtroTableroHistoria.value : 'todas';
+
     let historiasFiltradas = historiasActuales;
     if (filtroSprintSeleccionado !== 'todos') {
       const sprintActual = sprintsActuales.find((s) => s.id === filtroSprintSeleccionado);
@@ -791,11 +831,25 @@
     };
 
     historiasFiltradas.forEach((historia) => {
+      if (filtroHist !== 'todas' && historia.id !== filtroHist) return;
+
       (historia.tareas || []).forEach((tarea) => {
+        if (textoTitulo && !(tarea.titulo || '').toLowerCase().includes(textoTitulo)) {
+          return;
+        }
+
+        const respId = tarea.idResponsable || tarea.idUsuarioResponsable || '';
+        if (filtroResp !== 'todos' && respId !== filtroResp) {
+          return;
+        }
+
         let estadoNormalizado = tarea.estado || 'Por hacer';
-        if (estadoNormalizado === 'Pendiente') estadoNormalizado = 'Por hacer';
-        if (estadoNormalizado === 'Completada') estadoNormalizado = 'Terminado';
+        if (estadoNormalizado === 'por_hacer' || estadoNormalizado === 'Pendiente') estadoNormalizado = 'Por hacer';
+        if (estadoNormalizado === 'en_progreso') estadoNormalizado = 'En progreso';
+        if (estadoNormalizado === 'en_revision') estadoNormalizado = 'En revisión';
+        if (estadoNormalizado === 'terminado' || estadoNormalizado === 'Completada') estadoNormalizado = 'Terminado';
         if (!tareasPorEstado[estadoNormalizado]) estadoNormalizado = 'Por hacer';
+
         tareasPorEstado[estadoNormalizado].push({
           ...tarea,
           idHistoria: historia.id,
@@ -827,11 +881,17 @@
             return `
             <article class="tablero-tarjeta" data-tarea-id="${UI.escapar(t.id || '')}">
               <div class="tablero-tarjeta__meta">
-                <span class="insignia">${UI.escapar(t.id || 'Tarea')}</span>
+                <span class="insignia">${UI.escapar(t.id || 'TK')}</span>
+                <span class="insignia insignia--horas">${Number(t.horasEstimadas) || 1}h</span>
                 <span class="tablero-tarjeta__historia" title="${UI.escapar(t.idHistoria)} · ${UI.escapar(t.tituloHistoria)}">${UI.escapar(t.idHistoria)}</span>
               </div>
               <div class="tablero-tarjeta__titulo">${UI.escapar(t.titulo)}</div>
               ${t.descripcion ? `<div class="tablero-tarjeta__descripcion">${UI.escapar(t.descripcion)}</div>` : ''}
+              <div class="tablero-tarjeta__responsable">
+                <span class="avatar avatar--chico" style="width: 22px; height: 22px; font-size: 0.65rem;">${UI.escapar(UI.iniciales(t.nombreResponsable || ''))}</span>
+                <span>${UI.escapar(t.nombreResponsable || t.idResponsable || 'Sin asignar')}</span>
+              </div>
+              ${t.fechaTerminado && (t.estado === 'Terminado' || t.estado === 'terminado') ? `<div class="tablero-tarjeta__fecha-fin">Completado el: ${UI.formatoFecha(t.fechaTerminado)}</div>` : ''}
               ${selectorEstado}
             </article>`;
           }).join('');
@@ -849,7 +909,7 @@
     const sprintEnCurso = sprints.find((s) => s.estado === 'En curso');
 
     filtroSprintTablero.innerHTML = `
-      <option value="todos">Todas las historias del proyecto</option>
+      <option value="todos">Todos los sprints del proyecto</option>
       ${sprints.map((s) => `
         <option value="${UI.escapar(s.id)}">${UI.escapar(s.id)} · ${UI.escapar(s.nombre)} (${UI.escapar(s.estado)})</option>
       `).join('')}
@@ -864,7 +924,40 @@
     }
     filtroSprintTablero.value = filtroSprintSeleccionado;
 
+    // Poblar filtro de responsables (Developers)
+    if (filtroTableroResponsable) {
+      const valorPrevioResp = filtroTableroResponsable.value;
+      filtroTableroResponsable.innerHTML = `
+        <option value="todos">Todos los responsables</option>
+        ${developersProyecto.map((d) => `
+          <option value="${UI.escapar(d.id)}">${UI.escapar(d.nombre)} (${UI.escapar(d.id)})</option>
+        `).join('')}
+      `;
+      if (valorPrevioResp && (valorPrevioResp === 'todos' || developersProyecto.some((d) => d.id === valorPrevioResp))) {
+        filtroTableroResponsable.value = valorPrevioResp;
+      } else {
+        filtroTableroResponsable.value = 'todos';
+      }
+    }
+
+    // Poblar filtro de historias de usuario
+    if (filtroTableroHistoria) {
+      const valorPrevioHist = filtroTableroHistoria.value;
+      filtroTableroHistoria.innerHTML = `
+        <option value="todas">Todas las historias</option>
+        ${historiasActuales.map((h) => `
+          <option value="${UI.escapar(h.id)}">${UI.escapar(h.id)} · ${UI.escapar(h.titulo)}</option>
+        `).join('')}
+      `;
+      if (valorPrevioHist && (valorPrevioHist === 'todas' || historiasActuales.some((h) => h.id === valorPrevioHist))) {
+        filtroTableroHistoria.value = valorPrevioHist;
+      } else {
+        filtroTableroHistoria.value = 'todas';
+      }
+    }
+
     renderizarTareasTablero();
+    Icons.hidratar();
   }
 
   if (filtroSprintTablero) {
@@ -872,6 +965,16 @@
       filtroSprintSeleccionado = filtroSprintTablero.value;
       renderizarTareasTablero();
     });
+  }
+
+  if (filtroTableroTitulo) {
+    filtroTableroTitulo.addEventListener('input', renderizarTareasTablero);
+  }
+  if (filtroTableroResponsable) {
+    filtroTableroResponsable.addEventListener('change', renderizarTareasTablero);
+  }
+  if (filtroTableroHistoria) {
+    filtroTableroHistoria.addEventListener('change', renderizarTareasTablero);
   }
 
   const contenedorTablero = document.getElementById('tablero-scrum');
@@ -916,7 +1019,8 @@
       return false;
     }
 
-    const { proyecto: p, permisos, miRol, historial, historiasUsuario } = r.datos;
+    const { proyecto: p, permisos, miRol, historial, historiasUsuario, developers } = r.datos;
+    developersProyecto = developers || [];
     actual = p;
 
     // Encabezado

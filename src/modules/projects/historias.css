@@ -72,3 +72,16 @@
 
 .control--chico { min-height: 32px; padding: 4px 8px; font-size: 0.82rem; border-radius: var(--radio-s); }
 .tablero-tarjeta__estado { margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--c-linea); }
+
+.historia-tarea .historia-criterio__campos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tablero-tarjeta__responsable { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--c-piedra); margin-top: 2px; }
+@media (max-width: 760px) {
+  .historia-tarea .historia-criterio__campos { grid-template-columns: 1fr; }
+}
+
+.insignia--horas { background: var(--t-miel); color: #7A4F00; font-weight: 700; padding: 2px 8px; font-size: 0.78rem; }
+.insignia--chica { padding: 1px 6px; font-size: 0.75rem; }
+.tablero-tarjeta__fecha-fin { font-size: 0.78rem; color: var(--c-hoja); font-weight: 600; margin-top: 2px; }
+
+.tablero-filtros { margin-top: 8px; margin-bottom: 18px; gap: 12px; }
+.tablero-filtros .barra__filtro { flex: 1 1 200px; }
