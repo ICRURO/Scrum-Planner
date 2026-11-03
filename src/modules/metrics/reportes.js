@@ -157,5 +157,18 @@
     selectProyecto.addEventListener('change', cambiarProyecto);
     selectSprint.addEventListener('change', () => cargarMetricas(selectSprint.value));
 
+    // Manejador del botón de exportación (HU-45 / HU-46)
+    const btnExportar = document.getElementById('btn-exportar');
+    if (btnExportar) {
+        btnExportar.addEventListener('click', () => {
+        const idProyecto = selectProyecto.value;
+        const idSprint = selectSprint.value;
+        if (!idProyecto || !idSprint) {
+            return UI.toast('Selecciona un proyecto y un sprint válidos para exportar.', 'error');
+        }
+        window.location.href = `/api/metrics/proyectos/${encodeURIComponent(idProyecto)}/sprints/${encodeURIComponent(idSprint)}/exportar`;
+        });
+    }
+
     await inicializar();
     })();

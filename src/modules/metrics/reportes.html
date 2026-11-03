@@ -16,12 +16,21 @@
     <main class="pagina pagina--fluida">
         <!-- Encabezado con título y filtros alineados -->
         <div class="encabezado-reportes">
-        <h1>Métricas y Reportes del Proyecto</h1>
-        <div class="controles-filtro">
-            <select id="select-proyecto" class="control" aria-label="Seleccionar proyecto"></select>
-            <select id="select-sprint" class="control" aria-label="Seleccionar sprint"></select>
-        </div>
-        </div>
+            <h1>Métricas y Reportes del Proyecto</h1>
+            <div class="controles-filtro">
+                <select id="select-proyecto" class="control" aria-label="Seleccionar proyecto"></select>
+                <select id="select-sprint" class="control" aria-label="Seleccionar sprint"></select>
+                <!-- Botón de Exportar (Sara: HU-46) -->
+                <button id="btn-exportar" class="btn btn--primario" title="Exportar reporte de métricas">
+                <svg class="icono-svg-exportar" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Exportar
+                </button>
+            </div>
+            </div>
 
         <!-- HU-43 Criterio 4: Banner compacto de datos insuficientes -->
         <div class="alerta alerta--info" id="alerta-datos-insuficientes" hidden>

@@ -121,4 +121,49 @@
     });
     });
 
+    // HU-45 / HU-46: Exportar reporte de horas invertidas y métricas del proyecto
+    router.get('/proyectos/:idProyecto/sprints/:idSprint/exportar', (req, res) => {
+    const db = readDB();
+    const { idProyecto, idSprint } = req.params;
+    const usuario = req.usuario;
+
+    const proyecto = (db.proyectos || []).find((p) => p.id === idProyecto);
+    if (!proyecto) {
+        return res.status(404).json({ mensaje: 'No se encontró el proyecto.' });
+    }
+
+    if (usuario.rolGlobal !== 'administrador' && !esParticipante(usuario, idProyecto, db)) {
+        return res.status(403).json({ mensaje: 'No tienes permisos para exportar este reporte.' });
+    }
+
+    const sprintsProyecto = (db.sprints || []).filter((s) => s.idProyecto === idProyecto);
+    const sprint = sprintsProyecto.find((s) => s.id === idSprint);
+    const tareas = sprint ? (db.tareas || []).filter((t) => t.idSprint === sprint.id) : [];
+
+    const totalHoras = tareas.reduce((acc, t) => acc + (Number(t.horasEstimadas) || 1), 0);
+    const terminadas = tareas.filter((t) => t.estado === 'terminado' || t.estado === 'Finalizado' || t.estado === 'Terminado').length;
+
+    const reporteTxt = `========================================
+    REPORTE DE MÉTRICAS Y HORAS INVERTIDAS
+    ========================================
+    Proyecto: ${proyecto.id} - ${proyecto.nombre}
+    Sprint: ${sprint ? sprint.nombre : idSprint}
+    Fecha de Emisión: ${new Date().toLocaleDateString('es-MX')}
+
+    --- RESUMEN DE ESFUERZO ---
+    Total de Tareas en el Sprint: ${tareas.length}
+    Tareas Terminadas: ${terminadas}
+    Total de Horas Estimadas: ${totalHoras}h
+
+    --- DETALLE DE TAREAS ---
+    ${tareas.map(t => `- [${t.estado.toUpperCase()}] ${t.titulo} (${t.horasEstimadas}h)`).join('\n')}
+    ========================================
+    Scrum Manager - Módulo de Métricas (HU-45 / HU-46)
+    `;
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename=reporte-metricas-${idProyecto}-${idSprint}.txt`);
+    res.send(reporteTxt);
+    });
+
     module.exports = router;

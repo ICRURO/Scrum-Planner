@@ -165,3 +165,28 @@
     .tabla-contenedor {
     margin-top: 8px;
     }
+
+    #btn-exportar {
+    background-color: var(--c-hoja, #2E7D32);
+    color: #ffffff;
+    border: 1.5px solid transparent;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    min-height: 42px;
+    border-radius: var(--radio-m, 12px);
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.05s ease;
+    }
+
+    #btn-exportar:hover {
+    background-color: var(--c-hoja-700, #256628);
+    }
+
+    #btn-exportar svg {
+    stroke: #ffffff;
+    flex-shrink: 0;
+    }
