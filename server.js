@@ -77,3 +77,4 @@ app.listen(PORT, () => {
   console.log(`>>> Servidor activo en: http://localhost:${PORT}`);
   console.log(`>>> Iniciar sesión:     http://localhost:${PORT}/login`);
 });
+
