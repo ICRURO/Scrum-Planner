@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capacitación y Guía Scrum · Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/modules/training/capacitacion.css">
+</head>
+<body data-volver="/panel" data-volver-texto="panel" data-seccion="capacitacion" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina pagina--fluida">
+    <div class="titulo-pagina">
+      <h1>Guía y Material de Capacitación Scrum</h1>
+      <p>Aprende los fundamentos de Scrum y el funcionamiento del sistema Scrum Manager</p>
+    </div>
+
+    <!-- Modal / Sección de bienvenida (HU-54-T1: Diseñar modal y lógica de primera visita) -->
+    <section class="tarjeta" id="modal-bienvenida" hidden>
+      <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="bandera"></span>Bienvenido a la Capacitación</h2>
+      <p>Hemos detectado que cuentas con módulos pendientes en tu guía de Scrum Manager. ¿Deseas tomar la capacitación ahora o prefieres realizarla después?</p>
+      <div class="tarjeta__pie" style="margin-top: 20px;">
+        <button class="btn btn-secundario" id="btn-despues">Tomar después</button>
+        <button class="btn btn-primario" id="btn-ahora">Tomar capacitación ahora</button>
+      </div>
+    </section>
+
+    <!-- Contenedor principal que se expandirá en las siguientes tareas -->
+    <div class="rejilla-panel" id="contenedor-tutorial">
+      <section class="tarjeta">
+        <h2 class="tarjeta__titulo" id="titulo-modulo"><span class="icono-ficha" data-icon="info"></span>Módulo de Aprendizaje</h2>
+        <div id="contenido-teoria" style="margin-bottom: 24px; line-height: 1.6;">
+          <p>Cargando contenidos del tutorial de Scrum Manager...</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/training/capacitacion.js"></script>
+</body>
+</html>
