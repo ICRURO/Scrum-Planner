@@ -836,6 +836,86 @@
   if (filtroTableroResponsable) filtroTableroResponsable.addEventListener('change', renderizarTareasTablero);
   if (filtroTableroHistoria) filtroTableroHistoria.addEventListener('change', renderizarTareasTablero);
 
+  // ---------- HU-37: Validar que el trabajo esté terminado (Checklist de DoD) ----------
+  function pedirConfirmacionDoD(dods, idTarea) {
+    return new Promise((resolver) => {
+      const fondo = document.createElement('div');
+      fondo.className = 'modal-fondo';
+      
+      const checkboxes = dods.map(d => `
+        <div class="campo" style="margin-bottom: 8px;">
+          <label class="casilla" style="display: flex; align-items: flex-start; gap: 8px;">
+            <input type="checkbox" value="${UI.escapar(d.id)}" data-req="${d.tipo === 'Obligatorio'}" style="margin-top: 4px;">
+            <span>${UI.escapar(d.descripcion)} 
+              <span class="texto-suave" style="font-size: 0.85rem; margin-left: 4px;">
+                ${d.tipo === 'Obligatorio' ? ' <b style="color:var(--c-brasa)">Obligatorio</b>' : '(Opcional)'}
+              </span>
+            </span>
+          </label>
+        </div>
+      `).join('');
+
+      fondo.innerHTML = `
+        <div class="modal" role="dialog" aria-modal="true">
+          <h2 style="margin-bottom: 4px;">Verificar Tarea</h2>
+          <p class="texto-suave" style="margin-bottom: 16px;">Antes de marcar como terminada la tarea <strong>${UI.escapar(idTarea)}</strong></p>
+          <div style="max-height: 40vh; overflow-y: auto; margin-bottom: 12px; padding-right: 8px;">
+            ${checkboxes}
+          </div>
+          <div class="campo__error" id="error-dod" hidden style="margin-bottom: 12px;">No se puede terminar: falta cumplir criterios obligatorios de la DoD.</div>
+          <div class="modal__acciones">
+            <button class="btn btn-secundario" type="button" data-r="cancelar">Cancelar</button>
+            <button class="btn btn-primario" type="button" data-r="confirmar">Marcar terminada</button>
+          </div>
+        </div>`;
+      
+      const cerrar = (valor) => {
+        document.removeEventListener('keydown', alTeclear);
+        fondo.remove();
+        resolver(valor);
+      };
+      const alTeclear = (e) => { if (e.key === 'Escape') cerrar(null); };
+      
+      fondo.addEventListener('click', (e) => {
+        if (e.target === fondo) return cerrar(null);
+        const boton = e.target.closest('[data-r]');
+        if (!boton) return;
+        
+        if (boton.dataset.r === 'cancelar') return cerrar(null);
+        if (boton.dataset.r === 'confirmar') {
+          const obligatorios = [...fondo.querySelectorAll('input[data-req="true"]')];
+          if (obligatorios.some(cb => !cb.checked)) {
+            fondo.querySelector('#error-dod').hidden = false;
+            return;
+          }
+          const confirmados = [...fondo.querySelectorAll('input:checked')].map(cb => cb.value);
+          cerrar(confirmados);
+        }
+      });
+      
+      document.addEventListener('keydown', alTeclear);
+      document.body.appendChild(fondo);
+    });
+  }
+
+  async function actualizarEstadoTarea(selector, idHistoria, idTarea, nuevoEstado, dodsConfirmados) {
+    selector.disabled = true;
+    const r = await Api.put(
+      `/api/projects/${encodeURIComponent(actual.id)}/historias/${encodeURIComponent(idHistoria)}/tareas/${encodeURIComponent(idTarea)}/estado`,
+      { estado: nuevoEstado, dodsConfirmados }
+    );
+    selector.disabled = false;
+    
+    if (!r.ok) {
+      UI.toast(r.datos?.mensaje || 'Error al actualizar el estado de la tarea.', 'error');
+      await pintar();
+      return;
+    }
+    
+    await pintar();
+    UI.toast(r.datos.mensaje, 'exito');
+  }
+
   const contenedorTablero = document.getElementById('tablero-scrum');
   if (contenedorTablero) {
     contenedorTablero.addEventListener('change', async (e) => {
@@ -844,22 +924,18 @@
       const idHistoria = selector.dataset.idHistoria;
       const idTarea = selector.dataset.idTarea;
       const nuevoEstado = selector.value;
+      const opcionPrevia = [...selector.options].find(o => o.defaultSelected)?.value || 'Por hacer';
       
-      selector.disabled = true;
-      const r = await Api.put(
-        `/api/projects/${encodeURIComponent(actual.id)}/historias/${encodeURIComponent(idHistoria)}/tareas/${encodeURIComponent(idTarea)}/estado`,
-        { estado: nuevoEstado }
-      );
-      selector.disabled = false;
-      
-      if (!r.ok) {
-        UI.toast(r.datos?.mensaje || 'Error al actualizar el estado de la tarea.', 'error');
-        await pintar();
-        return;
+      if (nuevoEstado === 'Terminado' && listaDod && listaDod.length > 0) {
+        const confirmados = await pedirConfirmacionDoD(listaDod, idTarea);
+        if (!confirmados) {
+          selector.value = opcionPrevia; // revierte el cambio visual si cancelan
+          return;
+        }
+        await actualizarEstadoTarea(selector, idHistoria, idTarea, nuevoEstado, confirmados);
+      } else {
+        await actualizarEstadoTarea(selector, idHistoria, idTarea, nuevoEstado, []);
       }
-      
-      await pintar();
-      UI.toast(r.datos.mensaje, 'exito');
     });
   }
 

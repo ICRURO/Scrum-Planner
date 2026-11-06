@@ -939,10 +939,11 @@ router.put('/:id/historias/:idHistoria/tareas/:idTarea/estado', (req, res) => {
   if (esTerminado) {
     const dodsProyecto = (db.dods || []).filter(d => d.idProyecto === ctx.proyecto.id && d.tipo === 'Obligatorio');
     if (dodsProyecto.length > 0) {
-      // Como aquí se podría validar un checklist enviado desde el cliente (HU-37 completo),
-      // aseguramos que el cliente haya marcado los criterios obligatorios. 
-      // Por simplicidad en esta parte de backend, permitimos la transición si el frontend pasa la validación.
-      // Aquí se podría enriquecer comprobando un array de dodsCompletados en req.body.
+      const confirmados = req.body?.dodsConfirmados || [];
+      const faltan = dodsProyecto.filter(d => !confirmados.includes(d.id));
+      if (faltan.length > 0) {
+        return res.status(400).json({ mensaje: 'No se puede terminar: falta cumplir criterios obligatorios de la Definition of Done.' });
+      }
     }
   }
 
@@ -1225,4 +1226,4 @@ router.put('/:id/archivar', apiConPermiso('archivar_proyecto', (req) => req.para
   res.json({ mensaje: archivar ? 'Proyecto archivado.' : 'Proyecto desarchivado.', proyecto });
 });
 
-module.exports = router;
+module.exports = router; 
