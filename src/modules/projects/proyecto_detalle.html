@@ -40,7 +40,7 @@
           <dl class="datos" id="info"></dl>
         </section>
         
-        <div class="tarjeta mt-4">
+        <div class="tarjeta">
           <div class="tarjeta-encabezado">
             <h3 class="tarjeta__titulo"><span class="icono-ficha" data-icon="usuario"></span>Agregar Participante (HU-14 y HU-15)</h3>
           </div>
@@ -62,7 +62,7 @@
           </div>
         </div>
         
-        <div class="tarjeta mt-4">
+        <div class="tarjeta">
           <div class="tarjeta-encabezado">
             <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="equipo"></span>Equipo del Proyecto (HU-16)</h2>
           </div>
@@ -71,14 +71,38 @@
           </div>
         </div>
         
-        <section class="tarjeta">
+        <!-- Historial de cambios completo (HU-38) con 5 columnas y filtros -->
+        <section class="tarjeta" style="grid-column: 1 / -1;">
           <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="reloj"></span>Historial de cambios</h2>
+          <div class="barra">
+            <div class="entrada entrada--icono barra__buscar">
+              <span class="entrada__icono" data-icon="buscar"></span>
+              <input class="control" id="buscar-historial" type="search" placeholder="Buscar usuario o elemento..." aria-label="Buscar en historial">
+            </div>
+            <select class="control barra__filtro" id="filtro-elemento-historial" aria-label="Filtrar por elemento">
+              <option value="">Todos los elementos</option>
+              <option value="tarea">Tareas</option>
+              <option value="historia_usuario">Historias</option>
+              <option value="proyecto">Proyecto</option>
+              <option value="sprint">Sprints</option>
+              <option value="dod">Definition of Done</option>
+            </select>
+          </div>
           <div class="tabla-contenedor">
             <table class="tabla">
-              <thead><tr><th>Fecha</th><th>Usuario</th><th>Cambios</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Usuario</th>
+                  <th>Elemento</th>
+                  <th>Valor anterior</th>
+                  <th>Valor nuevo</th>
+                </tr>
+              </thead>
               <tbody id="historial"></tbody>
             </table>
           </div>
+          <p class="tabla-nota">Los registros históricos no se pueden editar ni eliminar.</p>
         </section>
       </div>
 
@@ -112,7 +136,6 @@
             </div>
           </form>
         </div>
-      
         <div class="tabla-contenedor">
           <table class="tabla">
             <thead>
@@ -127,6 +150,7 @@
         </div>
       </section>
 
+      <!-- Product Backlog -->
       <section class="tarjeta historias-proyecto">
         <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="info"></span>Product Backlog: historias y criterios de aceptación</h2>
         <div id="formulario-historia-contenedor" hidden>
@@ -223,6 +247,7 @@
         </div>
       </section>
       
+      <!-- Sprint Backlog -->
       <section class="tarjeta historias-proyecto" id="seccion-sprint-backlog">
         <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="calendario"></span>Sprint Backlog: definición y lista de sprints</h2>
         <div id="formulario-sprint-contenedor" hidden>
@@ -286,6 +311,7 @@
         </div>
       </section>
       
+      <!-- Tablero Scrum -->
       <section class="tarjeta historias-proyecto" id="seccion-tablero-scrum">
         <div class="tablero-encabezado">
           <div class="tablero-encabezado__titulo">
@@ -350,7 +376,6 @@
       </section>
     </div>
   </main>
-  
   <script src="/shared/js/icons.js"></script>
   <script src="/shared/js/api.js"></script>
   <script src="/shared/js/ui.js"></script>

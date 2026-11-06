@@ -1,31 +1,26 @@
 (async function () {
   const sesion = await Layout.listo;
   if (!sesion) return;
-
   const flash = sessionStorage.getItem('flash');
   if (flash) { sessionStorage.removeItem('flash'); UI.toast(flash, 'exito'); }
-
   const id = new URLSearchParams(window.location.search).get('id');
-
   const ESTADOS = [
     ['preparacion', 'En preparación', 'reloj'], ['activo', 'Activo', 'rayo'],
     ['suspendido', 'Suspendido', 'pausa'], ['finalizado', 'Finalizado', 'check']
   ];
   const NOMBRES = { preparacion: 'En preparación', activo: 'Activo', suspendido: 'Suspendido', finalizado: 'Finalizado' };
   const SIGUIENTE = { preparacion: 'activo', activo: 'suspendido', suspendido: 'activo' };
-
   let actual = null; 
   let historiasActuales = [];
+  let historialActual = []; // HU-38: Almacén de historial completo para filtrado dinámico
   let historiaEditando = null;
   let developersProyecto = [];
-
   const formularioHistoria = document.getElementById('formulario-historia');
   const formularioContenedor = document.getElementById('formulario-historia-contenedor');
   const criteriosFormulario = document.getElementById('criterios-formulario');
   const tareasFormulario = document.getElementById('tareas-formulario');
   const dependenciasFormulario = document.getElementById('historia-dependencias');
   const listaHistorias = document.getElementById('lista-historias');
-
   const formularioSprintContenedor = document.getElementById('formulario-sprint-contenedor');
   const formularioSprint = document.getElementById('formulario-sprint');
   const sprintNombreInput = document.getElementById('sprint-nombre');
@@ -38,11 +33,9 @@
   const botonGuardarSprint = document.getElementById('guardar-sprint');
   const botonCancelarSprint = document.getElementById('cancelar-edicion-sprint');
   const listaSprints = document.getElementById('lista-sprints');
-
   let sprintsActuales = [];
   let sprintEditando = null;
   let historiasAsignadasSprint = [];
-
   const divisionContenedor = document.getElementById('division-contenedor');
   const historiasDivision = document.getElementById('historias-division');
   let historiaParaDividir = null;
@@ -112,12 +105,11 @@
     UI.cargando(boton, true);
     const r = idDod ? await Api.put(url, datos) : await Api.post(url, datos);
     UI.cargando(boton, false);
-
     if (!r.ok) return UI.toast(r.datos?.mensaje || 'Error al guardar elemento DoD.', 'error');
     
     UI.toast(r.datos.mensaje, 'exito');
     formDodContenedor.hidden = true;
-    await cargarDod(); 
+    await cargarDod();
   });
 
   tablaDod?.addEventListener('click', async (e) => {
@@ -132,7 +124,6 @@
       }
       return;
     }
-
     const btnEliminar = e.target.closest('[data-eliminar-dod]');
     if (btnEliminar) {
       const ok = await UI.confirmar({
@@ -142,7 +133,6 @@
         peligro: true
       });
       if (!ok) return;
-
       const idDod = btnEliminar.dataset.eliminarDod;
       const r = await Api.delete(`/api/projects/${encodeURIComponent(actual.id)}/dod/${encodeURIComponent(idDod)}`);
       
@@ -191,7 +181,6 @@
           </option>
         `).join('')
       : '<option value="" disabled>No hay developers en el equipo</option>';
-
     const fila = document.createElement('div');
     fila.className = 'historia-criterio historia-tarea';
     fila.dataset.id = tarea.id || '';
@@ -268,13 +257,11 @@
         const tareas = historia.tareas || [];
         const comentarios = historia.comentarios || [];
         const aclaraciones = historia.aclaraciones || [];
-
         const relacion = historia.idHistoriaOrigen
           ? `Derivada de: ${UI.escapar(historia.idHistoriaOrigen)}`
           : historia.divisiones?.length
             ? `Dividida en: ${historia.divisiones.map((id) => UI.escapar(id)).join(', ')}`
             : '';
-
         return `
           <tr>
             <td><span class="insignia">${UI.escapar(historia.id)}</span>${relacion ? `<small class="historia-relacion">${relacion}</small>` : ''}</td>
@@ -358,10 +345,9 @@
 
   // ---------- Sprints y Tablero ----------
   const ROLES_DEFINIR_SPRINT = ['administrador', 'Product Owner', 'Developer'];
-  const ROLES_FINALIZAR_SPRINT = ['administrador', 'Product Owner','Developer'];
+  const ROLES_FINALIZAR_SPRINT = ['administrador', 'Product Owner', 'Developer'];
   const ROLES_CANCELAR_SPRINT = ['administrador', 'Product Owner'];
   const ESTADOS_SPRINT_VALIDOS = ['Planificado', 'En curso', 'Finalizado', 'Cancelado'];
-
   const CLASE_ESTADO_SPRINT = {
     'Planificado': 'preparacion',
     'En curso': 'activo',
@@ -394,13 +380,11 @@
     if (!sprintHistoriasLista) return;
     const idsValidos = new Set(historiasActuales.map((h) => h.id));
     historiasAsignadasSprint = historiasAsignadasSprint.filter((idHistoria) => idsValidos.has(idHistoria));
-
     if (!historiasActuales.length) {
       sprintHistoriasLista.innerHTML = '<p class="historia-vacio">No hay historias para seleccionar.</p>';
       actualizarResumenHistoriasSprint();
       return;
     }
-
     sprintHistoriasLista.innerHTML = historiasActuales.map((historia) => {
       const marcada = historiasAsignadasSprint.includes(historia.id);
       return `
@@ -418,7 +402,6 @@
       const casilla = e.target.closest('input[data-historia-sprint]');
       if (!casilla) return;
       const idHistoria = casilla.dataset.historiaSprint;
-
       if (casilla.checked) {
         if (!historiasAsignadasSprint.includes(idHistoria)) {
           historiasAsignadasSprint.push(idHistoria);
@@ -456,18 +439,15 @@
 
   function dibujarSprints(sprints = [], miRol = null, permisos = {}, archivado = false) {
     if (!formularioSprintContenedor || !listaSprints) return;
-
     sprintsActuales = sprints || [];
     const puedeDefinirSprint = (permisos.definirSprint !== undefined
       ? permisos.definirSprint
       : ROLES_DEFINIR_SPRINT.includes(miRol)) && !archivado;
     const puedeFinalizarSprint = ROLES_FINALIZAR_SPRINT.includes(miRol) && !archivado;
     const puedeCancelarSprint = ROLES_CANCELAR_SPRINT.includes(miRol) && !archivado;
-
     formularioSprintContenedor.hidden = !puedeDefinirSprint;
     fijarMinimoFechasSprint();
     actualizarOpcionesHistoriasSprint();
-
     listaSprints.innerHTML = sprintsActuales.length
       ? sprintsActuales.map((sprint) => {
         const historiasAsignadas = sprint.historiasAsignadas || [];
@@ -509,15 +489,12 @@
       e.preventDefault();
       if (!actual) return;
       UI.limpiarErrores(formularioSprint);
-
       const nombre = sprintNombreInput.value.trim();
       const estado = sprintEstadoSelect ? sprintEstadoSelect.value : 'Planificado';
       const objetivo = sprintObjetivoInput.value.trim();
       const fechaInicio = sprintInicioInput.value;
       const fechaFin = sprintFinInput.value;
-      const hoy = fechaActualLocal();
       let valido = true;
-
       if (!nombre) {
         UI.marcarError(sprintNombreInput, 'El nombre es obligatorio.');
         valido = false;
@@ -534,9 +511,7 @@
           valido = false;
         }
       }
-
       if (!valido) return;
-
       UI.cargando(botonGuardarSprint, true);
       const datosSprint = {
         nombre, objetivo, fechaInicio, fechaFin, estado,
@@ -633,7 +608,6 @@
         UI.toast(r.datos.mensaje, 'exito');
         return;
       }
-
       const botonFinalizar = e.target.closest('[data-finalizar-sprint]');
       if (botonFinalizar && actual) {
         const sprint = sprintsActuales.find((s) => s.id === botonFinalizar.dataset.finalizarSprint);
@@ -645,7 +619,6 @@
           peligro: true
         });
         if (!ok) return;
-
         UI.cargando(botonFinalizar, true);
         const r = await Api.put(`/api/projects/${encodeURIComponent(actual.id)}/sprints/${encodeURIComponent(sprint.id)}/finalizar`);
         UI.cargando(botonFinalizar, false);
@@ -655,12 +628,10 @@
         UI.toast(r.datos.mensaje, 'exito');
         return;
       }
-
       const botonEditar = e.target.closest('[data-editar-sprint]');
       if (!botonEditar || !actual) return;
       const sprint = sprintsActuales.find((s) => s.id === botonEditar.dataset.editarSprint);
       if (!sprint) return;
-
       sprintEditando = sprint.id;
       sprintNombreInput.value = sprint.nombre;
       sprintEstadoSelect.value = sprint.estado || 'Planificado';
@@ -669,7 +640,6 @@
       sprintFinInput.value = sprint.fechaFin;
       historiasAsignadasSprint = [...(sprint.historiasAsignadas || [])];
       actualizarOpcionesHistoriasSprint();
-
       if (botonGuardarSprint) botonGuardarSprint.textContent = 'Guardar cambios';
       if (botonCancelarSprint) botonCancelarSprint.hidden = false;
       formularioSprintContenedor.hidden = false;
@@ -682,7 +652,6 @@
   const filtroTableroTitulo = document.getElementById('filtro-tablero-titulo');
   const filtroTableroResponsable = document.getElementById('filtro-tablero-responsable');
   const filtroTableroHistoria = document.getElementById('filtro-tablero-historia');
-  
   const columnasTablero = {
     'Por hacer': document.getElementById('columna-por-hacer'),
     'En progreso': document.getElementById('columna-en-progreso'),
@@ -695,9 +664,7 @@
     'En revisión': document.getElementById('contador-en-revision'),
     'Terminado': document.getElementById('contador-terminado')
   };
-
   const ROLES_MODIFICAR_TAREA = ['administrador', 'Developer'];
-
   let filtroSprintSeleccionado = 'todos';
   let miRolActual = null;
   let proyectoArchivadoActual = false;
@@ -705,32 +672,27 @@
   function renderizarTareasTablero() {
     const puedeModificarTarea = ROLES_MODIFICAR_TAREA.includes(miRolActual) && !proyectoArchivadoActual;
     if (!columnasTablero['Por hacer']) return;
-
     const textoTitulo = filtroTableroTitulo ? filtroTableroTitulo.value.trim().toLowerCase() : '';
     const filtroResp = filtroTableroResponsable ? filtroTableroResponsable.value : 'todos';
     const filtroHist = filtroTableroHistoria ? filtroTableroHistoria.value : 'todas';
-
     let historiasFiltradas = historiasActuales;
     if (filtroSprintSeleccionado !== 'todos') {
       const sprintActual = sprintsActuales.find((s) => s.id === filtroSprintSeleccionado);
       const idsAsignadas = new Set(sprintActual ? (sprintActual.historiasAsignadas || []) : []);
       historiasFiltradas = historiasActuales.filter((h) => idsAsignadas.has(h.id));
     }
-
     const tareasPorEstado = {
       'Por hacer': [],
       'En progreso': [],
       'En revisión': [],
       'Terminado': []
     };
-
     historiasFiltradas.forEach((historia) => {
       if (filtroHist !== 'todas' && historia.id !== filtroHist) return;
       (historia.tareas || []).forEach((tarea) => {
         if (textoTitulo && !(tarea.titulo || '').toLowerCase().includes(textoTitulo)) return;
         const respId = tarea.idResponsable || tarea.idUsuarioResponsable || '';
         if (filtroResp !== 'todos' && respId !== filtroResp) return;
-
         let estadoNormalizado = tarea.estado || 'Por hacer';
         if (estadoNormalizado === 'por_hacer' || estadoNormalizado === 'Pendiente') estadoNormalizado = 'Por hacer';
         if (estadoNormalizado === 'en_progreso') estadoNormalizado = 'En progreso';
@@ -745,7 +707,6 @@
         });
       });
     });
-
     Object.keys(tareasPorEstado).forEach((estado) => {
       const contenedor = columnasTablero[estado];
       const contador = contadoresTablero[estado];
@@ -768,19 +729,19 @@
               </div>` : '';
             
             return `
-            <article class="tablero-tarjeta" data-tarea-id="${UI.escapar(t.id || '')}">
-              <div class="tablero-tarjeta__meta">
-                <span class="insignia">${UI.escapar(t.id || 'TK')}</span>
-                <span class="insignia insignia--horas">${Number(t.horasEstimadas) || 1}h</span>
-                <span class="tablero-tarjeta__historia" title="${UI.escapar(t.idHistoria)}">${UI.escapar(t.idHistoria)}</span>
-              </div>
-              <div class="tablero-tarjeta__titulo">${UI.escapar(t.titulo)}</div>
-              <div class="tablero-tarjeta__responsable">
-                <span class="avatar avatar--chico" style="width: 22px; height: 22px; font-size: 0.65rem;">${UI.escapar(UI.iniciales(t.nombreResponsable || ''))}</span>
-                <span>${UI.escapar(t.nombreResponsable || t.idResponsable || 'Sin asignar')}</span>
-              </div>
-              ${selectorEstado}
-            </article>`;
+              <article class="tablero-tarjeta" data-tarea-id="${UI.escapar(t.id || '')}">
+                <div class="tablero-tarjeta__meta">
+                  <span class="insignia">${UI.escapar(t.id || 'TK')}</span>
+                  <span class="insignia insignia--horas">${Number(t.horasEstimadas) || 1}h</span>
+                  <span class="tablero-tarjeta__historia" title="${UI.escapar(t.idHistoria)}">${UI.escapar(t.idHistoria)}</span>
+                </div>
+                <div class="tablero-tarjeta__titulo">${UI.escapar(t.titulo)}</div>
+                <div class="tablero-tarjeta__responsable">
+                  <span class="avatar avatar--chico" style="width: 22px; height: 22px; font-size: 0.65rem;">${UI.escapar(UI.iniciales(t.nombreResponsable || ''))}</span>
+                  <span>${UI.escapar(t.nombreResponsable || t.idResponsable || 'Sin asignar')}</span>
+                </div>
+                ${selectorEstado}
+              </article>`;
           }).join('');
         }
       }
@@ -848,7 +809,7 @@
             <input type="checkbox" value="${UI.escapar(d.id)}" data-req="${d.tipo === 'Obligatorio'}" style="margin-top: 4px;">
             <span>${UI.escapar(d.descripcion)} 
               <span class="texto-suave" style="font-size: 0.85rem; margin-left: 4px;">
-                ${d.tipo === 'Obligatorio' ? ' <b style="color:var(--c-brasa)">Obligatorio</b>' : '(Opcional)'}
+                ${d.tipo === 'Obligatorio' ? '• <b style="color:var(--c-brasa)">Obligatorio</b>' : '(Opcional)'}
               </span>
             </span>
           </label>
@@ -929,7 +890,7 @@
       if (nuevoEstado === 'Terminado' && listaDod && listaDod.length > 0) {
         const confirmados = await pedirConfirmacionDoD(listaDod, idTarea);
         if (!confirmados) {
-          selector.value = opcionPrevia; // revierte el cambio visual si cancelan
+          selector.value = opcionPrevia;
           return;
         }
         await actualizarEstadoTarea(selector, idHistoria, idTarea, nuevoEstado, confirmados);
@@ -937,6 +898,48 @@
         await actualizarEstadoTarea(selector, idHistoria, idTarea, nuevoEstado, []);
       }
     });
+  }
+
+  // ---------- Filtros de Historial (HU-38) ----------
+  const inputBuscarHistorial = document.getElementById('buscar-historial');
+  const selectFiltroElemento = document.getElementById('filtro-elemento-historial');
+
+  function renderizarHistorial() {
+    const tbody = document.getElementById('historial');
+    if (!tbody) return;
+    const texto = inputBuscarHistorial ? inputBuscarHistorial.value.trim().toLowerCase() : '';
+    const tipoFiltro = selectFiltroElemento ? selectFiltroElemento.value : '';
+
+    const filtrado = historialActual.filter((h) => {
+      const coincideElemento = !tipoFiltro || h.entidad === tipoFiltro;
+      const coincideTexto = !texto 
+        || (h.usuario || '').toLowerCase().includes(texto)
+        || (h.elemento || '').toLowerCase().includes(texto)
+        || (h.valorAnterior || '').toLowerCase().includes(texto)
+        || (h.valorNuevo || '').toLowerCase().includes(texto)
+        || UI.formatoFecha(h.fecha).toLowerCase().includes(texto);
+
+      return coincideElemento && coincideTexto;
+    });
+
+    tbody.innerHTML = filtrado.length
+      ? filtrado.map((h) => `
+          <tr>
+            <td>${UI.formatoFecha(h.fecha)}</td>
+            <td>${UI.escapar(h.usuario)}</td>
+            <td><strong>[${UI.escapar(h.elemento)}]</strong></td>
+            <td>${UI.escapar(h.valorAnterior)}</td>
+            <td>${UI.escapar(h.valorNuevo)}</td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="5" class="texto-suave">Sin coincidencias en el historial.</td></tr>';
+  }
+
+  if (inputBuscarHistorial) {
+    inputBuscarHistorial.addEventListener('input', renderizarHistorial);
+  }
+  if (selectFiltroElemento) {
+    selectFiltroElemento.addEventListener('change', renderizarHistorial);
   }
 
   // ---------- Repintado principal (Carga) ----------
@@ -956,7 +959,6 @@
     
     // Cargar la Definition of Done antes del renderizado (HU-36)
     await cargarDod();
-
     document.title = `${p.nombre} | Scrum Manager`;
     document.getElementById('nombre').textContent = p.nombre;
     document.getElementById('id-proyecto').textContent = p.id;
@@ -999,9 +1001,9 @@
     dibujarSprints(r.datos.sprints || [], miRol, permisos, p.archivado);
     dibujarTableroScrum(r.datos.sprints || [], miRol, p.archivado);
     
-    document.getElementById('historial').innerHTML = historial.length
-      ? historial.map((h) => `<tr><td>${UI.formatoFecha(h.fecha)}</td><td>${UI.escapar(h.usuario)}</td><td>${UI.escapar(h.cambio)}</td></tr>`).join('')
-      : '<tr><td colspan="3" class="texto-suave">Sin cambios.</td></tr>';
+    // HU-38: Cargar historial estructurado y renderizar con filtros
+    historialActual = historial || [];
+    renderizarHistorial();
       
     document.getElementById('contenido').hidden = false;
     await cargarEquipo(p.id, miRol);
@@ -1113,7 +1115,7 @@
     const boton = e.target.closest('[data-quitar-criterio]');
     if (boton) boton.closest('.historia-criterio').remove();
   });
-  
+
   document.getElementById('agregar-tarea').addEventListener('click', () => agregarTarea());
   tareasFormulario.addEventListener('click', (e) => {
     const boton = e.target.closest('[data-quitar-tarea]');
@@ -1132,7 +1134,7 @@
         entonces: fila.querySelector('[data-campo="entonces"]').value.trim()
       }))
       .filter((criterio) => criterio.dado || criterio.cuando || criterio.entonces);
-    
+      
     const tareas = [...tareasFormulario.querySelectorAll('.historia-tarea')]
       .map((fila) => ({
         ...(fila.dataset.id ? { id: fila.dataset.id } : {}),
@@ -1234,6 +1236,11 @@
     if (!r.ok) return UI.toast(r.datos?.mensaje || 'Error.', 'error');
     await pintar();
     UI.toast(r.datos.mensaje, 'exito');
+  });
+
+  document.getElementById('acciones').addEventListener('click', async (e) => {
+    const boton = e.target.closest('[data-accion]');
+    if (!boton || !actual) return;
   });
 
   await pintar();

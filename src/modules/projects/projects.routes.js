@@ -4,7 +4,6 @@ const { readDB, writeDB } = require('../../config/db');
 const { registrarHistorial } = require('../../config/historial');
 const { requiereSesion } = require('../../middleware/auth');
 const { puede, rolEnProyecto, permisosProyecto, esParticipante, apiConPermiso } = require('../../middleware/permisos');
-
 const router = express.Router();
 router.use(requiereSesion);
 
@@ -73,11 +72,9 @@ function validarSprint(db, idProyecto, datos, sprintExistente = null) {
   if (!datos || typeof datos !== 'object' || Array.isArray(datos)) return 'Los datos del sprint no son válidos.';
   if (typeof datos.nombre !== 'string' || !datos.nombre.trim()) return 'El nombre del sprint es obligatorio.';
   if (typeof datos.objetivo !== 'string' || !datos.objetivo.trim()) return 'El objetivo del sprint es obligatorio.';
-  
   if (!FECHA.test(datos.fechaInicio || '') || !FECHA.test(datos.fechaFin || '')) {
     return 'Debes seleccionar una fecha de inicio y una fecha de fin válidas (formato AAAA-MM-DD).';
   }
-
   const hoy = fechaActualLocal();
   const inicioModificado = !sprintExistente || datos.fechaInicio !== sprintExistente.fechaInicio;
   const finModificada = !sprintExistente || datos.fechaFin !== sprintExistente.fechaFin;
@@ -91,7 +88,6 @@ function validarSprint(db, idProyecto, datos, sprintExistente = null) {
   if (datos.fechaFin < datos.fechaInicio) {
     return 'La fecha de fin no puede ser anterior a la fecha de inicio.';
   }
-
   const estado = datos.estado === undefined ? 'Planificado' : datos.estado;
   if (!ESTADOS_SPRINT.includes(estado)) {
     return 'El estado del sprint debe ser Planificado, En curso, Finalizado o Cancelado.';
@@ -104,7 +100,6 @@ function validarSprint(db, idProyecto, datos, sprintExistente = null) {
       return 'Ya existe un sprint en curso en este proyecto. Solo puede haber uno a la vez.';
     }
   }
-
   if (datos.historiasAsignadas !== undefined) {
     if (!Array.isArray(datos.historiasAsignadas)
       || datos.historiasAsignadas.some((id) => typeof id !== 'string')
@@ -219,20 +214,16 @@ function normalizarCriterios(db, historia, criterios) {
 function normalizarTareas(db, idProyecto, historia, tareas, idSprintHistoria = null) {
   if (!db.tareas) db.tareas = [];
   const idHistoria = historia ? historia.id : null;
-  
   const actualesHistoria = historia ? (historia.tareas || []) : [];
   const actualesRaiz = idHistoria ? (db.tareas || []).filter((t) => t.idHistoria === idHistoria) : [];
-  
   const idsActuales = new Set([...actualesHistoria.map((t) => t.id), ...actualesRaiz.map((t) => t.id)]);
   const idsRecibidos = new Set();
   const lista = [];
-
   const developersValidos = new Set(
     (db.participantes || [])
       .filter((p) => p.idProyecto === idProyecto && p.rol === 'Developer')
       .map((p) => p.idUsuario)
   );
-
   for (const tarea of tareas || []) {
     if (tarea.id && (!idsActuales.has(tarea.id) || idsRecibidos.has(tarea.id))) {
       return { error: 'Una de las tareas no pertenece a esta historia o está duplicada.' };
@@ -244,12 +235,10 @@ function normalizarTareas(db, idProyecto, historia, tareas, idSprintHistoria = n
     if (!developersValidos.has(idResponsable)) {
       return { error: 'El responsable asignado a la tarea debe tener el rol de Developer en este proyecto.' };
     }
-
     const horasEstimadas = Math.max(1, Math.round(Number(tarea.horasEstimadas) || 1));
     const estado = tarea.estado || 'Por hacer';
     const esTerminado = estado === 'Terminado' || estado === 'terminado';
     const fechaTerminado = esTerminado ? (tarea.fechaTerminado || fechaActualLocal()) : null;
-
     let id = tarea.id;
     if (!id) {
       id = siguienteIdTarea(db);
@@ -280,7 +269,6 @@ function sincronizarTareasRaiz(db, idHistoria, tareasNormalizadas, idSprintHisto
   tareasNormalizadas.forEach((tn) => {
     tn.idHistoria = idHistoria;
     if (idSprintHistoria && !tn.idSprint) tn.idSprint = idSprintHistoria;
-
     const indice = db.tareas.findIndex((t) => t.id === tn.id);
     if (indice >= 0) {
       db.tareas[indice] = { ...db.tareas[indice], ...tn };
@@ -288,52 +276,6 @@ function sincronizarTareasRaiz(db, idHistoria, tareasNormalizadas, idSprintHisto
       db.tareas.push(tn);
     }
   });
-}
-
-function textoCambio(h) {
-  if (h.entidad === 'dod') {
-    if (h.campo === 'creacion') return `Elemento DoD agregado: ${h.valorNuevo}`;
-    if (h.campo === 'edicion') return `Elemento DoD editado: ${h.valorNuevo.descripcion}`;
-    if (h.campo === 'eliminacion') return `Elemento DoD eliminado: ${h.valorAnterior}`;
-  }
-  if (h.entidad === 'tarea') {
-    if (h.campo === 'estado') {
-      const nuevo = typeof h.valorNuevo === 'object' && h.valorNuevo !== null ? h.valorNuevo.estado : h.valorNuevo;
-      const titulo = typeof h.valorNuevo === 'object' && h.valorNuevo?.titulo ? ` (${h.valorNuevo.titulo})` : '';
-      return `Estado de tarea ${h.idEntidad}${titulo}: ${h.valorAnterior} → ${nuevo}`;
-    }
-  }
-  if (h.entidad === 'sprint') {
-    if (h.campo === 'creacion') return `Sprint definido: ${h.valorNuevo}`;
-    if (h.campo === 'edicion') return `Sprint modificado: ${h.idEntidad}`;
-    if (h.campo === 'estado' || h.campo === 'finalizacion' || h.campo === 'cancelacion') {
-      if (typeof h.valorNuevo === 'object' && h.valorNuevo !== null) {
-        if (h.valorNuevo.estado === 'Cancelado' || h.valorNuevo.razon) {
-          return `Estado del sprint: ${h.valorAnterior} → Cancelado. Razón: ${h.valorNuevo.razon}`;
-        }
-        const cantidad = h.valorNuevo.tareasCompletadas ?? 0;
-        return `Sprint finalizado: ${cantidad} tareas completadas`;
-      }
-      if (h.valorNuevo === 'Cancelado') {
-        return `Estado del sprint: ${h.valorAnterior} → Cancelado`;
-      }
-      const cantidad = typeof h.valorNuevo === 'number' ? h.valorNuevo : 0;
-      return `Sprint finalizado: ${cantidad} tareas completadas`;
-    }
-  }
-  if (h.entidad === 'historia_usuario') {
-    if (h.campo === 'creacion') return `Historia creada: ${h.valorNuevo}`;
-    if (h.campo === 'edicion') return 'Historia editada';
-    if (h.campo === 'refinamiento') return 'Historia refinada';
-    if (h.campo === 'division') return `Historia dividida; se creó ${h.valorNuevo}`;
-    if (h.campo === 'orden') return `Prioridad actualizada: ${h.valorAnterior} → ${h.valorNuevo}`;
-    if (h.campo === 'comentario') return 'Comentario agregado a una historia';
-  }
-  if (h.campo === 'creacion') return 'Proyecto creado';
-  if (h.campo === 'estado') return `Estado: ${ETIQUETAS[h.valorAnterior] || h.valorAnterior} → ${ETIQUETAS[h.valorNuevo] || h.valorNuevo}`;
-  if (h.campo === 'archivado') return h.valorNuevo ? 'Proyecto archivado' : 'Proyecto desarchivado';
-  if (h.valorNuevo && typeof h.valorNuevo === 'object') return `Información editada (${Object.keys(h.valorNuevo).join(', ')})`;
-  return 'Información editada';
 }
 
 function validar(d) {
@@ -432,6 +374,7 @@ router.get('/:id', (req, res) => {
   const idsHistorias = new Set(historiasUsuario.map((h) => h.id));
   const idsSprints = new Set(sprints.map((s) => s.id));
 
+  // HU-38: Mapeo estructurado para soportar 5 columnas y filtros independientes
   const historial = (db.historial || [])
     .filter((h) => (h.entidad === 'proyecto' && h.idEntidad === proyecto.id)
       || (h.entidad === 'historia_usuario' && idsHistorias.has(h.idEntidad))
@@ -441,12 +384,40 @@ router.get('/:id', (req, res) => {
     .sort((a, b) => b.fecha.localeCompare(a.fecha))
     .map((h) => {
       const autor = db.usuarios.find((x) => x.id === h.idUsuario);
-      return { fecha: h.fecha, usuario: autor ? `${autor.nombre} ${autor.apellidos}` : 'Desconocido', cambio: textoCambio(h) };
+      
+      let elementoLegible = h.entidad.toUpperCase();
+      if (h.entidad === 'tarea') elementoLegible = `Tarea ${h.idEntidad}`;
+      else if (h.entidad === 'historia_usuario') elementoLegible = `Historia ${h.idEntidad}`;
+      else if (h.entidad === 'proyecto') elementoLegible = `Proyecto ${h.idEntidad}`;
+      else if (h.entidad === 'sprint') elementoLegible = `Sprint ${h.idEntidad}`;
+      else if (h.entidad === 'dod') elementoLegible = `DoD ${h.idEntidad}`;
+
+      let valorAnt = h.valorAnterior;
+      if (valorAnt === null || valorAnt === undefined) {
+        valorAnt = '-';
+      } else if (typeof valorAnt === 'object') {
+        valorAnt = valorAnt.estado || valorAnt.nombre || valorAnt.descripcion || JSON.stringify(valorAnt);
+      }
+
+      let valorNue = h.valorNuevo;
+      if (valorNue === null || valorNue === undefined) {
+        valorNue = '-';
+      } else if (typeof valorNue === 'object') {
+        valorNue = valorNue.estado || valorNue.nombre || valorNue.descripcion || JSON.stringify(valorNue);
+      }
+
+      return {
+        fecha: h.fecha,
+        usuario: autor ? `${autor.nombre} ${autor.apellidos}` : (h.idUsuario || 'Sistema'),
+        entidad: h.entidad,
+        elemento: elementoLegible,
+        valorAnterior: String(valorAnt),
+        valorNuevo: String(valorNue)
+      };
     });
 
   res.json({ proyecto, miRol: rolEnProyecto(u, proyecto.id, db), permisos: permisosProyecto(u, proyecto, db), historial, historiasUsuario, sprints, developers, siguienteId: siguienteId(db) });
 });
-
 
 // ---------- HU-18, HU-19, HU-20 y HU-21 Historias, prioridad y comentarios ----------
 router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.params.id), (req, res) => {
@@ -458,16 +429,12 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
   const db = ctx.db;
   const errorPlanificacion = validarPlanificacion(db, ctx.proyecto.id, null, datos);
   if (errorPlanificacion) return res.status(400).json({ mensaje: errorPlanificacion });
-  
   if (!db.historiasUsuario) db.historiasUsuario = [];
-  
   const criterios = normalizarCriterios(db, null, datos.criterios);
   if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
   const idHistoriaNueva = siguienteIdHistoria(db.historiasUsuario);
-  
   const tareas = normalizarTareas(db, ctx.proyecto.id, null, datos.tareas);
   if (tareas.error) return res.status(400).json({ mensaje: tareas.error });
-  
   const historia = {
     id: idHistoriaNueva,
     idProyecto: ctx.proyecto.id,
@@ -482,7 +449,6 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
     orden: db.historiasUsuario.filter((h) => h.idProyecto === ctx.proyecto.id).length + 1,
     comentarios: []
   };
-
   sincronizarTareasRaiz(db, historia.id, tareas.lista, null);
   db.historiasUsuario.push(historia);
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'historia_usuario', idEntidad: historia.id, campo: 'creacion', valorNuevo: historia.titulo });
@@ -505,7 +471,6 @@ router.post('/:id/historias/:idHistoria/divisiones', apiConPermiso('gestionar_hi
     if (error) return res.status(400).json({ mensaje: error });
   }
   let orden = db.historiasUsuario.filter((h) => h.idProyecto === ctx.proyecto.id).length;
-  
   const creadas = historias.map((datos) => {
     const criterios = normalizarCriterios(db, null, datos.criterios);
     if (criterios.error) return { error: criterios.error };
@@ -544,10 +509,8 @@ router.post('/:id/historias/:idHistoria/divisiones', apiConPermiso('gestionar_hi
     });
     return historia;
   });
-
   const errorCriterios = creadas.find((historia) => historia.error);
   if (errorCriterios) return res.status(400).json({ mensaje: errorCriterios.error });
-
   writeDB(db);
   res.status(201).json({ mensaje: 'Historias resultantes creadas y vinculadas con la historia original.', historias: creadas });
 });
@@ -563,16 +526,13 @@ router.put('/:id/historias/orden', apiConPermiso('priorizar_historias', (req) =>
     || ids.some((idHistoria) => !historias.some((h) => h.id === idHistoria))) {
     return res.status(400).json({ mensaje: 'Envía el orden completo y válido de las historias del proyecto.' });
   }
-
   const ordenAnterior = historias
     .map((h, indice) => ({ id: h.id, orden: Number.isInteger(h.orden) && h.orden > 0 ? h.orden : indice + 1 }))
     .sort((a, b) => a.orden - b.orden)
     .map((h) => h.id);
-
   if (ids.every((idHistoria, indice) => idHistoria === ordenAnterior[indice])) {
     return res.status(400).json({ mensaje: 'El Product Backlog ya tiene ese orden.' });
   }
-
   ids.forEach((idHistoria, indice) => {
     const historia = historias.find((h) => h.id === idHistoria);
     const ordenAnteriorHistoria = Number.isInteger(historia.orden) && historia.orden > 0 ? historia.orden : ordenAnterior.indexOf(idHistoria) + 1;
@@ -588,7 +548,6 @@ router.put('/:id/historias/orden', apiConPermiso('priorizar_historias', (req) =>
       });
     }
   });
-
   writeDB(ctx.db);
   res.json({ mensaje: 'El orden del Product Backlog se actualizó.', ids });
 });
@@ -598,22 +557,18 @@ router.post('/:id/historias/:idHistoria/comentarios', apiConPermiso('comentar_hi
   if (!ctx) return;
   const historia = (ctx.db.historiasUsuario || []).find((h) => h.id === req.params.idHistoria && h.idProyecto === ctx.proyecto.id);
   if (!historia) return res.status(404).json({ mensaje: 'No se encontró la historia de usuario en este proyecto.' });
-  
   const texto = req.body?.texto;
   if (typeof texto !== 'string' || !texto.trim() || texto.trim().length > 2000) {
     return res.status(400).json({ mensaje: 'El comentario es obligatorio y no puede superar 2000 caracteres.' });
   }
-
   if (!historia.comentarios) historia.comentarios = [];
   const max = historia.comentarios.reduce((m, c) => Math.max(m, parseInt(String(c.id).replace(/^COM-/, ''), 10) || 0), 0);
-  
   const comentario = {
     id: `COM-${String(max + 1).padStart(3, '0')}`,
     idUsuario: req.usuario.id,
     texto: texto.trim(),
     fecha: new Date().toISOString()
   };
-  
   historia.comentarios.push(comentario);
   registrarHistorial(ctx.db, {
     idUsuario: req.usuario.id,
@@ -622,7 +577,6 @@ router.post('/:id/historias/:idHistoria/comentarios', apiConPermiso('comentar_hi
     campo: 'comentario',
     valorNuevo: comentario.texto
   });
-
   writeDB(ctx.db);
   const autor = ctx.db.usuarios.find((x) => x.id === req.usuario.id);
   res.status(201).json({
@@ -637,21 +591,16 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   const db = ctx.db;
   const historia = (db.historiasUsuario || []).find((h) => h.id === req.params.idHistoria && h.idProyecto === ctx.proyecto.id);
   if (!historia) return res.status(404).json({ mensaje: 'No se encontró la historia de usuario en este proyecto.' });
-
   const datos = req.body || {};
   const error = validarHistoria(datos);
   if (error) return res.status(400).json({ mensaje: error });
   const errorPlanificacion = validarPlanificacion(db, ctx.proyecto.id, historia.id, datos);
   if (errorPlanificacion) return res.status(400).json({ mensaje: errorPlanificacion });
-
   const criterios = normalizarCriterios(db, historia, datos.criterios === undefined ? historia.criterios : datos.criterios);
   if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
-
   const tareas = normalizarTareas(db, ctx.proyecto.id, historia, datos.tareas === undefined ? historia.tareas : datos.tareas, historia.idSprint);
   if (tareas.error) return res.status(400).json({ mensaje: tareas.error });
-
   sincronizarTareasRaiz(db, historia.id, tareas.lista, historia.idSprint);
-
   const titulo = String(datos.titulo).trim();
   const descripcion = String(datos.descripcion).trim();
   const estimacion = datos.estimacion === undefined ? historia.estimacion || null : datos.estimacion || null;
@@ -659,12 +608,10 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
     ? historia.responsableOrganizativo || null
     : datos.responsableOrganizativo?.trim() || null;
   const dependencias = datos.dependencias === undefined ? historia.dependencias || [] : datos.dependencias;
-  
   const aclaracion = datos.aclaracion === undefined ? '' : datos.aclaracion;
   if (typeof aclaracion !== 'string' || aclaracion.length > 2000) {
     return res.status(400).json({ mensaje: 'La aclaración no puede superar 2000 caracteres.' });
   }
-
   const cambios = titulo !== historia.titulo || descripcion !== historia.descripcion
     || estimacion !== (historia.estimacion || null)
     || responsableOrganizativo !== (historia.responsableOrganizativo || null)
@@ -672,9 +619,7 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
     || JSON.stringify(criterios.lista) !== JSON.stringify(historia.criterios || [])
     || JSON.stringify(tareas.lista) !== JSON.stringify(historia.tareas || [])
     || !!aclaracion.trim();
-
   if (!cambios) return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
-
   const valorAnterior = {
     titulo: historia.titulo,
     descripcion: historia.descripcion,
@@ -684,7 +629,6 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
     responsableOrganizativo: historia.responsableOrganizativo || null,
     dependencias: historia.dependencias || []
   };
-
   historia.titulo = titulo;
   historia.descripcion = descripcion;
   historia.criterios = criterios.lista;
@@ -692,7 +636,6 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   historia.estimacion = estimacion;
   historia.responsableOrganizativo = responsableOrganizativo;
   historia.dependencias = dependencias;
-
   const valorNuevo = {
     titulo,
     descripcion,
@@ -702,7 +645,6 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
     responsableOrganizativo,
     dependencias
   };
-
   if (aclaracion.trim()) {
     if (!historia.aclaraciones) historia.aclaraciones = [];
     const max = historia.aclaraciones.reduce((m, item) => Math.max(m, parseInt(String(item.id).replace(/^ACL-/, ''), 10) || 0), 0);
@@ -715,7 +657,6 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
     historia.aclaraciones.push(nuevaAclaracion);
     valorNuevo.aclaracion = nuevaAclaracion.texto;
   }
-
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'historia_usuario', idEntidad: historia.id, campo: 'refinamiento', valorAnterior, valorNuevo });
   writeDB(db);
   res.json({ mensaje: 'Historia de usuario actualizada.', historia });
@@ -723,21 +664,17 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
 
 // ---------- Sprint Backlog: Definir sprint ----------
 const ROLES_DEFINIR_SPRINT = ['administrador', 'Product Owner', 'Developer'];
-
 router.post('/:id/sprints', (req, res) => {
   const ctx = cargar(req, res);
   if (!ctx) return;
   const db = ctx.db;
-
   const miRol = rolEnProyecto(req.usuario, ctx.proyecto.id, db);
   if (!miRol || !ROLES_DEFINIR_SPRINT.includes(miRol)) {
     return res.status(403).json({ mensaje: 'No tienes permisos para realizar esta acción.' });
   }
-
   const datos = req.body || {};
   const error = validarSprint(db, ctx.proyecto.id, datos);
   if (error) return res.status(400).json({ mensaje: error });
-
   if (!db.sprints) db.sprints = [];
   const sprint = {
     id: siguienteIdSprint(db.sprints),
@@ -749,7 +686,6 @@ router.post('/:id/sprints', (req, res) => {
     estado: datos.estado || 'Planificado',
     historiasAsignadas: Array.isArray(datos.historiasAsignadas) ? datos.historiasAsignadas : []
   };
-
   db.sprints.push(sprint);
   registrarHistorial(db, {
     idUsuario: req.usuario.id,
@@ -766,35 +702,28 @@ router.put('/:id/sprints/:idSprint', (req, res) => {
   const ctx = cargar(req, res);
   if (!ctx) return;
   const db = ctx.db;
-
   const miRol = rolEnProyecto(req.usuario, ctx.proyecto.id, db);
   if (!miRol || !ROLES_DEFINIR_SPRINT.includes(miRol)) {
     return res.status(403).json({ mensaje: 'No tienes permisos para realizar esta acción.' });
   }
-
   const sprint = (db.sprints || []).find((s) => s.id === req.params.idSprint && s.idProyecto === ctx.proyecto.id);
   if (!sprint) return res.status(404).json({ mensaje: 'No se encontró el sprint en este proyecto.' });
-
   const datos = req.body || {};
   const error = validarSprint(db, ctx.proyecto.id, datos, sprint);
   if (error) return res.status(400).json({ mensaje: error });
-
   const nombre = String(datos.nombre).trim();
   const objetivo = String(datos.objetivo).trim();
   const fechaInicio = datos.fechaInicio;
   const fechaFin = datos.fechaFin;
   const estado = datos.estado || 'Planificado';
   const historiasAsignadas = Array.isArray(datos.historiasAsignadas) ? datos.historiasAsignadas : [];
-
   const cambios = nombre !== sprint.nombre
     || objetivo !== sprint.objetivo
     || fechaInicio !== sprint.fechaInicio
     || fechaFin !== sprint.fechaFin
     || estado !== sprint.estado
     || JSON.stringify(historiasAsignadas) !== JSON.stringify(sprint.historiasAsignadas || []);
-
   if (!cambios) return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
-
   const valorAnterior = {
     nombre: sprint.nombre,
     objetivo: sprint.objetivo,
@@ -803,14 +732,12 @@ router.put('/:id/sprints/:idSprint', (req, res) => {
     estado: sprint.estado,
     historiasAsignadas: sprint.historiasAsignadas || []
   };
-
   sprint.nombre = nombre;
   sprint.objetivo = objetivo;
   sprint.fechaInicio = fechaInicio;
   sprint.fechaFin = fechaFin;
   sprint.estado = estado;
   sprint.historiasAsignadas = historiasAsignadas;
-
   const valorNuevo = {
     nombre,
     objetivo,
@@ -819,7 +746,6 @@ router.put('/:id/sprints/:idSprint', (req, res) => {
     estado,
     historiasAsignadas
   };
-
   registrarHistorial(db, {
     idUsuario: req.usuario.id,
     entidad: 'sprint',
@@ -834,34 +760,27 @@ router.put('/:id/sprints/:idSprint', (req, res) => {
 
 // Finalizar sprint
 const ROLES_FINALIZAR_SPRINT = ['administrador', 'Product Owner'];
-
 router.put('/:id/sprints/:idSprint/finalizar', (req, res) => {
   const ctx = cargar(req, res);
   if (!ctx) return;
   const db = ctx.db;
-
   const miRol = rolEnProyecto(req.usuario, ctx.proyecto.id, db);
   if (!miRol || !ROLES_FINALIZAR_SPRINT.includes(miRol)) {
     return res.status(403).json({ mensaje: 'Solo el administrador y el Product Owner pueden finalizar un sprint.' });
   }
-
   const sprint = (db.sprints || []).find((s) => s.id === req.params.idSprint && s.idProyecto === ctx.proyecto.id);
   if (!sprint) return res.status(404).json({ mensaje: 'No se encontró el sprint en este proyecto.' });
-
   if (sprint.estado === 'Finalizado') {
     return res.status(409).json({ mensaje: 'El sprint ya se encuentra finalizado.' });
   }
-
   const idsHistoriasSprint = new Set(sprint.historiasAsignadas || []);
   const tareasDelSprint = (db.tareas || []).filter((t) =>
     t.idSprint === sprint.id || idsHistoriasSprint.has(t.idHistoria)
   );
-
   let tareasCompletadas = tareasDelSprint.filter((t) => {
     const est = String(t.estado || '').toLowerCase();
     return est === 'terminado' || est === 'completada' || t.estado === 'Terminado';
   }).length;
-
   if (tareasDelSprint.length === 0) {
     const historiasDelSprint = (db.historiasUsuario || []).filter((h) =>
       h.idProyecto === ctx.proyecto.id && idsHistoriasSprint.has(h.id)
@@ -875,10 +794,8 @@ router.put('/:id/sprints/:idSprint/finalizar', (req, res) => {
       });
     });
   }
-
   const estadoAnterior = sprint.estado;
   sprint.estado = 'Finalizado';
-
   registrarHistorial(db, {
     idUsuario: req.usuario.id,
     entidad: 'sprint',
@@ -890,7 +807,6 @@ router.put('/:id/sprints/:idSprint/finalizar', (req, res) => {
       tareasCompletadas
     }
   });
-
   writeDB(db);
   res.json({
     mensaje: `Sprint finalizado correctamente con ${tareasCompletadas} tarea(s) completada(s).`,
@@ -901,34 +817,27 @@ router.put('/:id/sprints/:idSprint/finalizar', (req, res) => {
 
 // Cambiar estado de una tarea
 const ROLES_MODIFICAR_TAREA = ['administrador', 'Developer'];
-
 router.put('/:id/historias/:idHistoria/tareas/:idTarea/estado', (req, res) => {
   const ctx = cargar(req, res);
   if (!ctx) return;
   const db = ctx.db;
-
   const miRol = rolEnProyecto(req.usuario, ctx.proyecto.id, db);
   if (!miRol || !ROLES_MODIFICAR_TAREA.includes(miRol)) {
     return res.status(403).json({ mensaje: 'Solo el administrador y los developers pueden modificar el estado de una tarea.' });
   }
-
   const historia = (db.historiasUsuario || []).find((h) => h.id === req.params.idHistoria && h.idProyecto === ctx.proyecto.id);
   if (!historia) return res.status(404).json({ mensaje: 'No se encontró la historia de usuario en este proyecto.' });
-
   const tarea = (historia.tareas || []).find((t) => t.id === req.params.idTarea);
   if (!tarea) return res.status(404).json({ mensaje: 'No se encontró la tarea en esta historia de usuario.' });
-
   const nuevoEstado = String(req.body?.estado || '').trim();
   if (!ESTADOS_TAREA.includes(nuevoEstado) && !['por_hacer', 'en_progreso', 'en_revision', 'terminado'].includes(nuevoEstado)) {
     return res.status(400).json({ mensaje: 'Estado de tarea no válido.' });
   }
-
   let estadoNormalizado = nuevoEstado;
   if (estadoNormalizado === 'por_hacer') estadoNormalizado = 'Por hacer';
   if (estadoNormalizado === 'en_progreso') estadoNormalizado = 'En progreso';
   if (estadoNormalizado === 'en_revision') estadoNormalizado = 'En revisión';
   if (estadoNormalizado === 'terminado') estadoNormalizado = 'Terminado';
-
   const estadoAnterior = tarea.estado || 'Por hacer';
   if (estadoAnterior === estadoNormalizado) {
     return res.status(400).json({ mensaje: 'La tarea ya se encuentra en ese estado.' });
@@ -953,7 +862,6 @@ router.put('/:id/historias/:idHistoria/tareas/:idTarea/estado', (req, res) => {
   } else {
     tarea.fechaTerminado = null;
   }
-
   if (!db.tareas) db.tareas = [];
   const idxRaiz = db.tareas.findIndex((t) => t.id === tarea.id);
   if (idxRaiz >= 0) {
@@ -966,7 +874,6 @@ router.put('/:id/historias/:idHistoria/tareas/:idTarea/estado', (req, res) => {
       idSprint: historia.idSprint || null
     });
   }
-
   registrarHistorial(db, {
     idUsuario: req.usuario.id,
     entidad: 'tarea',
@@ -979,7 +886,6 @@ router.put('/:id/historias/:idHistoria/tareas/:idTarea/estado', (req, res) => {
       idHistoria: historia.id
     }
   });
-
   writeDB(db);
   res.json({
     mensaje: `Estado de la tarea actualizado a "${nuevoEstado}".`,
@@ -989,27 +895,22 @@ router.put('/:id/historias/:idHistoria/tareas/:idTarea/estado', (req, res) => {
 
 // Cancelar sprint
 const ROLES_CANCELAR_SPRINT = ['administrador', 'Product Owner'];
-
 router.put('/:id/sprints/:idSprint/cancelar', (req, res) => {
   const ctx = cargar(req, res);
   if (!ctx) return;
   const db = ctx.db;
-
   const miRol = rolEnProyecto(req.usuario, ctx.proyecto.id, db);
   if (!miRol || !ROLES_CANCELAR_SPRINT.includes(miRol)) {
     return res.status(403).json({ mensaje: 'Solo el administrador y el Product Owner pueden cancelar un sprint.' });
   }
-
   const sprint = (db.sprints || []).find((s) => s.id === req.params.idSprint && s.idProyecto === ctx.proyecto.id);
   if (!sprint) return res.status(404).json({ mensaje: 'No se encontró el sprint en este proyecto.' });
-
   if (sprint.estado === 'Cancelado') {
     return res.status(409).json({ mensaje: 'El sprint ya se encuentra cancelado.' });
   }
   if (sprint.estado === 'Finalizado') {
     return res.status(409).json({ mensaje: 'No se puede cancelar un sprint que ya ha sido finalizado.' });
   }
-
   const razon = String(req.body?.razon || '').trim();
   if (!razon) {
     return res.status(400).json({ mensaje: 'Debes indicar una razón para cancelar el sprint.' });
@@ -1017,11 +918,9 @@ router.put('/:id/sprints/:idSprint/cancelar', (req, res) => {
   if (razon.length > 1000) {
     return res.status(400).json({ mensaje: 'La razón no puede superar los 1000 caracteres.' });
   }
-
   const estadoAnterior = sprint.estado;
   sprint.estado = 'Cancelado';
   sprint.razonCancelacion = razon;
-
   registrarHistorial(db, {
     idUsuario: req.usuario.id,
     entidad: 'sprint',
@@ -1033,7 +932,6 @@ router.put('/:id/sprints/:idSprint/cancelar', (req, res) => {
       razon
     }
   });
-
   writeDB(db);
   res.json({
     mensaje: 'Sprint cancelado correctamente.',
@@ -1043,7 +941,6 @@ router.put('/:id/sprints/:idSprint/cancelar', (req, res) => {
 });
 
 // ---------- EP-07: Definition of Done (HU-36) ----------
-
 // Consultar los criterios DoD de un proyecto
 router.get('/:id/dod', (req, res) => {
   const ctx = cargar(req, res);
@@ -1058,11 +955,9 @@ router.post('/:id/dod', apiConPermiso('editar_proyecto', (req) => req.params.id)
   if (!ctx) return;
   const db = ctx.db;
   const d = req.body || {};
-  
   if (!d.descripcion?.trim() || !['Obligatorio', 'Opcional'].includes(d.tipo)) {
     return res.status(400).json({ mensaje: 'La descripción y el tipo (Obligatorio/Opcional) son requeridos.' });
   }
-
   if (!db.dods) db.dods = [];
   const max = db.dods.reduce((m, item) => Math.max(m, parseInt(String(item.id).replace(/^DOD-/, ''), 10) || 0), 0);
   const nuevo = {
@@ -1071,7 +966,6 @@ router.post('/:id/dod', apiConPermiso('editar_proyecto', (req) => req.params.id)
     descripcion: d.descripcion.trim(),
     tipo: d.tipo
   };
-
   db.dods.push(nuevo);
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'dod', idEntidad: nuevo.id, campo: 'creacion', valorNuevo: nuevo.descripcion });
   writeDB(db);
@@ -1084,18 +978,14 @@ router.put('/:id/dod/:idDod', apiConPermiso('editar_proyecto', (req) => req.para
   if (!ctx) return;
   const db = ctx.db;
   const d = req.body || {};
-  
   const dod = (db.dods || []).find(x => x.id === req.params.idDod && x.idProyecto === ctx.proyecto.id);
   if (!dod) return res.status(404).json({ mensaje: 'Elemento DoD no encontrado.' });
-
   if (!d.descripcion?.trim() || !['Obligatorio', 'Opcional'].includes(d.tipo)) {
     return res.status(400).json({ mensaje: 'La descripción y el tipo son requeridos.' });
   }
-
   const valorAnterior = { descripcion: dod.descripcion, tipo: dod.tipo };
   dod.descripcion = d.descripcion.trim();
   dod.tipo = d.tipo;
-
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'dod', idEntidad: dod.id, campo: 'edicion', valorAnterior, valorNuevo: { descripcion: dod.descripcion, tipo: dod.tipo } });
   writeDB(db);
   res.json({ mensaje: 'Elemento DoD actualizado.', dod });
@@ -1106,10 +996,8 @@ router.delete('/:id/dod/:idDod', apiConPermiso('editar_proyecto', (req) => req.p
   const ctx = cargar(req, res);
   if (!ctx) return;
   const db = ctx.db;
-  
   const index = (db.dods || []).findIndex(x => x.id === req.params.idDod && x.idProyecto === ctx.proyecto.id);
   if (index === -1) return res.status(404).json({ mensaje: 'Elemento DoD no encontrado.' });
-
   const eliminado = db.dods.splice(index, 1)[0];
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'dod', idEntidad: eliminado.id, campo: 'eliminacion', valorAnterior: eliminado.descripcion });
   writeDB(db);
@@ -1133,13 +1021,11 @@ router.post('/', apiConPermiso('crear_proyecto'), (req, res) => {
     archivado: false
   };
   db.proyectos.push(proyecto);
-  
   if (req.usuario.rolGlobal !== 'administrador') {
     if (!db.participantes) db.participantes = [];
     const max = db.participantes.reduce((m, p) => Math.max(m, parseInt(String(p.id).split('-')[1], 10) || 0), 0);
     db.participantes.push({ id: `PAR-${String(max + 1).padStart(3, '0')}`, idProyecto: proyecto.id, idUsuario: req.usuario.id, rol: 'Product Owner' });
   }
-  
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'creacion', valorNuevo: proyecto.nombre });
   writeDB(db);
   res.status(201).json({ mensaje: 'Proyecto creado.', proyecto });
@@ -1153,15 +1039,12 @@ router.put('/:id', apiConPermiso('editar_proyecto', (req) => req.params.id), (re
   const d = { ...proyecto, ...(req.body || {}) };
   const error = validar(d);
   if (error) return res.status(400).json({ mensaje: error });
-  
   const antes = {}, despues = {};
   CAMPOS_EDITABLES.forEach((c) => {
     const nuevo = typeof d[c] === 'string' ? d[c].trim() : d[c];
     if (nuevo !== proyecto[c]) { antes[c] = proyecto[c]; despues[c] = nuevo; proyecto[c] = nuevo; }
   });
-  
   if (!Object.keys(despues).length) return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
-  
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'informacion', valorAnterior: antes, valorNuevo: despues });
   writeDB(db);
   res.json({ mensaje: 'Proyecto actualizado.', proyecto });
@@ -1173,13 +1056,11 @@ router.put('/:id/estado', apiConPermiso('cambiar_estado', (req) => req.params.id
   if (!ctx) return;
   const { db, proyecto } = ctx;
   const nuevo = req.body?.estado;
-  
   if (!ETIQUETAS[nuevo]) return res.status(400).json({ mensaje: 'Estado no válido.' });
   if (nuevo === 'finalizado') return res.status(400).json({ mensaje: 'Para finalizar usa la acción "Finalizar proyecto".' });
   if (!(TRANSICIONES[proyecto.estado] || []).includes(nuevo)) {
     return res.status(409).json({ mensaje: `No se puede pasar de ${ETIQUETAS[proyecto.estado]} a ${ETIQUETAS[nuevo]}.` });
   }
-  
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'estado', valorAnterior: proyecto.estado, valorNuevo: nuevo });
   proyecto.estado = nuevo;
   writeDB(db);
@@ -1193,7 +1074,6 @@ router.put('/:id/finalizar', apiConPermiso('finalizar_proyecto', (req) => req.pa
   const { db, proyecto } = ctx;
   if (proyecto.estado === 'finalizado') return res.status(409).json({ mensaje: 'El proyecto ya está finalizado.' });
   if (proyecto.estado === 'preparacion') return res.status(409).json({ mensaje: 'Un proyecto en preparación no puede finalizarse; actívalo primero.' });
-  
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'estado', valorAnterior: proyecto.estado, valorNuevo: 'finalizado' });
   proyecto.estado = 'finalizado';
   writeDB(db);
@@ -1205,7 +1085,6 @@ router.put('/:id/reabrir', apiConPermiso('reabrir_proyecto', (req) => req.params
   if (!ctx) return;
   const { db, proyecto } = ctx;
   if (proyecto.estado !== 'finalizado') return res.status(409).json({ mensaje: 'Solo se puede reabrir un proyecto finalizado.' });
-  
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'estado', valorAnterior: 'finalizado', valorNuevo: 'activo' });
   proyecto.estado = 'activo';
   writeDB(db);
@@ -1219,7 +1098,6 @@ router.put('/:id/archivar', apiConPermiso('archivar_proyecto', (req) => req.para
   const { db, proyecto } = ctx;
   const archivar = req.body?.archivado !== false; 
   if (proyecto.archivado === archivar) return res.status(409).json({ mensaje: archivar ? 'El proyecto ya está archivado.' : 'El proyecto no está archivado.' });
-  
   registrarHistorial(db, { idUsuario: req.usuario.id, entidad: 'proyecto', idEntidad: proyecto.id, campo: 'archivado', valorAnterior: proyecto.archivado, valorNuevo: archivar });
   proyecto.archivado = archivar;
   writeDB(db);
