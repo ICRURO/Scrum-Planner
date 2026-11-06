@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Detalle del proyecto · Scrum Manager</title>
+  <title>Detalle del proyecto | Scrum Manager</title>
   <link rel="stylesheet" href="/shared/css/tokens.css">
   <link rel="stylesheet" href="/shared/css/base.css">
   <link rel="stylesheet" href="/shared/css/components.css">
@@ -11,13 +11,12 @@
 </head>
 <body data-volver="/proyectos" data-volver-texto="proyectos" data-seccion="proyectos" data-protegida>
   <div id="app-header"></div>
-
   <main class="pagina">
     <div class="titulo-pagina">
       <h1 id="nombre">Proyecto</h1>
       <div class="titulo-meta"><span id="id-proyecto"></span><span id="estado-insignia"></span><span id="archivado-insignia"></span></div>
     </div>
-
+    
     <section class="tarjeta tarjeta--aviso" id="sin-acceso" hidden>
       <div class="vacio">
         <span class="vacio__icono" data-icon="escudo" data-size="26"></span>
@@ -26,7 +25,7 @@
         <a class="btn btn-secundario" href="/proyectos">Volver a proyectos</a>
       </div>
     </section>
-
+    
     <div class="columna" id="contenido" hidden>
       <section class="tarjeta">
         <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="bandera"></span>Estado del proyecto</h2>
@@ -34,13 +33,13 @@
         <div class="acciones-fila" id="acciones"></div>
         <div class="alerta alerta--info" id="aviso-rol" hidden></div>
       </section>
-
+      
       <div class="rejilla-doble">
         <section class="tarjeta">
           <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="info"></span>Información general</h2>
           <dl class="datos" id="info"></dl>
         </section>
-
+        
         <div class="tarjeta mt-4">
           <div class="tarjeta-encabezado">
             <h3 class="tarjeta__titulo"><span class="icono-ficha" data-icon="usuario"></span>Agregar Participante (HU-14 y HU-15)</h3>
@@ -48,25 +47,21 @@
           <div class="controles-edicion">
             <div class="campo">
               <label for="select-usuario">ID del Usuario:</label>
-              <input type="text" id="select-usuario" placeholder="Ej: USR-001" class="input">
+              <input type="text" id="select-usuario" placeholder="Ej: USR-001" class="input control">
             </div>
-
-
             <div class="campo mt-2">
-              <label for="select__rol">Rol Scrum:</label>
-              <select id="select-rol" class="input">
+              <label for="select-rol">Rol Scrum:</label>
+              <select id="select-rol" class="input control">
                 <option value="Product Owner">Product Owner</option>
                 <option value="Scrum Master">Scrum Master</option>
                 <option value="Developer">Developer</option>
                 <option value="Interesado">Interesado</option>
               </select>
             </div>
-            <!-- Se pasa el ID del proyecto directamente desde la URL o el DOM -->
             <button class="btn btn-primario mt-3" onclick="agregarParticipanteConRol(new URLSearchParams(window.location.search).get('id'))">Agregar al Equipo</button>
           </div>
-
-
         </div>
+        
         <div class="tarjeta mt-4">
           <div class="tarjeta-encabezado">
             <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="equipo"></span>Equipo del Proyecto (HU-16)</h2>
@@ -75,8 +70,7 @@
             <ul id="lista-equipo" class="lista-equipo-estilo"></ul>
           </div>
         </div>
-
-
+        
         <section class="tarjeta">
           <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="reloj"></span>Historial de cambios</h2>
           <div class="tabla-contenedor">
@@ -86,8 +80,53 @@
             </table>
           </div>
         </section>
-
       </div>
+
+      <!-- Definition of Done (HU-36) -->
+      <section class="tarjeta mt-4">
+        <div class="tarjeta-encabezado" style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 class="tarjeta__titulo" style="margin-bottom: 0;">
+            <span class="icono-ficha" data-icon="check"></span>Definition of Done
+          </h2>
+          <button class="btn btn-primario btn-chico" id="btn-agregar-dod">+ Agregar elemento</button>
+        </div>
+        <p class="texto-suave mt-1 mb-3">Condiciones obligatorias y opcionales para considerar terminado el trabajo.</p>
+        
+        <div id="contenedor-form-dod" hidden style="margin-bottom: 20px; padding: 16px; border: 1px solid var(--c-linea); border-radius: var(--radio-m); background: var(--c-papel);">
+          <form id="form-dod">
+            <input type="hidden" id="dod-id">
+            <div class="campo">
+              <label for="dod-descripcion">Elemento de verificación</label>
+              <input class="control" id="dod-descripcion" placeholder="Ej. Código revisado por otro Developer" required>
+            </div>
+            <div class="campo">
+              <label for="dod-tipo">Tipo</label>
+              <select class="control" id="dod-tipo" required>
+                <option value="Obligatorio">Obligatorio</option>
+                <option value="Opcional">Opcional</option>
+              </select>
+            </div>
+            <div class="historias-acciones" style="margin-top: 12px;">
+              <button class="btn btn-secundario btn-chico" type="button" id="btn-cancelar-dod">Cancelar</button>
+              <button class="btn btn-primario btn-chico" type="submit">Guardar cambios</button>
+            </div>
+          </form>
+        </div>
+      
+        <div class="tabla-contenedor">
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Elemento</th>
+                <th>Tipo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-dod"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="tarjeta historias-proyecto">
         <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="info"></span>Product Backlog: historias y criterios de aceptación</h2>
         <div id="formulario-historia-contenedor" hidden>
@@ -99,7 +138,7 @@
             <div class="campo">
               <label for="historia-descripcion">Descripción</label>
               <textarea class="control" id="historia-descripcion" name="descripcion" required placeholder="Como [rol], quiero [necesidad], para [beneficio]."></textarea>
-              <span class="campo__ayuda">Puedes redactarla con la estructura: Como…, quiero…, para…</span>
+              <span class="campo__ayuda">Puedes redactarla con la estructura: Como..., quiero..., para...</span>
             </div>
             <div class="campo">
               <label for="historia-estimacion">Estimación relativa</label>
@@ -126,22 +165,26 @@
               <label for="historia-aclaracion">Aclaración del refinamiento</label>
               <textarea class="control" id="historia-aclaracion" maxlength="2000" placeholder="Registra una aclaración para el equipo (opcional)."></textarea>
             </div>
+            
             <div class="historias-criterios-encabezado">
               <h3>Criterios de aceptación</h3>
               <button class="btn btn-secundario btn-chico" type="button" id="agregar-criterio">Agregar criterio</button>
             </div>
             <div id="criterios-formulario" class="historias-criterios"></div>
+            
             <div class="historias-criterios-encabezado">
               <h3>Tareas de la historia</h3>
               <button class="btn btn-secundario btn-chico" type="button" id="agregar-tarea">Agregar tarea</button>
             </div>
             <div id="tareas-formulario" class="historias-criterios"></div>
+            
             <div class="historias-acciones">
               <button class="btn btn-primario" type="submit" id="guardar-historia">Registrar historia</button>
               <button class="btn btn-secundario" type="button" id="cancelar-edicion-historia" hidden>Cancelar edición</button>
             </div>
           </form>
         </div>
+        
         <section class="historia-division" id="division-contenedor" hidden>
           <div class="tarjeta-encabezado">
             <h3 id="division-titulo">Dividir historia</h3>
@@ -156,6 +199,7 @@
             </div>
           </form>
         </section>
+        
         <div class="tabla-contenedor">
           <table class="tabla">
             <thead>
@@ -178,7 +222,7 @@
           </table>
         </div>
       </section>
-
+      
       <section class="tarjeta historias-proyecto" id="seccion-sprint-backlog">
         <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="calendario"></span>Sprint Backlog: definición y lista de sprints</h2>
         <div id="formulario-sprint-contenedor" hidden>
@@ -186,7 +230,7 @@
             <div class="rejilla-doble">
               <div class="campo">
                 <label for="sprint-nombre">Nombre del sprint</label>
-                <input class="control" id="sprint-nombre" name="nombre" maxlength="160" placeholder="Ej.: Sprint 1 · Autenticación y gestión de usuarios" required>
+                <input class="control" id="sprint-nombre" name="nombre" maxlength="160" placeholder="Ej.: Sprint 1 - Autenticación" required>
               </div>
               <div class="campo">
                 <label for="sprint-estado">Estado del sprint</label>
@@ -200,7 +244,7 @@
             </div>
             <div class="campo">
               <label for="sprint-objetivo">Objetivo del sprint</label>
-              <textarea class="control" id="sprint-objetivo" name="objetivo" maxlength="1000" placeholder="Describe la meta principal que el equipo alcanzará en este sprint." required></textarea>
+              <textarea class="control" id="sprint-objetivo" name="objetivo" maxlength="1000" placeholder="Describe la meta principal..." required></textarea>
             </div>
             <div class="rejilla-doble">
               <div class="campo">
@@ -214,7 +258,7 @@
             </div>
             <div class="campo">
               <label>Historias de usuario del Sprint</label>
-              <div id="sprint-historias-lista" class="sprint-historias-selector" role="group" aria-label="Seleccionar historias de usuario para el sprint"></div>
+              <div id="sprint-historias-lista" class="sprint-historias-selector" role="group" aria-label="Seleccionar historias"></div>
               <span class="campo__ayuda" id="sprint-historias-resumen">Historias seleccionadas (0): ninguna</span>
             </div>
             <div class="historias-acciones">
@@ -241,7 +285,7 @@
           </table>
         </div>
       </section>
-
+      
       <section class="tarjeta historias-proyecto" id="seccion-tablero-scrum">
         <div class="tablero-encabezado">
           <div class="tablero-encabezado__titulo">
@@ -255,11 +299,10 @@
             </select>
           </div>
         </div>
-
         <div class="tablero-filtros barra">
           <div class="barra__buscar entrada entrada--icono">
             <span class="entrada__icono" data-icon="buscar"></span>
-            <input class="control" id="filtro-tablero-titulo" type="search" placeholder="Filtrar tareas por título..." aria-label="Filtrar tareas por título">
+            <input class="control" id="filtro-tablero-titulo" type="search" placeholder="Filtrar tareas..." aria-label="Filtrar tareas">
           </div>
           <div class="barra__filtro">
             <label for="filtro-tablero-responsable" class="solo-lectores">Filtrar por responsable</label>
@@ -269,12 +312,11 @@
           </div>
           <div class="barra__filtro">
             <label for="filtro-tablero-historia" class="solo-lectores">Filtrar por historia</label>
-            <select class="control" id="filtro-tablero-historia" aria-label="Filtrar por historia de usuario">
+            <select class="control" id="filtro-tablero-historia" aria-label="Filtrar por historia">
               <option value="todas">Todas las historias</option>
             </select>
           </div>
         </div>
-
         <div class="tablero-scrum" id="tablero-scrum">
           <div class="tablero-columna" data-columna="Por hacer">
             <div class="tablero-columna__cabecera tablero-columna__cabecera--por-hacer">
@@ -283,7 +325,6 @@
             </div>
             <div class="tablero-columna__cuerpo" id="columna-por-hacer"></div>
           </div>
-
           <div class="tablero-columna" data-columna="En progreso">
             <div class="tablero-columna__cabecera tablero-columna__cabecera--en-progreso">
               <span class="tablero-columna__titulo">En progreso</span>
@@ -291,7 +332,6 @@
             </div>
             <div class="tablero-columna__cuerpo" id="columna-en-progreso"></div>
           </div>
-
           <div class="tablero-columna" data-columna="En revisión">
             <div class="tablero-columna__cabecera tablero-columna__cabecera--en-revision">
               <span class="tablero-columna__titulo">En revisión</span>
@@ -299,7 +339,6 @@
             </div>
             <div class="tablero-columna__cuerpo" id="columna-en-revision"></div>
           </div>
-
           <div class="tablero-columna" data-columna="Terminado">
             <div class="tablero-columna__cabecera tablero-columna__cabecera--terminado">
               <span class="tablero-columna__titulo">Terminado</span>
@@ -311,7 +350,7 @@
       </section>
     </div>
   </main>
-
+  
   <script src="/shared/js/icons.js"></script>
   <script src="/shared/js/api.js"></script>
   <script src="/shared/js/ui.js"></script>
