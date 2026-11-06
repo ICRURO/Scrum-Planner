@@ -7,7 +7,8 @@ const Layout = (() => {
     { id: 'proyectos', texto: 'Proyectos', icono: 'carpeta', href: '/proyectos', descripcion: 'Consulta y administra tus proyectos' },
     { id: 'equipos', texto: 'Equipos', icono: 'equipo', href: '/equipos', descripcion: 'Participantes y roles Scrum' },
     { id: 'reportes', texto: 'Reportes', icono: 'reportes', href: '/reportes', descripcion: 'Métricas y avance de los sprints' },
-    { id: 'usuarios', texto: 'Usuarios', icono: 'escudo', href: '/usuarios', descripcion: 'Cuentas, invitaciones y estados', roles: ['administrador'] }
+    { id: 'usuarios', texto: 'Usuarios', icono: 'escudo', href: '/usuarios', descripcion: 'Cuentas, invitaciones y estados', roles: ['administrador'] },
+    { id: 'capacitacion', texto: 'Capacitación', icono: 'capacitacion', href: '/capacitacion', descripcion: 'Guía y material de Scrum' }
   ];
   
   const PERFIL_HREF = '/perfil';

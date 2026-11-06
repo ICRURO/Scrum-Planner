@@ -53,6 +53,9 @@ app.get('/equipos', requierePagina, (req, res) => res.sendFile(pagina('equipos',
 // ---------- Reportes ----------
 app.get('/reportes', requierePagina, (req, res) => res.sendFile(pagina('metrics', 'reportes.html')));
 
+// ---------- Capacitación ----------
+app.get('/capacitacion', requierePagina, (req, res) => res.sendFile(pagina('training', 'capacitacion.html')));
+
 // ---------- API ----------
 // Cada módulo monta aquí sus rutas con una sola línea.
 app.use('/api/auth', require('./src/modules/auth/auth.routes'));
@@ -63,6 +66,9 @@ app.use('/api/equipos', require('./src/modules/equipos/equipos.routes'));
 
 // ---------- API de métricas ----------
 app.use('/api/metrics', require('./src/modules/metrics/metrics.routes'));
+
+// ---------- API de capacitación ----------
+app.use('/api/training', require('./src/modules/training/training.routes'));
 
 // ---------- Página 404 ----------
 app.use((req, res) => res.status(404).send('Página no encontrada'));
