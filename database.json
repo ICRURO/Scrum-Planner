@@ -1491,9 +1491,17 @@
   "capacitacionProgreso": [
     {
       "idUsuario": "USR-001",
-      "porcentaje": 25,
-      "pasoIndex": 2,
-      "moduloActual": "Épica 3",
+      "porcentaje": 33,
+      "pasoIndex": 3,
+      "moduloActual": "Épica 4",
+      "completado": false,
+      "ultimaActualizacion": "2026-11-06"
+    },
+    {
+      "idUsuario": "USR-009",
+      "porcentaje": 17,
+      "pasoIndex": 1,
+      "moduloActual": "Épica 2",
       "completado": false,
       "ultimaActualizacion": "2026-11-06"
     }
