@@ -1,0 +1,11 @@
+    /* src/modules/training/capacitacion.css */
+    .pagina--fluida {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    }
+
+    #modal-bienvenida {
+    margin-bottom: 24px;
+    border: 2px solid var(--c-brote);
+    }

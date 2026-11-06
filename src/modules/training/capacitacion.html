@@ -18,7 +18,7 @@
       <p>Aprende los fundamentos de Scrum y el funcionamiento del sistema Scrum Manager</p>
     </div>
 
-    <!-- Modal / Sección de bienvenida (HU-54-T1: Diseñar modal y lógica de primera visita) -->
+    <!-- Modal / Sección de bienvenida (HU-54) -->
     <section class="tarjeta" id="modal-bienvenida" hidden>
       <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="bandera"></span>Bienvenido a la Capacitación</h2>
       <p>Hemos detectado que cuentas con módulos pendientes en tu guía de Scrum Manager. ¿Deseas tomar la capacitación ahora o prefieres realizarla después?</p>
@@ -28,12 +28,17 @@
       </div>
     </section>
 
-    <!-- Contenedor principal que se expandirá en las siguientes tareas -->
+    <!-- Contenedor del Tutorial Interactivo (HU-57) -->
     <div class="rejilla-panel" id="contenedor-tutorial">
       <section class="tarjeta">
         <h2 class="tarjeta__titulo" id="titulo-modulo"><span class="icono-ficha" data-icon="info"></span>Módulo de Aprendizaje</h2>
         <div id="contenido-teoria" style="margin-bottom: 24px; line-height: 1.6;">
-          <p>Cargando contenidos del tutorial de Scrum Manager...</p>
+          <p>Cargando módulo de aprendizaje...</p>
+        </div>
+        <div class="tarjeta__pie" style="justify-content: space-between;">
+          <button class="btn btn-secundario" id="btn-anterior" disabled>Anterior</button>
+          <span id="indicador-progreso-texto" class="texto-suave">Paso 1 de 2</span>
+          <button class="btn btn-primario" id="btn-siguiente">Siguiente</button>
         </div>
       </section>
     </div>
