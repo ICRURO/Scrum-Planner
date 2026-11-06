@@ -28,19 +28,44 @@
       </div>
     </section>
 
-    <!-- Contenedor del Tutorial Interactivo (HU-57) -->
+    <!-- Contenedor del Tutorial Interactivo (HU-56, HU-57) -->
     <div class="rejilla-panel" id="contenedor-tutorial">
       <section class="tarjeta">
         <h2 class="tarjeta__titulo" id="titulo-modulo"><span class="icono-ficha" data-icon="info"></span>Módulo de Aprendizaje</h2>
         <div id="contenido-teoria" style="margin-bottom: 24px; line-height: 1.6;">
-          <p>Cargando módulo de aprendizaje...</p>
+          <!-- Aquí se inyecta dinámicamente la teoría y las capturas guiadas -->
         </div>
         <div class="tarjeta__pie" style="justify-content: space-between;">
           <button class="btn btn-secundario" id="btn-anterior" disabled>Anterior</button>
-          <span id="indicador-progreso-texto" class="texto-suave">Paso 1 de 2</span>
+          <span id="indicador-progreso-texto" class="texto-suave">Paso 1 de 12</span>
           <button class="btn btn-primario" id="btn-siguiente">Siguiente</button>
         </div>
       </section>
+
+      <!-- Panel de Control / Estado Individual -->
+      <aside class="columna">
+        <section class="tarjeta">
+          <h3 class="tarjeta__titulo"><span class="icono-ficha" data-icon="reloj"></span>Tu Progreso</h3>
+          <div style="font-size: 1.5rem; font-weight: 700; color: var(--c-hoja); margin-bottom: 8px;" id="texto-porcentaje">0%</div>
+          <progress id="barra-progreso" value="0" max="100" style="width: 100%; height: 12px; accent-color: var(--c-brote);"></progress>
+          <p class="nota" style="margin-top: 12px;">Tu avance se guarda de forma automática conforme avanzas en los módulos.</p>
+        </section>
+
+        <!-- Panel Administrativo de Avances (HU-55 - Visible solo para Admin) -->
+        <section class="tarjeta" id="panel-admin-avances" hidden>
+          <h3 class="tarjeta__titulo"><span class="icono-ficha" data-icon="equipo"></span>Avances del Equipo (Admin)</h3>
+          <div class="tabla-contenedor">
+            <table class="tabla">
+              <thead>
+                <tr><th>Usuario</th><th>Módulo</th><th>Avance</th></tr>
+              </thead>
+              <tbody id="tabla-avances-admin">
+                <!-- Se llena mediante JS para el Administrador -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </aside>
     </div>
   </main>
 

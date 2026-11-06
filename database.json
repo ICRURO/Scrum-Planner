@@ -1487,5 +1487,15 @@
       "fechaTerminado": null,
       "idUsuarioResponsable": "USR-012"
     }
+  ],
+  "capacitacionProgreso": [
+    {
+      "idUsuario": "USR-001",
+      "porcentaje": 25,
+      "pasoIndex": 2,
+      "moduloActual": "Épica 3",
+      "completado": false,
+      "ultimaActualizacion": "2026-11-06"
+    }
   ]
 }

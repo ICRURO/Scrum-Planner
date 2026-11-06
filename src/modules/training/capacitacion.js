@@ -1,150 +1,154 @@
-    (async function () {
-    const sesion = await Layout.listo;
-    if (!sesion) return;
+/* =================================================================
+   MÓDULO DE CAPACITACIÓN - SCRUM MANAGER
+   ================================================================= */
 
-    const modalBienvenida = document.getElementById('modal-bienvenida');
-    const contenedorTutorial = document.getElementById('contenedor-tutorial');
-    const contenidoTeoria = document.getElementById('contenido-teoria');
-    const tituloModulo = document.getElementById('titulo-modulo');
-    const btnAnterior = document.getElementById('btn-anterior');
-    const btnSiguiente = document.getElementById('btn-siguiente');
-    const textoPorcentaje = document.getElementById('texto-porcentaje');
-    const barraProgreso = document.getElementById('barra-progreso');
-    const indicadorTexto = document.getElementById('indicador-progreso-texto');
-    const panelAdmin = document.getElementById('panel-admin-avances');
-    const tablaAdmin = document.getElementById('tabla-avances-admin');
+(async function () {
+  const sesion = await Layout.listo;
+  if (!sesion) return;
 
-    let pasoActual = 0;
+  const modalBienvenida = document.getElementById('modal-bienvenida');
+  const contenedorTutorial = document.getElementById('contenedor-tutorial');
+  const contenidoTeoria = document.getElementById('contenido-teoria');
+  const tituloModulo = document.getElementById('titulo-modulo');
+  const btnAnterior = document.getElementById('btn-anterior');
+  const btnSiguiente = document.getElementById('btn-siguiente');
+  const textoPorcentaje = document.getElementById('texto-porcentaje');
+  const barraProgreso = document.getElementById('barra-progreso');
+  const indicadorTexto = document.getElementById('indicador-progreso-texto');
+  const panelAdmin = document.getElementById('panel-admin-avances');
+  const tablaAdmin = document.getElementById('tabla-avances-admin');
 
-    // Definición completa de las 12 Épicas de Scrum Manager
-    const pasosCapacitacion = [
-        {
-        titulo: 'Épica 1: Gestión de Cuentas y Autenticación',
-        texto: 'Permite el registro, inicio de sesión seguro mediante contraseñas cifradas y gestión de perfiles de usuario dentro de la plataforma.'
-        },
-        {
-        titulo: 'Épica 2: Control de Roles Globales',
-        texto: 'Administración de permisos generales para diferenciar entre el rol de administrador y usuarios estándar del sistema.'
-        },
-        {
-        titulo: 'Épica 3: Creación y Administración de Proyectos',
-        texto: 'Gestión del ciclo de vida de los proyectos, definición de objetivos, fechas previstas y estados (preparación, activo, suspendido, finalizado).'
-        },
-        {
-        titulo: 'Épica 4: Asignación de Equipos y Roles Scrum',
-        texto: 'Vculación de participantes a los proyectos asignándoles roles específicos como Product Owner, Scrum Master, Developer o Interesado.'
-        },
-        {
-        titulo: 'Épica 5: Planeación y Gestión de Sprints',
-        texto: 'Creación de Sprints, establecimiento de metas (Sprint Goals), definición de fechas y asignación de historias de usuario al Backlog del Sprint.'
-        },
-        {
-        titulo: 'Épica 6: Tablero de Trabajo Kanban (Scrum Board)',
-        texto: 'Visualización interactiva del flujo de tareas distribuidas en columnas ("Por hacer", "En progreso", "En revisión", "Terminado") con actualización en tiempo real.'
-        },
-        {
-        titulo: 'Épica 7: Definition of Done (DoD) y Trazabilidad',
-        texto: 'Configuración de criterios de verificación obligatorios u opcionales que deben cumplirse antes de marcar una tarea como terminada, junto con el registro histórico de cambios.'
-        },
-        {
-        titulo: 'Épica 8: Gestión de Impedimentos y Riesgos',
-        texto: 'Registro y seguimiento de obstáculos y riesgos identificados en el proyecto, asociándolos a tareas, historias o Sprints con sus respectivos responsables.'
-        },
-        {
-        titulo: 'Épica 9: Eventos y Reuniones Scrum',
-        texto: 'Control y registro de reuniones de coordinación (Sprint Planning, Daily Scrum, Sprint Review, Retrospective) y sus acuerdos derivados.'
-        },
-        {
-        titulo: 'Épica 10: Métricas, Burndown Chart y Velocidad',
-        texto: 'Generación automática de gráficos de esfuerzo ideal vs. real (Burndown Chart) y consulta del trabajo completado clasificado por tallas de estimación (XS, S, M, L, XL).'
-        },
-        {
-        titulo: 'Épica 11: Auditoría y Historial de Modificaciones',
-        texto: 'Registro detallado y auditable de todas las modificaciones realizadas sobre entidades, proyectos, tareas y Sprints.'
-        },
-        {
-        titulo: 'Épica 12: Exportación de Reportes y Estados',
-        texto: 'Capacidad de generar y exportar reportes ejecutivos del estado del proyecto, horas invertidas y métricas generales.'
-        }
-    ];
+  let pasoActual = 0;
 
-    async function cargarProgreso() {
-        const r = await Api.get('/api/training/progreso');
-        if (r.ok && r.datos?.progreso) {
-        const prog = r.datos.progreso;
-        pasoActual = typeof prog.pasoIndex === 'number' ? prog.pasoIndex : 0;
-        actualizarInterfazProgreso(false); // No sobrescribir al cargar
+  // Definición completa de las 12 Épicas de Scrum Manager
+  const pasosCapacitacion = [
+    {
+      titulo: 'Épica 1: Gestión de Cuentas y Autenticación',
+      texto: 'Permite el registro, inicio de sesión seguro mediante contraseñas cifradas y gestión de perfiles de usuario dentro de la plataforma.'
+    },
+    {
+      titulo: 'Épica 2: Control de Roles Globales',
+      texto: 'Administración de permisos generales para diferenciar entre el rol de administrador y usuarios estándar del sistema.'
+    },
+    {
+      titulo: 'Épica 3: Creación y Administración de Proyectos',
+      texto: 'Gestión del ciclo de vida de los proyectos, definición de objetivos, fechas previstas y estados (preparación, activo, suspendido, finalizado).'
+    },
+    {
+      titulo: 'Épica 4: Asignación de Equipos y Roles Scrum',
+      texto: 'Vinculación de participantes a los proyectos asignándoles roles específicos como Product Owner, Scrum Master, Developer o Interesado.'
+    },
+    {
+      titulo: 'Épica 5: Planeación y Gestión de Sprints',
+      texto: 'Creación de Sprints, establecimiento de metas (Sprint Goals), definición de fechas y asignación de historias de usuario al Backlog del Sprint.'
+    },
+    {
+      titulo: 'Épica 6: Tablero de Trabajo Kanban (Scrum Board)',
+      texto: 'Visualización interactiva del flujo de tareas distribuidas en columnas ("Por hacer", "En progreso", "En revisión", "Terminado") con actualización en tiempo real.'
+    },
+    {
+      titulo: 'Épica 7: Definition of Done (DoD) y Trazabilidad',
+      texto: 'Configuración de criterios de verificación obligatorios u opcionales que deben cumplirse antes de marcar una tarea como terminada, junto con el registro histórico de cambios.'
+    },
+    {
+      titulo: 'Épica 8: Gestión de Impedimentos y Riesgos',
+      texto: 'Registro y seguimiento de obstáculos y riesgos identificados en el proyecto, asociándolos a tareas, historias o Sprints con sus respectivos responsables.'
+    },
+    {
+      titulo: 'Épica 9: Eventos y Reuniones Scrum',
+      texto: 'Control y registro de reuniones de coordinación (Sprint Planning, Daily Scrum, Sprint Review, Retrospective) y sus acuerdos derivados.'
+    },
+    {
+      titulo: 'Épica 10: Métricas, Burndown Chart y Velocidad',
+      texto: 'Generación automática de gráficos de esfuerzo ideal vs. real (Burndown Chart) y consulta del trabajo completado clasificado por tallas de estimación (XS, S, M, L, XL).'
+    },
+    {
+      titulo: 'Épica 11: Auditoría y Historial de Modificaciones',
+      texto: 'Registro detallado y auditable de todas las modificaciones realizadas sobre entidades, proyectos, tareas y Sprints.'
+    },
+    {
+      titulo: 'Épica 12: Exportación de Reportes y Estados',
+      texto: 'Capacidad de generar y exportar reportes ejecutivos del estado del proyecto, horas invertidas y métricas generales.'
+    }
+  ];
 
-        if (prog.porcentaje === 0 && pasoActual === 0) {
-            modalBienvenida.hidden = false;
-            contenedorTutorial.style.opacity = '0.4';
-        }
-        }
+  async function cargarProgreso() {
+    const r = await Api.get('/api/training/progreso');
+    if (r.ok && r.datos?.progreso) {
+      const prog = r.datos.progreso;
+      pasoActual = typeof prog.pasoIndex === 'number' ? prog.pasoIndex : 0;
+      actualizarInterfazProgreso(false);
 
-        const resAdmin = await Api.get('/api/training/admin/avances');
-        if (resAdmin.ok && resAdmin.datos?.avances) {
-        panelAdmin.hidden = false;
-        tablaAdmin.innerHTML = resAdmin.datos.avances.map((item) => `
-            <tr>
-            <td><strong>${UI.escapar(item.nombre)}</strong><br><small class="texto-suave">${UI.escapar(item.correo)}</small></td>
-            <td>${UI.escapar(item.moduloActual)}</td>
-            <td><span class="insignia insignia--activo">${item.porcentaje}%</span></td>
-            </tr>
-        `).join('');
-        }
-        Icons.hidratar();
+      if (prog.porcentaje === 0 && pasoActual === 0) {
+        modalBienvenida.hidden = false;
+        contenedorTutorial.style.opacity = '0.4';
+      }
     }
 
-    function actualizarInterfazProgreso(guardar = true) {
-        const totalPasos = pasosCapacitacion.length;
-        const porcentajeCalculado = Math.round(((pasoActual + 1) / totalPasos) * 100);
-
-        tituloModulo.innerHTML = `<span class="icono-ficha" data-icon="bandera"></span>${pasosCapacitacion[pasoActual].titulo}`;
-        contenidoTeoria.innerHTML = `<p>${pasosCapacitacion[pasoActual].texto}</p>`;
-        indicadorTexto.textContent = `Paso ${pasoActual + 1} de ${totalPasos}`;
-
-        textoPorcentaje.textContent = `${porcentajeCalculado}%`;
-        barraProgreso.value = porcentajeCalculado;
-
-        btnAnterior.disabled = pasoActual === 0;
-        btnSiguiente.textContent = pasoActual === totalPasos - 1 ? 'Finalizar capacitación' : 'Siguiente';
-
-        if (guardar) {
-        Api.put('/api/training/progreso', {
-            porcentaje: porcentajeCalculado,
-            pasoIndex: pasoActual,
-            moduloActual: `Épica ${pasoActual + 1}`,
-            completado: porcentajeCalculado === 100
-        });
-        }
+    const resAdmin = await Api.get('/api/training/admin/avances');
+    if (resAdmin.ok && resAdmin.datos?.avances) {
+      panelAdmin.hidden = false;
+      tablaAdmin.innerHTML = resAdmin.datos.avances.map((item) => `
+        <tr>
+          <td><strong>${UI.escapar(item.nombre)}</strong><br><small class="texto-suave">${UI.escapar(item.correo)}</small></td>
+          <td>${UI.escapar(item.moduloActual)}</td>
+          <td><span class="insignia insignia--activo">${item.porcentaje}%</span></td>
+        </tr>
+      `).join('');
     }
+    Icons.hidratar();
+  }
 
-    document.getElementById('btn-ahora').addEventListener('click', () => {
-        modalBienvenida.hidden = true;
-        contenedorTutorial.style.opacity = '1';
-    });
+  function actualizarInterfazProgreso(guardar = true) {
+    const totalPasos = pasosCapacitacion.length;
+    const porcentajeCalculado = Math.round(((pasoActual + 1) / totalPasos) * 100);
 
-    document.getElementById('btn-despues').addEventListener('click', () => {
-        modalBienvenida.hidden = true;
-        contenedorTutorial.style.opacity = '1';
-        UI.toast('Puedes retomar la capacitación en cualquier momento.', 'info');
-    });
+    tituloModulo.innerHTML = `<span class="icono-ficha" data-icon="bandera"></span>${pasosCapacitacion[pasoActual].titulo}`;
+    contenidoTeoria.innerHTML = `<p>${pasosCapacitacion[pasoActual].texto}</p>`;
+    indicadorTexto.textContent = `Paso ${pasoActual + 1} de ${totalPasos}`;
 
-    btnSiguiente.addEventListener('click', () => {
-        if (pasoActual < pasosCapacitacion.length - 1) {
-        pasoActual++;
-        actualizarInterfazProgreso(true);
-        } else {
-        UI.toast('¡Has completado todas las épicas de Scrum Manager!', 'exito');
-        }
-    });
+    textoPorcentaje.textContent = `${porcentajeCalculado}%`;
+    barraProgreso.value = porcentajeCalculado;
 
-    btnAnterior.addEventListener('click', () => {
-        if (pasoActual > 0) {
-        pasoActual--;
-        actualizarInterfazProgreso(true);
-        }
-    });
+    btnAnterior.disabled = pasoActual === 0;
+    btnSiguiente.textContent = pasoActual === totalPasos - 1 ? 'Finalizar capacitación' : 'Siguiente';
 
-    await cargarProgreso();
-    })();
+    if (guardar) {
+      Api.put('/api/training/progreso', {
+        porcentaje: porcentajeCalculado,
+        pasoIndex: pasoActual,
+        moduloActual: `Épica ${pasoActual + 1}`,
+        completado: porcentajeCalculado === 100
+      });
+    }
+  }
+
+  document.getElementById('btn-ahora').addEventListener('click', () => {
+    modalBienvenida.hidden = true;
+    contenedorTutorial.style.opacity = '1';
+  });
+
+  document.getElementById('btn-despues').addEventListener('click', () => {
+    modalBienvenida.hidden = true;
+    contenedorTutorial.style.opacity = '1';
+    UI.toast('Puedes retomar la capacitación en cualquier momento.', 'info');
+  });
+
+  btnSiguiente.addEventListener('click', () => {
+    if (pasoActual < pasosCapacitacion.length - 1) {
+      pasoActual++;
+      actualizarInterfazProgreso(true);
+    } else {
+      UI.toast('¡Has completado todas las épicas de Scrum Manager!', 'exito');
+    }
+  });
+
+  btnAnterior.addEventListener('click', () => {
+    if (pasoActual > 0) {
+      pasoActual--;
+      actualizarInterfazProgreso(true);
+    }
+  });
+
+  await cargarProgreso();
+})();
