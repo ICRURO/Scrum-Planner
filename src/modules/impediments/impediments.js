@@ -1,4 +1,4 @@
-// EP-08: HU-39, HU-40, HU-41. Reutiliza Layout, Api y UI del proyecto.
+
 (async function () {
   const sesion = await Layout.listo;
   if (!sesion) return;
@@ -9,24 +9,29 @@
     nuevoImpedimento: $('vista-formulario'),
     seguimiento: $('vista-seguimiento'),
     riesgos: $('vista-riesgos'),
-    nuevoRiesgo: $('vista-riesgo-formulario')
+    nuevoRiesgo: $('vista-riesgo-formulario'),
+    seguimientoRiesgo: $('vista-seguimiento-riesgo')
   };
   const tabImpedimentos = $('tab-impedimentos');
   const tabRiesgos = $('tab-riesgos');
   const formImpedimento = $('form-impedimento');
   const formSeguimiento = $('form-seguimiento');
   const formRiesgo = $('form-riesgo');
+  const formSeguimientoRiesgo = $('form-seguimiento-riesgo');
 
   let impedimentos = [];
   let riesgos = [];
   let seleccionado = null;
+  let riesgoSeleccionado = null;
   let opciones = { proyectos: [], sprints: [], historias: [], tareas: [], participantes: [] };
 
   function mostrarVista(nombre) {
     Object.entries(vistas).forEach(([clave, elemento]) => { elemento.hidden = clave !== nombre; });
-    const enRiesgos = nombre === 'riesgos' || nombre === 'nuevoRiesgo';
-    tabImpedimentos.classList.toggle('boton--primario', !enRiesgos);
-    tabRiesgos.classList.toggle('boton--primario', enRiesgos);
+    const enRiesgos = ['riesgos', 'nuevoRiesgo', 'seguimientoRiesgo'].includes(nombre);
+    tabImpedimentos.classList.toggle('btn-primario', !enRiesgos);
+    tabImpedimentos.classList.toggle('btn-secundario', enRiesgos);
+    tabRiesgos.classList.toggle('btn-primario', enRiesgos);
+    tabRiesgos.classList.toggle('btn-secundario', !enRiesgos);
   }
 
   function establecerOpciones(select, elementos, textoInicial, valor = '') {
@@ -109,7 +114,7 @@
         <td>${UI.escapar(i.tipoRelacion)}<br><small>${UI.escapar(i.idRelacionado)}</small></td>
         <td>${UI.escapar(i.nombreResponsable)}</td>
         <td><span class="ep08-estado">${UI.escapar(i.estado)}</span></td>
-        <td><button type="button" class="boton" data-seguimiento="${UI.escapar(i.id)}">Ver detalles</button></td>
+        <td><button type="button" class="btn btn-secundario btn-chico" data-seguimiento="${UI.escapar(i.id)}">Ver detalles</button></td>
       </tr>
     `).join('');
   }
@@ -255,6 +260,7 @@
         <td>${UI.escapar(r.probabilidad)}</td>
         <td>${UI.escapar(r.nombreResponsable)}</td>
         <td>${UI.escapar(r.estado)}</td>
+        <td><button type="button" class="btn btn-secundario btn-chico" data-ver-riesgo="${UI.escapar(r.id)}">Ver detalles</button></td>
       </tr>
     `).join('');
   }
@@ -316,6 +322,75 @@
     }
   }
 
+  function dibujarHistorialRiesgo(seguimientos) {
+    const contenedor = $('historial-riesgo');
+    if (!Array.isArray(seguimientos) || seguimientos.length === 0) {
+      contenedor.textContent = 'Todavía no hay revisiones registradas.';
+      return;
+    }
+    contenedor.innerHTML = [...seguimientos].reverse().map(s => `
+      <div class="ep08-accion">
+        <strong>${UI.escapar(s.valorNuevo?.estado || 'Sin estado')}</strong>
+        <div>${UI.escapar(s.accion || 'Actualización de estado, plan o fecha de revisión.')}</div>
+        <small>${UI.escapar(fechaLocal(s.fecha))} · Usuario: ${UI.escapar(s.idUsuario || 'Sistema')}</small>
+        <small>Próxima revisión: ${UI.escapar(s.valorNuevo?.fechaRevision || 'Sin fecha')}</small>
+      </div>
+    `).join('');
+  }
+
+  function abrirSeguimientoRiesgo(id) {
+    const riesgo = riesgos.find(r => r.id === id);
+    if (!riesgo) return UI.toast('Riesgo no encontrado.', 'error');
+    riesgoSeleccionado = riesgo;
+    $('detalle-riesgo-id').textContent = `${riesgo.id} · ${riesgo.idProyecto}`;
+    $('detalle-riesgo-descripcion').value = riesgo.descripcion || '';
+    $('detalle-riesgo-responsable').value = riesgo.nombreResponsable || riesgo.idResponsable || '';
+    $('detalle-riesgo-probabilidad').value = riesgo.probabilidad || '';
+    $('detalle-riesgo-estado').value = riesgo.estado || 'Identificado';
+    $('detalle-riesgo-acciones').value = riesgo.accionesRespuesta || '';
+    $('detalle-riesgo-fecha').value = riesgo.fechaRevision || '';
+    $('detalle-riesgo-accion').value = '';
+    dibujarHistorialRiesgo(riesgo.seguimientos);
+    mensaje($('mensaje-seguimiento-riesgo'), '');
+    mostrarVista('seguimientoRiesgo');
+  }
+
+  async function guardarSeguimientoRiesgo(evento) {
+    evento.preventDefault();
+    if (!riesgoSeleccionado) return;
+    const datos = {
+      estado: $('detalle-riesgo-estado').value,
+      accionesRespuesta: $('detalle-riesgo-acciones').value.trim(),
+      fechaRevision: $('detalle-riesgo-fecha').value,
+      accionSeguimiento: $('detalle-riesgo-accion').value.trim()
+    };
+    if (!datos.estado || !datos.fechaRevision) {
+      mensaje($('mensaje-seguimiento-riesgo'), 'Selecciona un estado y una fecha de revisión.');
+      return;
+    }
+    const boton = formSeguimientoRiesgo.querySelector('[type="submit"]');
+    boton.disabled = true;
+    try {
+      const r = await enviar(
+        `/api/impediments/riesgos/${encodeURIComponent(riesgoSeleccionado.id)}/seguimiento`,
+        'PUT', datos
+      );
+      if (!r.ok) {
+        mensaje($('mensaje-seguimiento-riesgo'), r.datos?.mensaje || 'No se pudo actualizar el riesgo.');
+        return;
+      }
+      UI.toast('Seguimiento del riesgo actualizado.', 'success');
+      riesgoSeleccionado = null;
+      mostrarVista('riesgos');
+      await cargarRiesgos();
+    } catch (error) {
+      console.error(error);
+      mensaje($('mensaje-seguimiento-riesgo'), 'Error de conexión con el servidor.');
+    } finally {
+      boton.disabled = false;
+    }
+  }
+
   tabImpedimentos.addEventListener('click', () => mostrarVista('impedimentos'));
   tabRiesgos.addEventListener('click', () => mostrarVista('riesgos'));
   $('btn-nuevo').addEventListener('click', abrirAltaImpedimento);
@@ -335,6 +410,15 @@
   $('riesgo-proyecto').addEventListener('change', actualizarResponsablesRiesgo);
   formRiesgo.addEventListener('submit', guardarRiesgo);
   $('buscar-riesgos').addEventListener('input', dibujarRiesgos);
+  $('tabla-riesgos').addEventListener('click', evento => {
+    const boton = evento.target.closest('[data-ver-riesgo]');
+    if (boton) abrirSeguimientoRiesgo(boton.dataset.verRiesgo);
+  });
+  $('btn-volver-riesgos').addEventListener('click', () => {
+    riesgoSeleccionado = null;
+    mostrarVista('riesgos');
+  });
+  formSeguimientoRiesgo.addEventListener('submit', guardarSeguimientoRiesgo);
 
   mostrarVista('impedimentos');
   await cargarOpciones();

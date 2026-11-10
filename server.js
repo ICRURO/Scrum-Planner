@@ -53,6 +53,9 @@ app.get('/equipos', requierePagina, (req, res) => res.sendFile(pagina('equipos',
 //----------- Impedimentos y riesgos ----------
 app.get('/impedimentos', requierePagina, (req, res) => res.sendFile(pagina('impediments', 'impediments.html')));
 
+// ------------Reuniones Scrum-------------
+app.get('/reuniones', requierePagina, (req, res) => res.sendFile(pagina('meetings', 'meetings.html')));
+
 // ---------- Reportes ----------
 app.get('/reportes', requierePagina, (req, res) => res.sendFile(pagina('metrics', 'reportes.html')));
 
@@ -75,6 +78,9 @@ app.use('/api/training', require('./src/modules/training/training.routes'));
 
 // ---------- API de impedimentos ----------
 app.use('/api/impediments',require('./src/modules/impediments/impediments.routes'));
+
+// ---------- API de reuniones ----------
+app.use('/api/reuniones',require('./src/modules/meetings/meetings.routes'));
 
 // ---------- Página 404 ----------
 app.use((req, res) => res.status(404).send('Página no encontrada'));

@@ -1,4 +1,3 @@
-// EP-08: HU-39 (registrar impedimentos), HU-40 (seguimiento) y HU-41 (registrar riesgos)
 const express = require('express');
 const router = express.Router();
 const { readDB, writeDB } = require('../../config/db');
@@ -11,6 +10,7 @@ router.use(requiereSesion);
 const ROLES_GESTION = ['Product Owner', 'Scrum Master', 'Developer'];
 const ESTADOS_IMPEDIMENTO = ['Identificado', 'En atención', 'Resuelto'];
 const PROBABILIDADES = ['Alta', 'Media', 'Baja'];
+const ESTADOS_RIESGO = ['Identificado', 'En atención', 'Mitigado', 'Cerrado'];
 
 function accesoLectura(usuario, proyectoId, db) {
   return puede(usuario, 'consultar_proyecto', proyectoId, db);
@@ -39,7 +39,6 @@ function proyectosGestionables(db, usuario) {
   return (db.proyectos || []).filter(p => !p.archivado && accesoGestion(usuario, p.id, db));
 }
 
-// Unificar tareas que el sistema puede guardar tanto en db.tareas como dentro de una historia.
 function tareasConProyecto(db) {
   const historias = new Map((db.historiasUsuario || []).map(h => [h.id, h]));
   const sprints = new Map((db.sprints || []).map(s => [s.id, s]));
@@ -98,7 +97,6 @@ function fechaValida(valor) {
   return Number.isFinite(fecha.getTime()) && fecha.toISOString().slice(0, 10) === valor;
 }
 
-// GET /api/impediments/opciones — datos para los formularios.
 router.get('/opciones', (req, res) => {
   const db = readDB();
   const proyectos = proyectosGestionables(db, req.usuario).map(p => ({ id: p.id, nombre: p.nombre }));
@@ -125,7 +123,6 @@ router.get('/opciones', (req, res) => {
   res.json({ proyectos, sprints, historias, tareas, participantes });
 });
 
-// GET /api/impediments — listado y búsqueda en la interfaz (HU-39/40).
 router.get('/', (req, res) => {
   const db = readDB();
   const impedimentos = (db.impedimentos || [])
@@ -138,7 +135,6 @@ router.get('/', (req, res) => {
   res.json({ impedimentos });
 });
 
-// POST /api/impediments — registrar impedimento (HU-39).
 router.post('/', (req, res) => {
   const { descripcion, idProyecto, tipoRelacion, idRelacionado } = req.body || {};
   if (typeof descripcion !== 'string' || !descripcion.trim() || descripcion.trim().length > 500) {
@@ -187,7 +183,6 @@ router.post('/', (req, res) => {
   res.status(201).json({ mensaje: 'Impedimento registrado correctamente.', impedimento });
 });
 
-// PUT /api/impediments/:id/seguimiento — HU-40.
 router.put('/:id/seguimiento', (req, res) => {
   const db = readDB();
   const impedimento = (db.impedimentos || []).find(i => i.id === req.params.id);
@@ -237,7 +232,6 @@ router.put('/:id/seguimiento', (req, res) => {
   res.json({ mensaje: 'Seguimiento actualizado correctamente.', impedimento });
 });
 
-// GET /api/impediments/riesgos — consultar registros de riesgos (HU-41).
 router.get('/riesgos', (req, res) => {
   const db = readDB();
   const riesgos = (db.riesgos || [])
@@ -246,7 +240,6 @@ router.get('/riesgos', (req, res) => {
   res.json({ riesgos });
 });
 
-// POST /api/impediments/riesgos — registrar riesgo (HU-41).
 router.post('/riesgos', (req, res) => {
   const { idProyecto, descripcion, probabilidad, idResponsable, accionesRespuesta, fechaRevision } = req.body || {};
   if (typeof descripcion !== 'string' || !descripcion.trim() || descripcion.trim().length > 500) {
@@ -296,6 +289,75 @@ router.post('/riesgos', (req, res) => {
   });
   writeDB(db);
   res.status(201).json({ mensaje: 'Riesgo registrado correctamente.', riesgo });
+});
+
+router.put('/riesgos/:id/seguimiento', (req, res) => {
+  const db = readDB();
+  const riesgo = (db.riesgos || []).find(r => r.id === req.params.id);
+  if (!riesgo) return res.status(404).json({ mensaje: 'Riesgo no encontrado.' });
+
+  if (!accesoGestion(req.usuario, riesgo.idProyecto, db)) {
+    return res.status(403).json({ mensaje: 'No tienes permisos para actualizar este riesgo.' });
+  }
+  const proyecto = (db.proyectos || []).find(p => p.id === riesgo.idProyecto);
+  if (!proyecto || proyecto.archivado) {
+    return res.status(409).json({ mensaje: 'No se puede modificar un riesgo de un proyecto archivado.' });
+  }
+
+  const { estado, accionesRespuesta, fechaRevision, accionSeguimiento } = req.body || {};
+  if (!ESTADOS_RIESGO.includes(estado)) {
+    return res.status(400).json({ mensaje: 'Selecciona un estado de riesgo válido.' });
+  }
+  if (typeof accionesRespuesta !== 'string' || accionesRespuesta.length > 1000) {
+    return res.status(400).json({ mensaje: 'Las acciones de respuesta deben ser texto de hasta 1000 caracteres.' });
+  }
+  if (!fechaValida(fechaRevision)) {
+    return res.status(400).json({ mensaje: 'La fecha de revisión debe tener formato AAAA-MM-DD y ser válida.' });
+  }
+  if (typeof accionSeguimiento !== 'string' || accionSeguimiento.length > 1000) {
+    return res.status(400).json({ mensaje: 'La acción de seguimiento debe ser texto de hasta 1000 caracteres.' });
+  }
+
+  const nuevasAcciones = accionesRespuesta.trim();
+  const nuevaAccion = accionSeguimiento.trim();
+  const anterior = {
+    estado: riesgo.estado || 'Identificado',
+    accionesRespuesta: riesgo.accionesRespuesta || '',
+    fechaRevision: riesgo.fechaRevision || null
+  };
+  const nuevo = { estado, accionesRespuesta: nuevasAcciones, fechaRevision };
+  const hayCambios = anterior.estado !== nuevo.estado ||
+    anterior.accionesRespuesta !== nuevo.accionesRespuesta ||
+    anterior.fechaRevision !== nuevo.fechaRevision;
+  if (!hayCambios && !nuevaAccion) {
+    return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
+  }
+
+  const fecha = new Date().toISOString();
+  riesgo.estado = estado;
+  riesgo.accionesRespuesta = nuevasAcciones;
+  riesgo.fechaRevision = fechaRevision;
+  riesgo.fechaActualizacion = fecha;
+  if (!Array.isArray(riesgo.seguimientos)) riesgo.seguimientos = [];
+  riesgo.seguimientos.push({
+    id: siguienteId(riesgo.seguimientos, 'SEG'),
+    idUsuario: req.usuario.id,
+    fecha,
+    accion: nuevaAccion,
+    valorAnterior: anterior,
+    valorNuevo: nuevo
+  });
+
+  registrarHistorial(db, {
+    idUsuario: req.usuario.id,
+    entidad: 'riesgo',
+    idEntidad: riesgo.id,
+    campo: 'seguimiento',
+    valorAnterior: anterior,
+    valorNuevo: { ...nuevo, accionSeguimiento: nuevaAccion || null }
+  });
+  writeDB(db);
+  return res.json({ mensaje: 'Seguimiento del riesgo actualizado.', riesgo });
 });
 
 module.exports = router;
