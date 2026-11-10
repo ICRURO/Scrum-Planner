@@ -50,6 +50,9 @@ app.get('/proyectos/editar', requierePagina, paginaConPermiso('editar_proyecto',
   (req, res) => res.sendFile(pagina('projects', 'proyecto_form.html')));
 app.get('/equipos', requierePagina, (req, res) => res.sendFile(pagina('equipos', 'equipos.html')));
 
+//----------- Impedimentos y riesgos ----------
+app.get('/impedimentos', requierePagina, (req, res) => res.sendFile(pagina('impediments', 'impediments.html')));
+
 // ---------- Reportes ----------
 app.get('/reportes', requierePagina, (req, res) => res.sendFile(pagina('metrics', 'reportes.html')));
 
@@ -70,8 +73,12 @@ app.use('/api/metrics', require('./src/modules/metrics/metrics.routes'));
 // ---------- API de capacitación ----------
 app.use('/api/training', require('./src/modules/training/training.routes'));
 
+// ---------- API de impedimentos ----------
+app.use('/api/impediments',require('./src/modules/impediments/impediments.routes'));
+
 // ---------- Página 404 ----------
 app.use((req, res) => res.status(404).send('Página no encontrada'));
+
 
 app.listen(PORT, () => {
   console.log(`>>> Servidor activo en: http://localhost:${PORT}`);

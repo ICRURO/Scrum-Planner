@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Impedimentos y riesgos - Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/modules/impediments/impediments.css">
+</head>
+<body data-volver="/panel" data-seccion="impedimentos" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1>Impedimentos y riesgos</h1>
+      <p>Registro y seguimiento de obstáculos y riesgos del proyecto</p>
+    </div>
+
+    <div class="ep08-pestanas" aria-label="Secciones de la épica 08">
+      <button type="button" class="boton boton--primario" id="tab-impedimentos">Impedimentos</button>
+      <button type="button" class="boton" id="tab-riesgos">Riesgos</button>
+    </div>
+
+    <!-- HU-39/HU-40: listado -->
+    <section class="tarjeta" id="vista-listado">
+      <div class="barra ep08-barra">
+        <div class="entrada entrada--icono barra__buscar">
+          <span class="entrada__icono" data-icon="buscar"></span>
+          <input class="control" id="buscar" type="search" placeholder="Buscar impedimento..." aria-label="Buscar impedimentos">
+        </div>
+        <div class="ep08-filtro">
+          <label for="filtro-estado">Estado</label>
+          <select class="control" id="filtro-estado">
+            <option value="">Todos</option>
+            <option value="Identificado">Identificado</option>
+            <option value="En atención">En atención</option>
+            <option value="Resuelto">Resuelto</option>
+          </select>
+        </div>
+        <span class="barra__espacio"></span>
+        <button type="button" class="boton boton--primario" id="btn-nuevo">+ Nuevo impedimento</button>
+      </div>
+      <div class="tabla-contenedor" id="contenedor-tabla" hidden>
+        <table class="tabla">
+          <thead><tr>
+            <th>ID</th><th>Descripción</th><th>Relacionado con</th><th>Responsable</th><th>Estado</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="tabla-impedimentos"></tbody>
+        </table>
+      </div>
+      <div class="vacio" id="sin-resultados" hidden>
+        <h3>No hay impedimentos para mostrar</h3>
+        <p>Registra un impedimento o modifica los filtros.</p>
+      </div>
+    </section>
+
+    <!-- HU-39: nuevo impedimento -->
+    <section class="tarjeta ep08-formulario" id="vista-formulario" hidden>
+      <div class="titulo-pagina">
+        <h2>Registrar impedimento</h2>
+        <p>Datos básicos del impedimento</p>
+      </div>
+      <form id="form-impedimento">
+        <div class="ep08-campo">
+          <label for="descripcion">Descripción del impedimento</label>
+          <textarea class="control" id="descripcion" rows="4" maxlength="500" required placeholder="Describe el obstáculo identificado..."></textarea>
+        </div>
+        <div class="ep08-campo">
+          <label for="tipo-relacion">Relacionado con</label>
+          <select class="control" id="tipo-relacion" required>
+            <option value="">Selecciona una opción</option>
+            <option value="proyecto">Proyecto</option>
+            <option value="sprint">Sprint</option>
+            <option value="historia">Historia de usuario</option>
+            <option value="tarea">Tarea</option>
+          </select>
+        </div>
+        <div class="ep08-campo">
+          <label for="elemento-relacionado">Elemento relacionado</label>
+          <select class="control" id="elemento-relacionado" required disabled>
+            <option value="">Primero selecciona un tipo</option>
+          </select>
+        </div>
+        <div class="ep08-campo">
+          <label for="estado">Estado inicial</label>
+          <input class="control" id="estado" value="Identificado" readonly>
+        </div>
+        <p id="mensaje-formulario" class="ep08-mensaje" role="status" hidden></p>
+        <div class="ep08-acciones">
+          <button type="button" class="boton" id="btn-cancelar">Cancelar</button>
+          <button type="submit" class="boton boton--primario">Guardar impedimento</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- HU-40: responsable, estado, acciones e historial -->
+    <section class="tarjeta ep08-formulario" id="vista-seguimiento" hidden>
+      <div class="titulo-pagina">
+        <h2>Seguimiento de impedimento</h2>
+        <p id="seguimiento-id"></p>
+      </div>
+      <form id="form-seguimiento">
+        <div class="ep08-campo">
+          <label for="seguimiento-descripcion">Descripción</label>
+          <textarea class="control" id="seguimiento-descripcion" rows="3" readonly></textarea>
+        </div>
+        <div class="ep08-campo">
+          <label for="seguimiento-responsable">Responsable del seguimiento</label>
+          <select class="control" id="seguimiento-responsable" required>
+            <option value="">Selecciona responsable</option>
+          </select>
+        </div>
+        <div class="ep08-campo">
+          <label for="seguimiento-estado">Estado</label>
+          <select class="control" id="seguimiento-estado" required>
+            <option value="Identificado">Identificado</option>
+            <option value="En atención">En atención</option>
+            <option value="Resuelto">Resuelto</option>
+          </select>
+        </div>
+        <div class="ep08-campo">
+          <label for="seguimiento-accion">Acción realizada (opcional)</label>
+          <textarea class="control" id="seguimiento-accion" rows="3" maxlength="1000" placeholder="Describe lo que se hizo para atender el impedimento..."></textarea>
+        </div>
+        <h3 class="ep08-subtitulo">Historial de acciones</h3>
+        <div class="ep08-historial" id="historial-acciones"></div>
+        <p id="mensaje-seguimiento" class="ep08-mensaje" role="status" hidden></p>
+        <div class="ep08-acciones">
+          <button type="button" class="boton" id="btn-cancelar-seguimiento">Volver</button>
+          <button type="submit" class="boton boton--primario">Guardar seguimiento</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- HU-41: listado de riesgos. Su actualización se realizará en HU-42. -->
+    <section class="tarjeta" id="vista-riesgos" hidden>
+      <div class="barra ep08-barra">
+        <div class="entrada entrada--icono barra__buscar">
+          <span class="entrada__icono" data-icon="buscar"></span>
+          <input class="control" id="buscar-riesgos" type="search" placeholder="Buscar riesgo..." aria-label="Buscar riesgos">
+        </div>
+        <span class="barra__espacio"></span>
+        <button type="button" class="boton boton--primario" id="btn-nuevo-riesgo">+ Nuevo riesgo</button>
+      </div>
+      <div class="tabla-contenedor" id="contenedor-riesgos" hidden>
+        <table class="tabla">
+          <thead><tr>
+            <th>ID</th><th>Descripción</th><th>Proyecto</th><th>Probabilidad</th><th>Responsable</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="tabla-riesgos"></tbody>
+        </table>
+      </div>
+      <div class="vacio" id="sin-riesgos" hidden>
+        <h3>No hay riesgos para mostrar</h3>
+        <p>Registra el primer riesgo o cambia tu búsqueda.</p>
+      </div>
+    </section>
+
+    <!-- HU-41: formulario para registrar riesgo -->
+    <section class="tarjeta ep08-formulario" id="vista-riesgo-formulario" hidden>
+      <div class="titulo-pagina">
+        <h2>Registrar riesgo</h2>
+        <p>Identifica y documenta una situación que pueda afectar al proyecto</p>
+      </div>
+      <form id="form-riesgo">
+        <div class="ep08-campo">
+          <label for="riesgo-proyecto">Proyecto</label>
+          <select class="control" id="riesgo-proyecto" required></select>
+        </div>
+        <div class="ep08-campo">
+          <label for="riesgo-descripcion">Descripción del riesgo</label>
+          <textarea class="control" id="riesgo-descripcion" rows="4" maxlength="500" required placeholder="¿Qué situación podría afectar al proyecto?"></textarea>
+        </div>
+        <div class="ep08-campo">
+          <label for="riesgo-probabilidad">Probabilidad</label>
+          <select class="control" id="riesgo-probabilidad" required>
+            <option value="">Selecciona una probabilidad</option>
+            <option value="Alta">Alta</option>
+            <option value="Media">Media</option>
+            <option value="Baja">Baja</option>
+          </select>
+        </div>
+        <div class="ep08-campo">
+          <label for="riesgo-responsable">Responsable</label>
+          <select class="control" id="riesgo-responsable" required disabled>
+            <option value="">Selecciona un proyecto</option>
+          </select>
+        </div>
+        <div class="ep08-campo">
+          <label for="riesgo-acciones">Acciones de respuesta</label>
+          <textarea class="control" id="riesgo-acciones" rows="3" maxlength="1000" placeholder="Acciones preventivas o de respuesta (opcional)"></textarea>
+        </div>
+        <div class="ep08-campo">
+          <label for="riesgo-fecha">Fecha de revisión</label>
+          <input class="control" type="date" id="riesgo-fecha" required>
+        </div>
+        <p id="mensaje-riesgo" class="ep08-mensaje" role="status" hidden></p>
+        <div class="ep08-acciones">
+          <button type="button" class="boton" id="btn-cancelar-riesgo">Cancelar</button>
+          <button type="submit" class="boton boton--primario">Guardar riesgo</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/impediments/impediments.js"></script>
+</body>
+</html>

@@ -1160,6 +1160,53 @@
         "titulo": "Configurar rutas de autenticación y sesiones",
         "idHistoria": "HU-001"
       }
+    },
+    {
+      "id": "HIS-055",
+      "fecha": "2026-11-10T02:21:16.709Z",
+      "idUsuario": "USR-001",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-001",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "No se puede completar la tarea debido a un error en la conexión con el servidor."
+    },
+    {
+      "id": "HIS-056",
+      "fecha": "2026-11-10T02:52:04.727Z",
+      "idUsuario": "USR-001",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-002",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "Registro impedimento"
+    },
+    {
+      "id": "HIS-057",
+      "fecha": "2026-11-10T02:52:37.992Z",
+      "idUsuario": "USR-001",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-002",
+      "campo": "seguimiento",
+      "valorAnterior": {
+        "estado": "Identificado",
+        "idResponsable": null
+      },
+      "valorNuevo": {
+        "estado": "En atención",
+        "idResponsable": "USR-002",
+        "accion": "comrpobar accion realizada"
+      }
+    },
+    {
+      "id": "HIS-058",
+      "fecha": "2026-11-10T02:53:50.874Z",
+      "idUsuario": "USR-001",
+      "entidad": "riesgo",
+      "idEntidad": "RSK-001",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "prueba descripcion riesgo"
     }
   ],
   "tokens": [
@@ -1504,6 +1551,53 @@
       "moduloActual": "Épica 2",
       "completado": false,
       "ultimaActualizacion": "2026-11-06"
+    }
+  ],
+  "impedimentos": [
+    {
+      "id": "IMP-001",
+      "descripcion": "No se puede completar la tarea debido a un error en la conexión con el servidor.",
+      "idProyecto": "PRJ-001",
+      "tipoRelacion": "proyecto",
+      "idRelacionado": "PRJ-001",
+      "estado": "Identificado",
+      "idReportadoPor": "USR-001",
+      "fechaRegistro": "2026-11-10T02:21:16.708Z",
+      "acciones": []
+    },
+    {
+      "id": "IMP-002",
+      "idProyecto": "PRJ-001",
+      "descripcion": "Registro impedimento",
+      "tipoRelacion": "proyecto",
+      "idRelacionado": "PRJ-001",
+      "estado": "En atención",
+      "idResponsable": "USR-002",
+      "idReportadoPor": "USR-001",
+      "fechaRegistro": "2026-11-10T02:52:04.727Z",
+      "acciones": [
+        {
+          "id": "ACC-001",
+          "descripcion": "comrpobar accion realizada",
+          "idUsuario": "USR-001",
+          "fecha": "2026-11-10T02:52:37.992Z"
+        }
+      ],
+      "fechaActualizacion": "2026-11-10T02:52:37.992Z"
+    }
+  ],
+  "riesgos": [
+    {
+      "id": "RSK-001",
+      "idProyecto": "PRJ-002",
+      "descripcion": "prueba descripcion riesgo",
+      "probabilidad": "Media",
+      "idResponsable": "USR-003",
+      "accionesRespuesta": "prueba accion de respuesta",
+      "fechaRevision": "2026-11-12",
+      "estado": "Identificado",
+      "idReportadoPor": "USR-001",
+      "fechaRegistro": "2026-11-10T02:53:50.874Z"
     }
   ]
 }
