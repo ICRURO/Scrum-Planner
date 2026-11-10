@@ -1,4 +1,3 @@
-/* EP-08: Respeta las clases y los estilos compartidos de Scrum Manager. */
 [hidden] { display: none !important; }
 
 .ep08-pestanas {
@@ -43,6 +42,6 @@
 
 @media (max-width: 650px) {
   .ep08-acciones { flex-direction: column; }
-  .ep08-acciones .boton { width: 100%; }
+  .ep08-acciones .btn { width: 100%; }
   .ep08-filtro { flex: 1 1 140px; }
 }
