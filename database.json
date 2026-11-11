@@ -1207,6 +1207,20 @@
       "campo": "creacion",
       "valorAnterior": null,
       "valorNuevo": "prueba descripcion riesgo"
+    },
+    {
+      "id": "HIS-059",
+      "fecha": "2026-11-10T13:55:00.853Z",
+      "idUsuario": "USR-001",
+      "entidad": "reunion",
+      "idEntidad": "REU-001",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": {
+        "tipo": "Daily Scrum",
+        "fecha": "2026-11-10",
+        "idProyecto": "PRJ-001"
+      }
     }
   ],
   "tokens": [
@@ -1538,11 +1552,11 @@
   "capacitacionProgreso": [
     {
       "idUsuario": "USR-001",
-      "porcentaje": 33,
-      "pasoIndex": 3,
-      "moduloActual": "Épica 4",
+      "porcentaje": 83,
+      "pasoIndex": 9,
+      "moduloActual": "Épica 10",
       "completado": false,
-      "ultimaActualizacion": "2026-11-06"
+      "ultimaActualizacion": "2026-11-10"
     },
     {
       "idUsuario": "USR-009",
@@ -1551,6 +1565,13 @@
       "moduloActual": "Épica 2",
       "completado": false,
       "ultimaActualizacion": "2026-11-06"
+    },
+    {
+      "idUsuario": "USR-002",
+      "porcentaje": 0,
+      "pasoIndex": 0,
+      "moduloActual": "Épica 1",
+      "completado": false
     }
   ],
   "impedimentos": [
@@ -1598,6 +1619,26 @@
       "estado": "Identificado",
       "idReportadoPor": "USR-001",
       "fechaRegistro": "2026-11-10T02:53:50.874Z"
+    }
+  ],
+  "reuniones": [
+    {
+      "id": "REU-001",
+      "idProyecto": "PRJ-001",
+      "idSprint": "SPR-002",
+      "tipo": "Daily Scrum",
+      "fecha": "2026-11-10",
+      "participantes": [
+        "USR-008",
+        "USR-009",
+        "USR-010",
+        "USR-012",
+        "USR-014"
+      ],
+      "observaciones": "",
+      "acuerdos": [],
+      "idCreador": "USR-001",
+      "fechaRegistro": "2026-11-10T13:55:00.853Z"
     }
   ]
 }
