@@ -1207,6 +1207,118 @@
       "campo": "creacion",
       "valorAnterior": null,
       "valorNuevo": "prueba descripcion riesgo"
+    },
+    {
+      "id": "HIS-059",
+      "fecha": "2026-11-10T14:25:28.088Z",
+      "idUsuario": "USR-002",
+      "entidad": "dod",
+      "idEntidad": "DOD-001",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "Hacerlo"
+    },
+    {
+      "id": "HIS-060",
+      "fecha": "2026-11-10T14:25:37.148Z",
+      "idUsuario": "USR-002",
+      "entidad": "dod",
+      "idEntidad": "DOD-002",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "No hacerlo"
+    },
+    {
+      "id": "HIS-061",
+      "fecha": "2026-11-10T14:25:40.227Z",
+      "idUsuario": "USR-002",
+      "entidad": "dod",
+      "idEntidad": "DOD-001",
+      "campo": "eliminacion",
+      "valorAnterior": "Hacerlo",
+      "valorNuevo": null
+    },
+    {
+      "id": "HIS-062",
+      "fecha": "2026-11-10T14:26:07.566Z",
+      "idUsuario": "USR-002",
+      "entidad": "reunion",
+      "idEntidad": "REU-001",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": {
+        "tipo": "Sprint Review",
+        "fecha": "2026-11-18",
+        "idProyecto": "PRJ-002"
+      }
+    },
+    {
+      "id": "HIS-063",
+      "fecha": "2026-11-10T14:27:17.038Z",
+      "idUsuario": "USR-001",
+      "entidad": "tarea",
+      "idEntidad": "TK-002",
+      "campo": "estado",
+      "valorAnterior": "En progreso",
+      "valorNuevo": {
+        "estado": "Terminado",
+        "titulo": "Configurar rutas de autenticación y sesiones",
+        "idHistoria": "HU-001"
+      }
+    },
+    {
+      "id": "HIS-064",
+      "fecha": "2026-11-10T14:27:58.532Z",
+      "idUsuario": "USR-001",
+      "entidad": "dod",
+      "idEntidad": "DOD-002",
+      "campo": "edicion",
+      "valorAnterior": {
+        "descripcion": "No hacerlo",
+        "tipo": "Obligatorio"
+      },
+      "valorNuevo": {
+        "descripcion": "No hacerlo",
+        "tipo": "Opcional"
+      }
+    },
+    {
+      "id": "HIS-065",
+      "fecha": "2026-11-10T14:28:06.991Z",
+      "idUsuario": "USR-001",
+      "entidad": "tarea",
+      "idEntidad": "TK-005",
+      "campo": "estado",
+      "valorAnterior": "En progreso",
+      "valorNuevo": {
+        "estado": "Terminado",
+        "titulo": "Construir columnas y tarjetas del tablero Kanban",
+        "idHistoria": "HU-003"
+      }
+    },
+    {
+      "id": "HIS-066",
+      "fecha": "2026-11-10T14:29:16.551Z",
+      "idUsuario": "USR-001",
+      "entidad": "acuerdo",
+      "idEntidad": "ACU-001",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": {
+        "idReunion": "REU-001",
+        "descripcion": "ser buena persona",
+        "idResponsable": "USR-002"
+      }
+    },
+    {
+      "id": "HIS-067",
+      "fecha": "2026-11-10T14:32:44.870Z",
+      "idUsuario": "USR-001",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-003",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "Prueba 2"
     }
   ],
   "tokens": [
@@ -1321,8 +1433,8 @@
           "titulo": "Configurar rutas de autenticación y sesiones",
           "descripcion": "Configurar las rutas que se usaran para autenticación e inicio de sesiones",
           "horasEstimadas": 16,
-          "estado": "En progreso",
-          "fechaTerminado": null,
+          "estado": "Terminado",
+          "fechaTerminado": "2026-11-10",
           "idResponsable": "USR-010",
           "idUsuarioResponsable": "USR-010"
         }
@@ -1389,8 +1501,8 @@
           "titulo": "Construir columnas y tarjetas del tablero Kanban",
           "descripcion": "Construir las columnas y tarjetas que se usarán en el tablero Kanban",
           "horasEstimadas": 16,
-          "estado": "En progreso",
-          "fechaTerminado": null,
+          "estado": "Terminado",
+          "fechaTerminado": "2026-11-10",
           "idResponsable": "USR-014",
           "idUsuarioResponsable": "USR-014"
         },
@@ -1480,8 +1592,8 @@
       "idHistoria": "HU-001",
       "titulo": "Configurar rutas de autenticación y sesiones",
       "horasEstimadas": 16,
-      "estado": "en_progreso",
-      "fechaTerminado": null,
+      "estado": "terminado",
+      "fechaTerminado": "2026-11-10",
       "idResponsable": "USR-010",
       "descripcion": "Configurar las rutas que se usaran para autenticación e inicio de sesiones",
       "idUsuarioResponsable": "USR-010"
@@ -1516,10 +1628,10 @@
       "idHistoria": "HU-003",
       "titulo": "Construir columnas y tarjetas del tablero Kanban",
       "horasEstimadas": 16,
-      "estado": "en_progreso",
+      "estado": "terminado",
       "idResponsable": "USR-014",
       "descripcion": "Construir las columnas y tarjetas que se usarán en el tablero Kanban",
-      "fechaTerminado": null,
+      "fechaTerminado": "2026-11-10",
       "idUsuarioResponsable": "USR-014"
     },
     {
@@ -1538,11 +1650,11 @@
   "capacitacionProgreso": [
     {
       "idUsuario": "USR-001",
-      "porcentaje": 33,
-      "pasoIndex": 3,
-      "moduloActual": "Épica 4",
+      "porcentaje": 42,
+      "pasoIndex": 4,
+      "moduloActual": "Épica 5",
       "completado": false,
-      "ultimaActualizacion": "2026-11-06"
+      "ultimaActualizacion": "2026-11-10"
     },
     {
       "idUsuario": "USR-009",
@@ -1551,6 +1663,14 @@
       "moduloActual": "Épica 2",
       "completado": false,
       "ultimaActualizacion": "2026-11-06"
+    },
+    {
+      "idUsuario": "USR-002",
+      "porcentaje": 25,
+      "pasoIndex": 2,
+      "moduloActual": "Épica 3",
+      "completado": false,
+      "ultimaActualizacion": "2026-11-10"
     }
   ],
   "impedimentos": [
@@ -1584,6 +1704,18 @@
         }
       ],
       "fechaActualizacion": "2026-11-10T02:52:37.992Z"
+    },
+    {
+      "id": "IMP-003",
+      "idProyecto": "PRJ-002",
+      "descripcion": "Prueba 2",
+      "tipoRelacion": "proyecto",
+      "idRelacionado": "PRJ-002",
+      "estado": "Identificado",
+      "idResponsable": null,
+      "idReportadoPor": "USR-001",
+      "fechaRegistro": "2026-11-10T14:32:44.870Z",
+      "acciones": []
     }
   ],
   "riesgos": [
@@ -1598,6 +1730,41 @@
       "estado": "Identificado",
       "idReportadoPor": "USR-001",
       "fechaRegistro": "2026-11-10T02:53:50.874Z"
+    }
+  ],
+  "dods": [
+    {
+      "id": "DOD-002",
+      "idProyecto": "PRJ-001",
+      "descripcion": "No hacerlo",
+      "tipo": "Opcional"
+    }
+  ],
+  "reuniones": [
+    {
+      "id": "REU-001",
+      "idProyecto": "PRJ-002",
+      "idSprint": "SPRINT-P2-01",
+      "tipo": "Sprint Review",
+      "fecha": "2026-11-18",
+      "participantes": [
+        "USR-003"
+      ],
+      "observaciones": "Si",
+      "acuerdos": [
+        {
+          "id": "ACU-001",
+          "descripcion": "ser buena persona",
+          "idResponsable": "USR-002",
+          "fechaCompromiso": "2026-11-11",
+          "estado": "Pendiente",
+          "fechaCreacion": "2026-11-10T14:29:16.551Z",
+          "idCreador": "USR-001",
+          "historial": []
+        }
+      ],
+      "idCreador": "USR-002",
+      "fechaRegistro": "2026-11-10T14:26:07.566Z"
     }
   ]
 }
