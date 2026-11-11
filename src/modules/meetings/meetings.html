@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reuniones Scrum - Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/modules/meetings/meetings.css">
+</head>
+<body data-volver="/panel" data-seccion="reuniones" data-protegida>
+  <div id="app-header"></div>
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1>Eventos y reuniones Scrum</h1>
+      <p>Registro de actividades de coordinación, acuerdos y compromisos del Sprint</p>
+    </div>
+
+    <section class="tarjeta" id="vista-reuniones">
+      <div class="barra">
+        <div class="entrada entrada--icono barra__buscar">
+          <span class="entrada__icono" data-icon="buscar"></span>
+          <input class="control" type="search" id="buscar-reuniones" placeholder="Buscar reunión..." aria-label="Buscar reuniones">
+        </div>
+        <div class="barra__filtro">
+          <label class="ep09-label-filtro" for="filtro-tipo">Tipo de reunión</label>
+          <select class="control" id="filtro-tipo">
+            <option value="">Todos los tipos</option>
+            <option value="Sprint Planning">Sprint Planning</option>
+            <option value="Daily Scrum">Daily Scrum</option>
+            <option value="Sprint Review">Sprint Review</option>
+            <option value="Sprint Retrospective">Sprint Retrospective</option>
+          </select>
+        </div>
+        <span class="barra__espacio"></span>
+        <button class="btn btn-primario" type="button" id="btn-nueva-reunion">+ Nueva reunión</button>
+      </div>
+      <div id="contenedor-reuniones" class="tabla-contenedor" hidden>
+        <table class="tabla">
+          <thead><tr><th>ID</th><th>Tipo</th><th>Fecha</th><th>Proyecto / Sprint</th><th>Participantes</th><th>Acuerdos</th><th>Acciones</th></tr></thead>
+          <tbody id="tabla-reuniones"></tbody>
+        </table>
+      </div>
+      <div class="vacio" id="sin-reuniones" hidden>
+        <span class="vacio__icono" data-icon="calendario" data-size="24"></span>
+        <h3>No hay reuniones para mostrar</h3>
+        <p>Registra una reunión o modifica los filtros.</p>
+      </div>
+    </section>
+
+    <section class="tarjeta ep09-formulario" id="vista-nueva-reunion" hidden>
+      <div class="titulo-pagina">
+        <h2>Registrar reunión Scrum</h2>
+        <p>Datos básicos y participantes de la reunión</p>
+      </div>
+      <form id="form-reunion">
+        <div class="campo">
+          <label for="reunion-proyecto">Proyecto</label>
+          <select class="control" id="reunion-proyecto" required></select>
+        </div>
+        <div class="campo-fila">
+          <div class="campo">
+            <label for="reunion-sprint">Sprint (opcional)</label>
+            <select class="control" id="reunion-sprint"></select>
+          </div>
+          <div class="campo">
+            <label for="reunion-tipo">Tipo de reunión</label>
+            <select class="control" id="reunion-tipo" required>
+              <option value="">Selecciona el tipo</option>
+              <option value="Sprint Planning">Sprint Planning</option>
+              <option value="Daily Scrum">Daily Scrum</option>
+              <option value="Sprint Review">Sprint Review</option>
+              <option value="Sprint Retrospective">Sprint Retrospective</option>
+            </select>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="reunion-fecha">Fecha de reunión</label>
+          <input class="control" type="date" id="reunion-fecha" required>
+        </div>
+        <fieldset class="campo ep09-fieldset">
+          <legend>Participantes</legend>
+          <div id="reunion-participantes" class="ep09-participantes"></div>
+          <p class="campo__ayuda">Selecciona al menos un integrante activo del proyecto.</p>
+        </fieldset>
+        <div class="campo">
+          <label for="reunion-observaciones">Observaciones de la reunión</label>
+          <textarea class="control" id="reunion-observaciones" maxlength="2000" rows="3" placeholder="Temas tratados, comentarios o decisiones..."></textarea>
+        </div>
+        <p class="ep09-mensaje" id="mensaje-reunion" role="alert" hidden></p>
+        <div class="ep09-acciones">
+          <button class="btn btn-secundario" type="button" id="btn-cancelar-reunion">Cancelar</button>
+          <button class="btn btn-primario" type="submit">Guardar reunión</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="tarjeta" id="vista-detalle" hidden>
+      <div class="ep09-detalle-cabecera">
+        <div>
+          <h2 id="detalle-reunion-titulo">Detalle de reunión</h2>
+          <p id="detalle-reunion-id"></p>
+        </div>
+        <button class="btn btn-secundario" id="btn-volver-reuniones" type="button">Volver a reuniones</button>
+      </div>
+      <dl class="ep09-datos">
+        <div><dt>Proyecto</dt><dd id="detalle-proyecto"></dd></div>
+        <div><dt>Sprint</dt><dd id="detalle-sprint"></dd></div>
+        <div><dt>Fecha</dt><dd id="detalle-fecha"></dd></div>
+        <div><dt>Participantes</dt><dd id="detalle-participantes"></dd></div>
+        <div class="ep09-datos-ancho"><dt>Observaciones</dt><dd id="detalle-observaciones"></dd></div>
+      </dl>
+      <div class="ep09-separador"></div>
+      <div class="ep09-detalle-cabecera">
+        <h3>Acuerdos y acciones de seguimiento</h3>
+        <span id="resumen-acuerdos" class="ep09-ayuda"></span>
+      </div>
+      <div class="tabla-contenedor" id="contenedor-acuerdos" hidden>
+        <table class="tabla">
+          <thead><tr><th>ID</th><th>Acuerdo / acción</th><th>Responsable</th><th>Compromiso</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="tabla-acuerdos"></tbody>
+        </table>
+      </div>
+      <div class="vacio" id="sin-acuerdos" hidden>
+        <h3>Sin acuerdos registrados</h3>
+        <p>Puedes agregar el primer acuerdo de esta reunión.</p>
+      </div>
+
+      <div class="ep09-separador"></div>
+      <form id="form-acuerdo" class="ep09-bloque-formulario" hidden>
+        <h3>Agregar acuerdo o compromiso</h3>
+        <div class="campo">
+          <label for="acuerdo-descripcion">Descripción del acuerdo / acción</label>
+          <textarea class="control" id="acuerdo-descripcion" rows="2" maxlength="1000" required></textarea>
+        </div>
+        <div class="campo-fila">
+          <div class="campo">
+            <label for="acuerdo-responsable">Responsable</label>
+            <select class="control" id="acuerdo-responsable" required></select>
+          </div>
+          <div class="campo">
+            <label for="acuerdo-fecha">Fecha compromiso (opcional)</label>
+            <input class="control" type="date" id="acuerdo-fecha">
+          </div>
+        </div>
+        <p class="campo__ayuda">El acuerdo comenzará en estado Pendiente.</p>
+        <p id="mensaje-acuerdo" class="ep09-mensaje" role="alert" hidden></p>
+        <div class="ep09-acciones">
+          <button class="btn btn-primario" type="submit">Agregar acuerdo</button>
+        </div>
+      </form>
+
+      <form id="form-seguimiento-acuerdo" class="ep09-bloque-formulario" hidden>
+        <h3 id="titulo-seguimiento-acuerdo">Seguimiento del acuerdo</h3>
+        <p id="texto-acuerdo"></p>
+        <div class="campo-fila">
+          <div class="campo">
+            <label for="editar-acuerdo-responsable">Responsable</label>
+            <select class="control" id="editar-acuerdo-responsable" required></select>
+          </div>
+          <div class="campo">
+            <label for="editar-acuerdo-estado">Estado</label>
+            <select class="control" id="editar-acuerdo-estado" required>
+              <option value="Pendiente">Pendiente</option>
+              <option value="En curso">En curso</option>
+              <option value="Completada">Completada</option>
+            </select>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="editar-acuerdo-fecha">Fecha compromiso (opcional)</label>
+          <input class="control" type="date" id="editar-acuerdo-fecha">
+        </div>
+        <div class="campo">
+          <label for="editar-acuerdo-nota">Nota de seguimiento (opcional)</label>
+          <textarea class="control" id="editar-acuerdo-nota" rows="2" maxlength="1000" placeholder="Describe qué ocurrió con esta acción..."></textarea>
+        </div>
+        <h4>Historial de seguimiento</h4>
+        <div class="ep09-historial" id="historial-acuerdo"></div>
+        <p id="mensaje-seguimiento-acuerdo" class="ep09-mensaje" role="alert" hidden></p>
+        <div class="ep09-acciones">
+          <button class="btn btn-secundario" type="button" id="btn-cancelar-edicion">Cancelar</button>
+          <button class="btn btn-primario" type="submit">Guardar seguimiento</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/meetings/meetings.js"></script>
+</body>
+</html>
