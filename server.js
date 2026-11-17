@@ -62,6 +62,9 @@ app.get('/reportes', requierePagina, (req, res) => res.sendFile(pagina('metrics'
 // ---------- Capacitación ----------
 app.get('/capacitacion', requierePagina, (req, res) => res.sendFile(pagina('training', 'capacitacion.html')));
 
+// ---------- Notificaciones ----------
+app.get('/notificaciones', requierePagina, (req, res) => res.sendFile(pagina('notifications', 'notificaciones.html')));
+
 // ---------- API ----------
 // Cada módulo monta aquí sus rutas con una sola línea.
 app.use('/api/auth', require('./src/modules/auth/auth.routes'));
@@ -81,6 +84,9 @@ app.use('/api/impediments',require('./src/modules/impediments/impediments.routes
 
 // ---------- API de reuniones ----------
 app.use('/api/reuniones',require('./src/modules/meetings/meetings.routes'));
+
+// ---------- API de notificaiones ----------
+app.use('/api/notifications', require('./src/modules/notifications/notifications.routes'));
 
 // ---------- Página 404 ----------
 app.use((req, res) => res.status(404).send('Página no encontrada'));

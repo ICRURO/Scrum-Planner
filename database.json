@@ -427,6 +427,18 @@
       "idProyecto": "PRJ-006",
       "idUsuario": "USR-002",
       "rol": "Product Owner"
+    },
+    {
+      "id": "PAR-019",
+      "idProyecto": "PRJ-006",
+      "idUsuario": "USR-012",
+      "rol": "Developer"
+    },
+    {
+      "id": "PAR-020",
+      "idProyecto": "PRJ-006",
+      "idUsuario": "USR-001",
+      "rol": "Scrum Master"
     }
   ],
   "historial": [
@@ -1328,6 +1340,80 @@
         "titulo": "Definir arquitectura y base de datos inicial",
         "idHistoria": "HU-001"
       }
+    },
+    {
+      "id": "HIS-100",
+      "fecha": "2026-11-17T06:11:18.026Z",
+      "idUsuario": "USR-001",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-006",
+      "campo": "participante",
+      "valorAnterior": null,
+      "valorNuevo": "USR-012 (Developer)"
+    },
+    {
+      "id": "HIS-101",
+      "fecha": "2026-11-17T06:15:19.115Z",
+      "idUsuario": "USR-001",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-006",
+      "campo": "participante",
+      "valorAnterior": null,
+      "valorNuevo": "USR-001 (Scrum Master)"
+    },
+    {
+      "id": "HIS-102",
+      "fecha": "2026-11-17T06:18:54.099Z",
+      "idUsuario": "USR-001",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "prueba"
+    },
+    {
+      "id": "HIS-103",
+      "fecha": "2026-11-17T06:19:26.027Z",
+      "idUsuario": "USR-001",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "campo": "seguimiento",
+      "valorAnterior": {
+        "estado": "Identificado",
+        "idResponsable": null
+      },
+      "valorNuevo": {
+        "estado": "Identificado",
+        "idResponsable": "USR-003",
+        "accion": null
+      }
+    },
+    {
+      "id": "HIS-104",
+      "fecha": "2026-11-17T06:19:31.196Z",
+      "idUsuario": "USR-001",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "campo": "seguimiento",
+      "valorAnterior": {
+        "estado": "Identificado",
+        "idResponsable": "USR-003"
+      },
+      "valorNuevo": {
+        "estado": "Resuelto",
+        "idResponsable": "USR-003",
+        "accion": null
+      }
+    },
+    {
+      "id": "HIS-105",
+      "fecha": "2026-11-17T06:25:07.324Z",
+      "idUsuario": "USR-001",
+      "entidad": "historia_usuario",
+      "idEntidad": "HU-009",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "ñ"
     }
   ],
   "tokens": [
@@ -1840,6 +1926,20 @@
       ],
       "estado": "Terminada",
       "datosPrueba": true
+    },
+    {
+      "id": "HU-009",
+      "idProyecto": "PRJ-006",
+      "idSprint": null,
+      "titulo": "ñ",
+      "descripcion": "ñ",
+      "criterios": [],
+      "tareas": [],
+      "estimacion": "XS",
+      "responsableOrganizativo": "ñ",
+      "dependencias": [],
+      "orden": 1,
+      "comentarios": []
     }
   ],
   "sprints": [
@@ -2165,6 +2265,13 @@
       "moduloActual": "Épica 3",
       "completado": false,
       "ultimaActualizacion": "2026-11-10"
+    },
+    {
+      "idUsuario": "USR-012",
+      "porcentaje": 0,
+      "pasoIndex": 0,
+      "moduloActual": "Épica 1",
+      "completado": false
     }
   ],
   "impedimentos": [
@@ -2228,6 +2335,19 @@
       "idReportadoPor": "USR-001",
       "fechaRegistro": "2026-11-10T14:32:44.870Z",
       "acciones": []
+    },
+    {
+      "id": "IMP-004",
+      "idProyecto": "PRJ-001",
+      "descripcion": "prueba",
+      "tipoRelacion": "tarea",
+      "idRelacionado": "TK-012",
+      "estado": "Resuelto",
+      "idResponsable": "USR-003",
+      "idReportadoPor": "USR-001",
+      "fechaRegistro": "2026-11-17T06:18:54.099Z",
+      "acciones": [],
+      "fechaActualizacion": "2026-11-17T06:19:31.196Z"
     }
   ],
   "riesgos": [
@@ -3027,5 +3147,254 @@
         }
       }
     ]
-  }
+  },
+  "notificaciones": [
+    {
+      "id": "NOT-001",
+      "idUsuarioDestino": "USR-002",
+      "idProyecto": "PRJ-001",
+      "categoria": "Impedimento",
+      "mensaje": "Nuevo impedimento registrado en la tarea TK-012",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:18:54.099Z"
+    },
+    {
+      "id": "NOT-002",
+      "idUsuarioDestino": "USR-003",
+      "idProyecto": "PRJ-001",
+      "categoria": "Impedimento",
+      "mensaje": "Nuevo impedimento registrado en la tarea TK-012",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:18:54.099Z"
+    },
+    {
+      "id": "NOT-003",
+      "idUsuarioDestino": "USR-004",
+      "idProyecto": "PRJ-001",
+      "categoria": "Impedimento",
+      "mensaje": "Nuevo impedimento registrado en la tarea TK-012",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:18:54.099Z"
+    },
+    {
+      "id": "NOT-004",
+      "idUsuarioDestino": "USR-005",
+      "idProyecto": "PRJ-001",
+      "categoria": "Impedimento",
+      "mensaje": "Nuevo impedimento registrado en la tarea TK-012",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:18:54.099Z"
+    },
+    {
+      "id": "NOT-005",
+      "idUsuarioDestino": "USR-008",
+      "idProyecto": "PRJ-001",
+      "categoria": "Impedimento",
+      "mensaje": "Nuevo impedimento registrado en la tarea TK-012",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:18:54.099Z"
+    },
+    {
+      "id": "NOT-006",
+      "idUsuarioDestino": "USR-009",
+      "idProyecto": "PRJ-001",
+      "categoria": "Impedimento",
+      "mensaje": "Nuevo impedimento registrado en la tarea TK-012",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:18:54.099Z"
+    },
+    {
+      "id": "NOT-007",
+      "idUsuarioDestino": "USR-010",
+      "idProyecto": "PRJ-001",
+      "categoria": "Impedimento",
+      "mensaje": "Nuevo impedimento registrado en la tarea TK-012",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:18:54.099Z"
+    },
+    {
+      "id": "NOT-008",
+      "idUsuarioDestino": "USR-012",
+      "idProyecto": "PRJ-001",
+      "categoria": "Impedimento",
+      "mensaje": "Nuevo impedimento registrado en la tarea TK-012",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:18:54.099Z"
+    },
+    {
+      "id": "NOT-009",
+      "idUsuarioDestino": "USR-014",
+      "idProyecto": "PRJ-001",
+      "categoria": "Impedimento",
+      "mensaje": "Nuevo impedimento registrado en la tarea TK-012",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:18:54.099Z"
+    },
+    {
+      "id": "NOT-010",
+      "idUsuarioDestino": "USR-003",
+      "idProyecto": "PRJ-001",
+      "categoria": "Asignación",
+      "mensaje": "Se te ha asignado la atención del impedimento IMP-004",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:19:26.027Z"
+    },
+    {
+      "id": "NOT-011",
+      "idUsuarioDestino": "USR-002",
+      "idProyecto": "PRJ-001",
+      "categoria": "Cambio de estado",
+      "mensaje": "El estado del impedimento IMP-004 cambió a Resuelto",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:19:31.196Z"
+    },
+    {
+      "id": "NOT-012",
+      "idUsuarioDestino": "USR-003",
+      "idProyecto": "PRJ-001",
+      "categoria": "Cambio de estado",
+      "mensaje": "El estado del impedimento IMP-004 cambió a Resuelto",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:19:31.196Z"
+    },
+    {
+      "id": "NOT-013",
+      "idUsuarioDestino": "USR-004",
+      "idProyecto": "PRJ-001",
+      "categoria": "Cambio de estado",
+      "mensaje": "El estado del impedimento IMP-004 cambió a Resuelto",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:19:31.196Z"
+    },
+    {
+      "id": "NOT-014",
+      "idUsuarioDestino": "USR-005",
+      "idProyecto": "PRJ-001",
+      "categoria": "Cambio de estado",
+      "mensaje": "El estado del impedimento IMP-004 cambió a Resuelto",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:19:31.196Z"
+    },
+    {
+      "id": "NOT-015",
+      "idUsuarioDestino": "USR-008",
+      "idProyecto": "PRJ-001",
+      "categoria": "Cambio de estado",
+      "mensaje": "El estado del impedimento IMP-004 cambió a Resuelto",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:19:31.196Z"
+    },
+    {
+      "id": "NOT-016",
+      "idUsuarioDestino": "USR-009",
+      "idProyecto": "PRJ-001",
+      "categoria": "Cambio de estado",
+      "mensaje": "El estado del impedimento IMP-004 cambió a Resuelto",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:19:31.196Z"
+    },
+    {
+      "id": "NOT-017",
+      "idUsuarioDestino": "USR-010",
+      "idProyecto": "PRJ-001",
+      "categoria": "Cambio de estado",
+      "mensaje": "El estado del impedimento IMP-004 cambió a Resuelto",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:19:31.196Z"
+    },
+    {
+      "id": "NOT-018",
+      "idUsuarioDestino": "USR-012",
+      "idProyecto": "PRJ-001",
+      "categoria": "Cambio de estado",
+      "mensaje": "El estado del impedimento IMP-004 cambió a Resuelto",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:19:31.196Z"
+    },
+    {
+      "id": "NOT-019",
+      "idUsuarioDestino": "USR-014",
+      "idProyecto": "PRJ-001",
+      "categoria": "Cambio de estado",
+      "mensaje": "El estado del impedimento IMP-004 cambió a Resuelto",
+      "elemento": "IMP-004",
+      "entidad": "impedimento",
+      "idEntidad": "IMP-004",
+      "urlDestino": "/impedimentos",
+      "leida": false,
+      "fecha": "2026-11-17T06:19:31.196Z"
+    }
+  ]
 }
