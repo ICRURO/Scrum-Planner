@@ -1,136 +1,173 @@
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Métricas y Reportes · Scrum Manager</title>
-    <link rel="stylesheet" href="/shared/css/tokens.css">
-    <link rel="stylesheet" href="/shared/css/base.css">
-    <link rel="stylesheet" href="/shared/css/components.css">
-    <link rel="stylesheet" href="/modules/metrics/reportes.css">
-    </head>
-    <body data-volver="/panel" data-volver-texto="panel" data-seccion="reportes" data-protegida>
-    
-    <div id="app-header"></div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Métricas y Reportes · Scrum Manager</title>
+<link rel="stylesheet" href="/shared/css/tokens.css">
+<link rel="stylesheet" href="/shared/css/base.css">
+<link rel="stylesheet" href="/shared/css/components.css">
+<link rel="stylesheet" href="/modules/metrics/reportes.css">
+<style>
+.controles-filtro { flex-wrap: wrap; }
+@media print {
+    #app-header, .encabezado-reportes .controles-filtro, #btn-exportar, #btn-descargar-pdf-completo, .btn {
+        display: none !important;
+    }
+    body { background-color: #ffffff !important; color: #000000 !important; }
+    main.pagina { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+    .tarjeta { border: 1px solid #cbd5e1 !important; box-shadow: none !important; break-inside: avoid; margin-bottom: 16px !important; }
+}
+</style>
+</head>
+<body data-volver="/panel" data-volver-texto="panel" data-seccion="reportes" data-protegida>
 
-    <main class="pagina pagina--fluida">
-        <!-- Encabezado con título y filtros alineados -->
-        <div class="encabezado-reportes">
-            <h1>Métricas y Reportes del Proyecto</h1>
-            <div class="controles-filtro">
-                <select id="select-proyecto" class="control" aria-label="Seleccionar proyecto"></select>
-                <select id="select-sprint" class="control" aria-label="Seleccionar sprint"></select>
-                <!-- Botón de Exportar (Sara: HU-46) -->
-                <button id="btn-exportar" class="btn btn--primario" title="Exportar reporte de métricas">
-                <svg class="icono-svg-exportar" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Exportar
-                </button>
-            </div>
-            </div>
+<div id="app-header"></div>
 
-        <!-- HU-43 Criterio 4: Banner compacto de datos insuficientes -->
-        <div class="alerta alerta--info" id="alerta-datos-insuficientes" hidden>
-        <span class="icono-ficha" data-icon="info"></span>
-        <span>No hay suficientes tareas registradas ni tiempo transcurrido para trazar una curva confiable en este Sprint.</span>
+<main class="pagina pagina--fluida">
+    <!-- Encabezado con título y filtros alineados -->
+    <div class="encabezado-reportes">
+        <h1>Métricas y Reportes del Proyecto</h1>
+        <div class="controles-filtro">
+            <select id="select-proyecto" class="control" aria-label="Seleccionar proyecto"></select>
+            <select id="select-sprint" class="control" aria-label="Seleccionar sprint"></select>
+            <select id="formato-reporte" class="control" aria-label="Formato del reporte del Sprint"><option value="pdf">PDF</option><option value="txt">TXT</option></select>
+            <button id="btn-exportar" class="btn btn--primario" title="Exportar reporte de métricas">
+            <svg class="icono-svg-exportar" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Exportar
+            </button>
         </div>
+    </div>
 
-        <!-- Cuadrante 2x2 exacto del prototipo -->
-        <div class="rejilla-metricas" id="contenedor-metricas">
-        
-        <!-- Arriba Izquierda: Burndown Chart (HU-43) -->
+    <p id="resumen-proyecto" class="alerta alerta--info" aria-live="polite">Consultando estado del proyecto...</p>
+    <!-- Banner compacto de datos insuficientes -->
+    <div class="alerta alerta--info" id="alerta-datos-insuficientes" hidden>
+        <span class="icono-ficha" data-icon="info"></span>
+        <span>Se requieren tareas con horas estimadas y fechas válidas para dibujar el burndown.</span>
+    </div>
+
+    <!-- Cuadrante 2x2 -->
+    <div class="rejilla-metricas" id="contenedor-metricas">
+    
+        <!-- Burndown Chart -->
         <section class="tarjeta">
             <div class="tarjeta-encabezado">
-            <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="bandera"></span>Burndown Chart</h2>
-            <div class="leyenda-grafica">
-                <span class="leyenda-item"><span class="indicador indicador--ideal"></span> Ideal</span>
-                <span class="leyenda-item"><span class="indicador indicador--actual"></span> Actual</span>
-            </div>
+                <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="bandera"></span>Burndown Chart</h2>
+                <div class="leyenda-grafica">
+                    <span class="leyenda-item"><span class="indicador indicador--ideal"></span> Ideal</span>
+                    <span class="leyenda-item"><span class="indicador indicador--actual"></span> Actual</span>
+                </div>
             </div>
             <div class="contenedor-svg" id="grafico-burndown"></div>
+            <p id="notas-burndown" class="texto-suave" style="font-size: .85rem; margin-top: 12px" aria-live="polite"></p>
         </section>
 
-        <!-- Arriba Derecha: Historias por Talla (HU-44) -->
+        <!-- Historias por Talla -->
         <section class="tarjeta">
             <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="reloj"></span>Historias por Talla de Estimación</h2>
             <div class="cuadricula-tallas">
-            <div class="tarjeta-talla">
-                <div class="talla-header">
-                <span class="talla-nombre">XS</span>
-                <svg class="talla-icono-svg" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                <div class="tarjeta-talla">
+                    <div class="talla-header"><span class="talla-nombre">XS</span></div>
+                    <span class="talla-valor" id="talla-xs">0</span>
                 </div>
-                <span class="talla-valor" id="talla-xs">0</span>
-            </div>
-            <div class="tarjeta-talla">
-                <div class="talla-header">
-                <span class="talla-nombre">S</span>
-                <svg class="talla-icono-svg" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                <div class="tarjeta-talla">
+                    <div class="talla-header"><span class="talla-nombre">S</span></div>
+                    <span class="talla-valor" id="talla-s">0</span>
                 </div>
-                <span class="talla-valor" id="talla-s">0</span>
-            </div>
-            <div class="tarjeta-talla">
-                <div class="talla-header">
-                <span class="talla-nombre">M</span>
-                <svg class="talla-icono-svg" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                <div class="tarjeta-talla">
+                    <div class="talla-header"><span class="talla-nombre">M</span></div>
+                    <span class="talla-valor" id="talla-m">0</span>
                 </div>
-                <span class="talla-valor" id="talla-m">0</span>
-            </div>
-            <div class="tarjeta-talla">
-                <div class="talla-header">
-                <span class="talla-nombre">L</span>
-                <svg class="talla-icono-svg" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                <div class="tarjeta-talla">
+                    <div class="talla-header"><span class="talla-nombre">L</span></div>
+                    <span class="talla-valor" id="talla-l">0</span>
                 </div>
-                <span class="talla-valor" id="talla-l">0</span>
-            </div>
-            <div class="tarjeta-talla">
-                <div class="talla-header">
-                <span class="talla-nombre">XL</span>
-                <svg class="talla-icono-svg" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                <div class="tarjeta-talla">
+                    <div class="talla-header"><span class="talla-nombre">XL</span></div>
+                    <span class="talla-valor" id="talla-xl">0</span>
                 </div>
-                <span class="talla-valor" id="talla-xl">0</span>
-            </div>
             </div>
         </section>
 
-        <!-- Abajo Izquierda: Tareas en Progreso -->
+        <!-- Tareas en Progreso -->
         <section class="tarjeta">
             <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="equipo"></span>Equipo · Tareas en Progreso</h2>
             <div class="tabla-contenedor">
-            <table class="tabla">
-                <thead>
-                <tr><th>Integrante</th><th>Tarea</th><th>Estado</th></tr>
-                </thead>
-                <tbody id="tabla-tareas-progreso"></tbody>
-            </table>
+                <table class="tabla">
+                    <thead>
+                        <tr><th>Integrante</th><th>Tarea</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody id="tabla-tareas-progreso"></tbody>
+                </table>
             </div>
         </section>
 
-        <!-- Abajo Derecha: Reportes de Estado -->
+        <!-- Reportes de Estado -->
         <section class="tarjeta">
             <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="carpeta"></span>Reportes de Estado</h2>
             <div class="tabla-contenedor">
-            <table class="tabla">
-                <thead>
-                <tr><th>Reporte</th><th>Tipo</th><th>Fecha</th></tr>
-                </thead>
-                <tbody>
-                <tr><td>Sprint 1 Retrospectiva</td><td><span class="insignia insignia--activo">PDF</span></td><td>10 Oct 2026</td></tr>
-                <tr><td>Notas de Lanzamiento v1.0</td><td><span class="insignia insignia--activo">PDF</span></td><td>08 Oct 2026</td></tr>
-                <tr><td>Matriz de Impedimentos</td><td><span class="insignia insignia--activo">PDF</span></td><td>05 Oct 2026</td></tr>
-                </tbody>
-            </table>
+                <table class="tabla">
+                    <thead>
+                        <tr><th>Reporte</th><th>Tipo</th><th>Fecha</th></tr>
+                    </thead>
+                    <tbody id="tabla-reportes-estado"><tr><td colspan="3">Selecciona un Sprint para generar su reporte.</td></tr></tbody>
+                </table>
             </div>
         </section>
-        </div>
-    </main>
+    </div>
 
-    <script src="/shared/js/icons.js"></script>
-    <script src="/shared/js/api.js"></script>
-    <script src="/shared/js/ui.js"></script>
-    <script src="/shared/js/layout.js"></script>
-    <script src="/modules/metrics/reportes.js"></script>
-    </body>
-    </html>
+    <!-- SECCIÓN ÉPICA 12: PANEL HISTÓRICO Y EXPORTACIÓN (HU-53-T9) -->
+    <div style="margin-top: 24px; display: grid; grid-template-columns: 1fr 1.35fr; gap: 18px; align-items: start;">
+        <div style="display: grid; gap: 18px;">
+            <section class="tarjeta">
+                <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="carpeta"></span>Panel para Reportes (PDF)</h2>
+                <p class="texto-suave" style="margin-bottom: 16px; font-size: 0.9rem;">
+                    Descarga el reporte completo del proyecto seleccionado: Sprints, historias, tareas, equipo, DoD, impedimentos, riesgos, reuniones y burndowns.
+                </p>
+                <button id="btn-descargar-pdf-completo" class="btn btn--primario" style="width: 100%; justify-content: center;">
+                    Descargar el reporte completo (PDF)
+                </button>
+            </section>
+
+            <section class="tarjeta">
+                <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="historia"></span>Recursos para el equipo</h2>
+                <ul class="lista-simple" style="font-size: 0.92rem;">
+                    <li><a href="/proyectos" id="link-recurso-dod" class="btn-texto" style="padding: 0;">• Plantillas Definition of Done (DoD)</a></li>
+                    <li><a href="/reuniones" id="link-recurso-retro" class="btn-texto" style="padding: 0;">• Enlace a Retrospectivas PDF</a></li>
+                    <li><a href="/impedimentos" id="link-recurso-riesgos" class="btn-texto" style="padding: 0;">• Matriz de riesgo actualizada</a></li>
+                </ul>
+            </section>
+        </div>
+
+        <section class="tarjeta">
+            <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="reloj"></span>Sprints Completos Pasados</h2>
+            <div class="tabla-contenedor" style="max-height: 290px; overflow-y: auto;">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Sprint</th>
+                            <th>Estado</th>
+                            <th>Fecha de Cierre</th>
+                            <th>Reportes Asociados</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-sprints-historial">
+                        <tr><td colspan="4" class="texto-suave" style="text-align: center;">Cargando historial...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script src="/shared/js/icons.js"></script>
+<script src="/shared/js/api.js"></script>
+<script src="/shared/js/ui.js"></script>
+<script src="/shared/js/layout.js"></script>
+<script src="/modules/metrics/reportes.js"></script>
+</body>
+</html>

@@ -1,15 +1,19 @@
-    (async function () {
+(async function () {
     const sesion = await Layout.listo;
     if (!sesion) return;
 
     const selectProyecto = document.getElementById('select-proyecto');
     const selectSprint = document.getElementById('select-sprint');
+    const formatoReporte = document.getElementById('formato-reporte');
     const alertaDatos = document.getElementById('alerta-datos-insuficientes');
     const contenedorSvg = document.getElementById('grafico-burndown');
     const tablaProgreso = document.getElementById('tabla-tareas-progreso');
+    const tablaSprintsHistorial = document.getElementById('tabla-sprints-historial');
+    const tablaReportesEstado = document.getElementById('tabla-reportes-estado');
+    const resumenProyecto = document.getElementById('resumen-proyecto');
+    const notasBurndown = document.getElementById('notas-burndown');
 
     let proyectos = [];
-    let proyectoActual = null;
 
     async function inicializar() {
         const r = await Api.get('/api/projects');
@@ -17,52 +21,99 @@
         proyectos = r.datos.proyectos || [];
 
         if (!proyectos.length) {
-        selectProyecto.innerHTML = '<option value="">Sin proyectos</option>';
-        selectSprint.innerHTML = '<option value="">Sin sprints</option>';
-        return;
+            selectProyecto.innerHTML = '<option value="">Sin proyectos</option>';
+            selectSprint.innerHTML = '<option value="">Sin sprints</option>';
+            return;
         }
 
         selectProyecto.innerHTML = proyectos
-        .map((p) => `<option value="${p.id}">${p.id} · ${UI.escapar(p.nombre)}</option>`)
-        .join('');
+            .map((p) => `<option value="${p.id}">${p.id} · ${UI.escapar(p.nombre)}</option>`)
+            .join('');
 
         const urlParams = new URLSearchParams(window.location.search);
         const idUrl = urlParams.get('id');
         if (idUrl && proyectos.some((p) => p.id === idUrl)) {
-        selectProyecto.value = idUrl;
+            selectProyecto.value = idUrl;
         }
 
         await cambiarProyecto();
     }
 
-    // Cuando cambia el proyecto, actualizamos los Sprints que le pertenecen
     async function cambiarProyecto() {
         const idProyecto = selectProyecto.value;
         if (!idProyecto) return;
-        proyectoActual = idProyecto;
 
-        // Consultamos inicialmente con "ACTUAL" para que el backend nos diga qué sprints tiene este proyecto
+        const projObj = proyectos.find(p => p.id === idProyecto);
+        if (projObj && resumenProyecto) {
+            resumenProyecto.textContent = `Proyecto: ${projObj.nombre} — Estado: ${projObj.estado.toUpperCase()}${projObj.fechaCierre ? ' (Cerrado el ' + projObj.fechaCierre + ')' : ''}`;
+        }
+
+        await cargarHistorialSprintsPasados(idProyecto);
+
         const res = await Api.get(`/api/metrics/proyectos/${encodeURIComponent(idProyecto)}/sprints/ACTUAL`);
         if (!res.ok) return UI.toast(res.datos?.mensaje || 'Error al obtener métricas.', 'error');
 
         const { sprintsDisponibles, sprint } = res.datos;
 
         if (sprintsDisponibles && sprintsDisponibles.length > 0) {
-        selectSprint.innerHTML = sprintsDisponibles
-            .map((s) => `<option value="${s.id}">${UI.escapar(s.nombre)}</option>`)
-            .join('');
+            selectSprint.innerHTML = sprintsDisponibles
+                .map((s) => `<option value="${s.id}">${UI.escapar(s.nombre)}</option>`)
+                .join('');
 
-        // Seleccionar el sprint devuelto o el primero disponible
-        if (sprint) {
-            selectSprint.value = sprint.id;
+            if (sprint) {
+                selectSprint.value = sprint.id;
+            } else {
+                selectSprint.selectedIndex = 0;
+            }
+            await cargarMetricas(selectSprint.value);
         } else {
-            selectSprint.selectedIndex = 0;
+            selectSprint.innerHTML = '<option value="">Sin sprints</option>';
+            contenedorSvg.innerHTML = '<span class="texto-suave">Sin sprints registrados.</span>';
+            alertaDatos.hidden = false;
+            tablaProgreso.innerHTML = '<tr><td colspan="3" class="texto-suave">No hay tareas.</td></tr>';
+            if (tablaReportesEstado) {
+                tablaReportesEstado.innerHTML = '<tr><td colspan="3">Selecciona un Sprint para generar su reporte.</td></tr>';
+            }
         }
-        await cargarMetricas(selectSprint.value);
-        } else {
-        selectSprint.innerHTML = '<option value="">Sin sprints</option>';
-        await cargarMetricas('NINGUNO');
+    }
+
+    async function cargarHistorialSprintsPasados(idProyecto) {
+        if (!idProyecto || !tablaSprintsHistorial) return;
+
+        // Enlaces de "Recursos para el equipo" vinculados al proyecto seleccionado (HU-53-T9)
+        const linkDod = document.getElementById('link-recurso-dod');
+        const linkRetro = document.getElementById('link-recurso-retro');
+        const linkRiesgos = document.getElementById('link-recurso-riesgos');
+        if (linkDod) linkDod.href = `/proyectos/detalle?id=${encodeURIComponent(idProyecto)}`;
+        if (linkRetro) linkRetro.href = `/reuniones?proyecto=${encodeURIComponent(idProyecto)}`;
+        if (linkRiesgos) linkRiesgos.href = `/impedimentos?proyecto=${encodeURIComponent(idProyecto)}`;
+
+        const res = await Api.get(`/api/metrics/proyectos/${encodeURIComponent(idProyecto)}/historial-sprints`);
+        const listaSprints = res.datos?.sprints || res.sprints || [];
+
+        if (listaSprints.length === 0) {
+            tablaSprintsHistorial.innerHTML = `<tr><td colspan="4" class="texto-suave" style="text-align: center;">No hay Sprints pasados registrados en este proyecto.</td></tr>`;
+            return;
         }
+
+        tablaSprintsHistorial.innerHTML = listaSprints.map((s) => {
+            const esCancelado = String(s.estado || '').toLowerCase() === 'cancelado';
+            const claseEstado = esCancelado ? 'insignia--finalizado' : 'insignia--activo';
+            const fechaMostrada = s.fechaCierre ? UI.formatoFecha(s.fechaCierre) : (s.fechaFin ? UI.formatoFecha(s.fechaFin) : 'Sin registrar');
+
+            return `
+                <tr>
+                    <td><strong>${UI.escapar(s.nombre)}</strong></td>
+                    <td><span class="insignia ${claseEstado}">${UI.escapar(s.estado)}</span></td>
+                    <td>${UI.escapar(fechaMostrada)}</td>
+                    <td>
+                        <button class="btn btn-primario btn-chico" type="button" data-sprint-pdf="${UI.escapar(s.id)}" title="Descargar reporte asociado">
+                            ${Icons.get('carpeta', 16)} PDF
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
 
     async function cargarMetricas(idSprint) {
@@ -72,7 +123,16 @@
         const res = await Api.get(`/api/metrics/proyectos/${encodeURIComponent(idProyecto)}/sprints/${encodeURIComponent(idSprint)}`);
         if (!res.ok) return UI.toast(res.datos?.mensaje || 'Error al obtener métricas.', 'error');
 
-        const { metricas } = res.datos;
+        const { metricas, sprint } = res.datos;
+        
+        if (tablaReportesEstado && sprint) {
+            tablaReportesEstado.innerHTML = `
+                <tr>
+                    <td>Reporte Ejecutivo (${UI.escapar(sprint.nombre)})</td>
+                    <td><button class="btn btn--secundario" data-sprint-pdf="${UI.escapar(sprint.id)}">PDF / TXT</button></td>
+                    <td>${UI.escapar(metricas.fechaConsulta)}</td>
+                </tr>`;
+        }
 
         alertaDatos.hidden = metricas.datosSuficientes;
 
@@ -83,17 +143,21 @@
         document.getElementById('talla-xl').textContent = metricas.conteoTallas.XL || 0;
 
         dibujarBurndownSVG(metricas);
+        
+        if (notasBurndown) {
+            notasBurndown.textContent = metricas.advertencias?.[0] || '';
+        }
 
         if (metricas.tareasEnProgreso && metricas.tareasEnProgreso.length > 0) {
-        tablaProgreso.innerHTML = metricas.tareasEnProgreso.map((t) => `
-            <tr>
-            <td>${UI.escapar(t.responsable)}</td>
-            <td>${UI.escapar(t.titulo)}</td>
-            <td><span class="insignia insignia--activo">${t.estado}</span></td>
-            </tr>
-        `).join('');
+            tablaProgreso.innerHTML = metricas.tareasEnProgreso.map((t) => `
+                <tr>
+                    <td>${UI.escapar(t.responsable)}</td>
+                    <td>${UI.escapar(t.titulo)}</td>
+                    <td><span class="insignia insignia--activo">${UI.escapar(t.estado)}</span></td>
+                </tr>
+            `).join('');
         } else {
-        tablaProgreso.innerHTML = '<tr><td colspan="3" class="texto-suave">No hay tareas en progreso actualmente.</td></tr>';
+            tablaProgreso.innerHTML = '<tr><td colspan="3" class="texto-suave">No hay tareas en progreso actualmente.</td></tr>';
         }
 
         Icons.hidratar();
@@ -101,8 +165,8 @@
 
     function dibujarBurndownSVG(m) {
         if (!m.datosSuficientes) {
-        contenedorSvg.innerHTML = '<span class="texto-suave">Sin datos suficientes para graficar.</span>';
-        return;
+            contenedorSvg.innerHTML = '<span class="texto-suave">Sin datos suficientes para graficar.</span>';
+            return;
         }
 
         const ancho = 450;
@@ -112,10 +176,10 @@
         const padArr = 20;
         const padAba = 30;
 
-        const maxHoras = Math.max(...m.serieIdeal, ...m.serieReal, 1);
+        const maxHoras = Math.max(1, ...m.serieIdeal, ...m.serieReal);
         const n = m.etiquetasDias.length;
 
-        const cX = (i) => padIzq + (i * (ancho - padIzq - padDer)) / (n - 1);
+        const cX = (i) => padIzq + (i * (ancho - padIzq - padDer)) / Math.max(1, n - 1);
         const cY = (v) => alto - padAba - (v * (alto - padArr - padAba)) / maxHoras;
 
         const puntosIdeal = m.serieIdeal.map((v, i) => `${cX(i)},${cY(v)}`).join(' ');
@@ -124,7 +188,7 @@
         const paso = Math.max(1, Math.floor((n - 1) / 3));
         const indicesFechas = [0];
         for (let idx = paso; idx < n - 1; idx += paso) {
-        indicesFechas.push(idx);
+            indicesFechas.push(idx);
         }
         if (!indicesFechas.includes(n - 1)) indicesFechas.push(n - 1);
 
@@ -157,18 +221,38 @@
     selectProyecto.addEventListener('change', cambiarProyecto);
     selectSprint.addEventListener('change', () => cargarMetricas(selectSprint.value));
 
-    // Manejador del botón de exportación (HU-45 / HU-46)
-    const btnExportar = document.getElementById('btn-exportar');
-    if (btnExportar) {
-        btnExportar.addEventListener('click', () => {
+    async function descargarReporte(idSprint, formato = 'pdf', alcance = 'sprint') {
         const idProyecto = selectProyecto.value;
-        const idSprint = selectSprint.value;
-        if (!idProyecto || !idSprint) {
-            return UI.toast('Selecciona un proyecto y un sprint válidos para exportar.', 'error');
+        if (!idProyecto || (alcance === 'sprint' && !idSprint)) return UI.toast('Selecciona un proyecto y un Sprint.', 'error');
+        try {
+            const base = `/api/metrics/proyectos/${encodeURIComponent(idProyecto)}`;
+            const url = alcance === 'proyecto' ? `${base}/exportar?formato=${formato}` : `${base}/sprints/${encodeURIComponent(idSprint)}/exportar?formato=${formato}`;
+            const respuesta = await fetch(url, { credentials: 'same-origin' });
+            if (!respuesta.ok) {
+                const error = await respuesta.json().catch(() => ({}));
+                throw new Error(error.mensaje || 'No se pudo generar el reporte.');
+            }
+            const blob = await respuesta.blob();
+            const enlace = document.createElement('a');
+            const objeto = URL.createObjectURL(blob);
+            enlace.href = objeto;
+            enlace.download = `reporte-${idProyecto}-${alcance === 'proyecto' ? 'proyecto-completo' : idSprint}.${formato}`.replace(/[^a-zA-Z0-9_.-]/g, '_');
+            document.body.appendChild(enlace);
+            enlace.click(); 
+            enlace.remove();
+            setTimeout(() => URL.revokeObjectURL(objeto), 10000);
+        } catch (e) { 
+            UI.toast(e.message || 'Error al descargar el reporte.', 'error'); 
         }
-        window.location.href = `/api/metrics/proyectos/${encodeURIComponent(idProyecto)}/sprints/${encodeURIComponent(idSprint)}/exportar`;
-        });
     }
 
+    document.getElementById('btn-descargar-pdf-completo')?.addEventListener('click', () => descargarReporte(null, formatoReporte?.value || 'pdf', 'proyecto'));
+    document.getElementById('btn-exportar')?.addEventListener('click', () => descargarReporte(selectSprint.value, formatoReporte?.value || 'pdf', 'sprint'));
+
+    document.addEventListener('click', e => {
+        const boton = e.target.closest('[data-sprint-pdf]');
+        if (boton) descargarReporte(boton.dataset.sprintPdf, formatoReporte?.value || 'pdf', 'sprint');
+    });
+
     await inicializar();
-    })();
+})();
