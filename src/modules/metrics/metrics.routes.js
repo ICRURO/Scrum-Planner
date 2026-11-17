@@ -2,168 +2,52 @@
     const { readDB } = require('../../config/db');
     const { requiereSesion } = require('../../middleware/auth');
     const { esParticipante } = require('../../middleware/permisos');
-
+    const { obtenerDatos, obtenerReporteProyecto, resumenProyecto, normalizar } = require('./metrics.service');
+    const { crearPDF, crearTexto } = require('./metrics.report');
     const router = express.Router();
     router.use(requiereSesion);
-
-    const ESTIMACIONES = ['XS', 'S', 'M', 'L', 'XL'];
-
-    function calcularDias(inicio, fin) {
-    const diff = new Date(fin).getTime() - new Date(inicio).getTime();
-    return Math.max(1, Math.round(diff / (1000 * 60 * 60 * 24)));
+    function contexto(req, res) {
+    const db = readDB();
+    const proyecto = (db.proyectos || []).find(p => p.id === req.params.idProyecto);
+    if (!proyecto) { res.status(404).json({ mensaje: 'No se encontró el proyecto.' }); return null; }
+    if (req.usuario.rolGlobal !== 'administrador' && !esParticipante(req.usuario, proyecto.id, db)) {
+        res.status(403).json({ mensaje: 'No tienes permisos para consultar este proyecto.' }); return null;
     }
-
-    // GET /api/metrics/proyectos/:idProyecto/sprints/:idSprint
+    return { db, proyecto, sprints: (db.sprints || []).filter(s => s.idProyecto === proyecto.id) };
+    }
     router.get('/proyectos/:idProyecto/sprints/:idSprint', (req, res) => {
-    const db = readDB();
-    const { idProyecto, idSprint } = req.params;
-    const usuario = req.usuario;
-
-    const proyecto = (db.proyectos || []).find((p) => p.id === idProyecto);
-    if (!proyecto) {
-        return res.status(404).json({ mensaje: 'No se encontró el proyecto.' });
-    }
-
-    if (usuario.rolGlobal !== 'administrador' && !esParticipante(usuario, idProyecto, db)) {
-        return res.status(403).json({ mensaje: 'No tienes permisos para consultar este proyecto.' });
-    }
-
-    // 1. Obtener únicamente los sprints pertenecientes a ESTE proyecto
-    const sprintsProyecto = (db.sprints || []).filter((s) => s.idProyecto === idProyecto);
-    const sprint = sprintsProyecto.find((s) => s.id === idSprint);
-
-    // 2. Historias exclusivas de este proyecto y sprint (soporta idSprint o historiasAsignadas)
-    const historias = (db.historiasUsuario || []).filter((h) => {
-        if (h.idProyecto !== idProyecto) return false;
-        if (!sprint) return false;
-        const asignadaEnSprint = Array.isArray(sprint.historiasAsignadas) && sprint.historiasAsignadas.includes(h.id);
-        return h.idSprint === sprint.id || asignadaEnSprint;
+    const c = contexto(req, res); if (!c) return;
+    const id = req.params.idSprint;
+    const sprint = id === 'ACTUAL' ? c.sprints.find(s => normalizar(s.estado) === 'activo') || [...c.sprints].sort((a,b) => String(b.fechaInicio).localeCompare(String(a.fechaInicio)))[0] : c.sprints.find(s => s.id === id);
+    if (!sprint && !['ACTUAL', 'NINGUNO'].includes(id)) return res.status(404).json({ mensaje: 'No se encontró el Sprint en este proyecto.' });
+    res.json({ ...obtenerDatos(c.db, c.proyecto, sprint), resumenProyecto: resumenProyecto(c.db, c.proyecto), sprintsDisponibles: c.sprints.map(s => ({ id: s.id, nombre: s.nombre })) });
     });
-
-    // 3. Tareas exclusivas: si el sprint no pertenece a este proyecto, no se cargan tareas
-    const tareas = sprint
-        ? (db.tareas || []).filter((t) => t.idSprint === sprint.id)
-        : [];
-
-    // HU-44/HU-46: Conteo por tallas
-    const conteoTallas = { XS: 0, S: 0, M: 0, L: 0, XL: 0, sinEstimar: 0 };
-    historias.forEach((h) => {
-        if (h.estimacion && ESTIMACIONES.includes(h.estimacion)) {
-        conteoTallas[h.estimacion]++;
-        } else {
-        conteoTallas.sinEstimar++;
-        }
-    });
-
-    // HU-43/HU-45: Parámetros del Burndown Chart
-    const fechaInicio = sprint?.fechaInicio || proyecto.fechaInicio;
-    const fechaFin = sprint?.fechaFin || proyecto.fechaFin;
-    const totalDias = calcularDias(fechaInicio, fechaFin);
-    const totalHoras = tareas.reduce((acc, t) => acc + (Number(t.horasEstimadas) || 1), 0);
-
-    // Validación estricta: Solo hay datos suficientes si existe el Sprint en este proyecto y tiene tareas
-    const datosSuficientes = Boolean(sprint) && tareas.length > 0 && totalDias > 0;
-
-    let serieIdeal = [];
-    let serieReal = [];
-    let etiquetasDias = [];
-
-    if (datosSuficientes) {
-        const reduccionIdeal = totalHoras / totalDias;
-        const hoyISO = new Date().toISOString().split('T')[0];
-
-        for (let i = 0; i <= totalDias; i++) {
-        const fechaCorte = new Date(fechaInicio + 'T00:00:00');
-        fechaCorte.setDate(fechaCorte.getDate() + i);
-        const corteISO = fechaCorte.toISOString().split('T')[0];
-
-        const fechaCorta = fechaCorte.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
-        etiquetasDias.push(fechaCorta);
-
-        serieIdeal.push(Math.max(0, parseFloat((totalHoras - (reduccionIdeal * i)).toFixed(1))));
-
-        const completadas = tareas
-            .filter((t) => (t.estado === 'terminado' || t.estado === 'Finalizado' || t.estado === 'Terminado') && t.fechaTerminado && t.fechaTerminado <= corteISO)
-            .reduce((acc, t) => acc + (Number(t.horasEstimadas) || 1), 0);
-
-        if (corteISO <= hoyISO) {
-            serieReal.push(Math.max(0, parseFloat((totalHoras - completadas).toFixed(1))));
-        }
-        }
+    function descargar(req, res, next, datos) {
+    const formato = req.query.formato || 'txt';
+    if (!['txt', 'pdf'].includes(formato)) return res.status(400).json({ mensaje: 'Formato no válido. Usa pdf o txt.' });
+    const nombre = `reporte-${datos.proyecto.id}-${datos.sprint?.id || 'proyecto-completo'}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+    res.attachment(`${nombre}.${formato}`);
+    if (formato === 'txt') return res.type('text/plain; charset=utf-8').send(crearTexto(datos));
+    res.type('application/pdf');
+    try {
+        const doc = crearPDF(datos); doc.on('error', next); doc.pipe(res); doc.end();
+    } catch (e) { next(e); }
     }
-
-    const tareasEnProgreso = tareas
-        .filter((t) => t.estado === 'en_progreso' || t.estado === 'En progreso')
-        .map((t) => {
-        const responsable = (db.usuarios || []).find((u) => u.id === t.idResponsable || u.id === t.idUsuario);
-        return {
-            id: t.id,
-            titulo: t.titulo || t.descripcion || 'Tarea sin título',
-            responsable: responsable ? `${responsable.nombre} ${responsable.apellidos}` : 'Sin asignar',
-            estado: 'En progreso'
-        };
-        });
-
-    res.json({
-        proyecto: { id: proyecto.id, nombre: proyecto.nombre },
-        sprintsDisponibles: sprintsProyecto.map((s) => ({ id: s.id, nombre: s.nombre })),
-        sprint: sprint || null,
-        metricas: {
-        datosSuficientes,
-        totalHoras,
-        totalDias,
-        etiquetasDias,
-        serieIdeal,
-        serieReal,
-        conteoTallas,
-        tareasEnProgreso
-        }
+    router.get('/proyectos/:idProyecto/sprints/:idSprint/exportar', (req, res, next) => {
+    const c = contexto(req, res); if (!c) return;
+    const sprint = c.sprints.find(s => s.id === req.params.idSprint);
+    if (!sprint) return res.status(404).json({ mensaje: 'No se encontró el Sprint en este proyecto.' });
+    descargar(req, res, next, obtenerDatos(c.db, c.proyecto, sprint));
     });
+    router.get('/proyectos/:idProyecto/exportar', (req, res, next) => {
+    const c = contexto(req, res); if (!c) return;
+    descargar(req, res, next, obtenerReporteProyecto(c.db, c.proyecto));
     });
-
-    // HU-45 / HU-46: Exportar reporte de horas invertidas y métricas del proyecto
-    router.get('/proyectos/:idProyecto/sprints/:idSprint/exportar', (req, res) => {
-    const db = readDB();
-    const { idProyecto, idSprint } = req.params;
-    const usuario = req.usuario;
-
-    const proyecto = (db.proyectos || []).find((p) => p.id === idProyecto);
-    if (!proyecto) {
-        return res.status(404).json({ mensaje: 'No se encontró el proyecto.' });
-    }
-
-    if (usuario.rolGlobal !== 'administrador' && !esParticipante(usuario, idProyecto, db)) {
-        return res.status(403).json({ mensaje: 'No tienes permisos para exportar este reporte.' });
-    }
-
-    const sprintsProyecto = (db.sprints || []).filter((s) => s.idProyecto === idProyecto);
-    const sprint = sprintsProyecto.find((s) => s.id === idSprint);
-    const tareas = sprint ? (db.tareas || []).filter((t) => t.idSprint === sprint.id) : [];
-
-    const totalHoras = tareas.reduce((acc, t) => acc + (Number(t.horasEstimadas) || 1), 0);
-    const terminadas = tareas.filter((t) => t.estado === 'terminado' || t.estado === 'Finalizado' || t.estado === 'Terminado').length;
-
-    const reporteTxt = `========================================
-    REPORTE DE MÉTRICAS Y HORAS INVERTIDAS
-    ========================================
-    Proyecto: ${proyecto.id} - ${proyecto.nombre}
-    Sprint: ${sprint ? sprint.nombre : idSprint}
-    Fecha de Emisión: ${new Date().toLocaleDateString('es-MX')}
-
-    --- RESUMEN DE ESFUERZO ---
-    Total de Tareas en el Sprint: ${tareas.length}
-    Tareas Terminadas: ${terminadas}
-    Total de Horas Estimadas: ${totalHoras}h
-
-    --- DETALLE DE TAREAS ---
-    ${tareas.map(t => `- [${t.estado.toUpperCase()}] ${t.titulo} (${t.horasEstimadas}h)`).join('\n')}
-    ========================================
-    Scrum Manager - Módulo de Métricas (HU-45 / HU-46)
-    `;
-
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename=reporte-metricas-${idProyecto}-${idSprint}.txt`);
-    res.send(reporteTxt);
+    router.get('/proyectos/:idProyecto/historial-sprints', (req, res) => {
+    const c = contexto(req, res); if (!c) return;
+    res.json({ ok: true, sprints: c.sprints.filter(s => ['finalizado', 'completado', 'terminado'].includes(normalizar(s.estado))).map(s => ({
+        id: s.id, nombre: s.nombre, estado: s.estado,
+        fechaCierre: s.fechaCierre || null, fechaFin: s.fechaFin || null
+    })) });
     });
-
     module.exports = router;
