@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { readDB, writeDB } = require('../../config/db');
 const { registrarHistorial } = require('../../config/historial');
+const { CATEGORIAS_EVENTO, crearNotificacion, participantesDelProyecto } = require('../../config/notificaciones');
 const { requiereSesion } = require('../../middleware/auth');
 const { puede, rolEnProyecto } = require('../../middleware/permisos');
 
@@ -171,6 +172,7 @@ router.post('/', (req, res) => {
     acciones: []
   };
   db.impedimentos.push(impedimento);
+
   registrarHistorial(db, {
     idUsuario: req.usuario.id,
     entidad: 'impedimento',
@@ -179,6 +181,28 @@ router.post('/', (req, res) => {
     valorAnterior: null,
     valorNuevo: impedimento.descripcion
   });
+
+  // Notificación HU-49: Nuevo impedimento / bloqueo registrado
+  const contextoBloqueo = tipoRelacion === 'sprint'
+    ? 'que afecta al Sprint'
+    : tipoRelacion === 'tarea'
+      ? `en la tarea ${idRelacionado}`
+      : tipoRelacion === 'historia'
+        ? `en la historia ${idRelacionado}`
+        : `en el proyecto ${idProyecto}`;
+
+  crearNotificacion(db, {
+    destinatarios: participantesDelProyecto(db, idProyecto),
+    idActor: req.usuario.id,
+    idProyecto,
+    categoria: CATEGORIAS_EVENTO.IMPEDIMENTO,
+    mensaje: `Nuevo impedimento registrado ${contextoBloqueo}`,
+    elemento: impedimento.id,
+    entidad: 'impedimento',
+    idEntidad: impedimento.id,
+    urlDestino: '/impedimentos'
+  });
+
   writeDB(db);
   res.status(201).json({ mensaje: 'Impedimento registrado correctamente.', impedimento });
 });
@@ -220,6 +244,7 @@ router.put('/:id/seguimiento', (req, res) => {
       fecha
     });
   }
+
   registrarHistorial(db, {
     idUsuario: req.usuario.id,
     entidad: 'impedimento',
@@ -228,6 +253,37 @@ router.put('/:id/seguimiento', (req, res) => {
     valorAnterior: { estado: estadoAnterior, idResponsable: responsableAnterior },
     valorNuevo: { estado, idResponsable, accion: textoAccion || null }
   });
+
+  // Notificación HU-49: Asignación de responsable del impedimento
+  if (idResponsable && idResponsable !== responsableAnterior) {
+    crearNotificacion(db, {
+      destinatarios: [idResponsable],
+      idActor: req.usuario.id,
+      idProyecto: impedimento.idProyecto,
+      categoria: CATEGORIAS_EVENTO.ASIGNACION,
+      mensaje: `Se te ha asignado la atención del impedimento ${impedimento.id}`,
+      elemento: impedimento.id,
+      entidad: 'impedimento',
+      idEntidad: impedimento.id,
+      urlDestino: '/impedimentos'
+    });
+  }
+
+  // Notificación HU-49: Cambio de estado del impedimento
+  if (estadoAnterior !== estado) {
+    crearNotificacion(db, {
+      destinatarios: participantesDelProyecto(db, impedimento.idProyecto),
+      idActor: req.usuario.id,
+      idProyecto: impedimento.idProyecto,
+      categoria: CATEGORIAS_EVENTO.CAMBIO_ESTADO,
+      mensaje: `El estado del impedimento ${impedimento.id} cambió a ${estado}`,
+      elemento: impedimento.id,
+      entidad: 'impedimento',
+      idEntidad: impedimento.id,
+      urlDestino: '/impedimentos'
+    });
+  }
+
   writeDB(db);
   res.json({ mensaje: 'Seguimiento actualizado correctamente.', impedimento });
 });
@@ -279,6 +335,7 @@ router.post('/riesgos', (req, res) => {
     fechaRegistro: new Date().toISOString()
   };
   db.riesgos.push(riesgo);
+
   registrarHistorial(db, {
     idUsuario: req.usuario.id,
     entidad: 'riesgo',
@@ -287,6 +344,20 @@ router.post('/riesgos', (req, res) => {
     valorAnterior: null,
     valorNuevo: riesgo.descripcion
   });
+
+  // Notificación HU-49: Asignación de responsable del riesgo
+  crearNotificacion(db, {
+    destinatarios: [idResponsable],
+    idActor: req.usuario.id,
+    idProyecto,
+    categoria: CATEGORIAS_EVENTO.ASIGNACION,
+    mensaje: `Se te ha asignado la gestión del riesgo ${riesgo.id}`,
+    elemento: riesgo.id,
+    entidad: 'riesgo',
+    idEntidad: riesgo.id,
+    urlDestino: '/impedimentos'
+  });
+
   writeDB(db);
   res.status(201).json({ mensaje: 'Riesgo registrado correctamente.', riesgo });
 });
@@ -356,6 +427,22 @@ router.put('/riesgos/:id/seguimiento', (req, res) => {
     valorAnterior: anterior,
     valorNuevo: { ...nuevo, accionSeguimiento: nuevaAccion || null }
   });
+
+  // Notificación HU-49: Cambio de estado del riesgo
+  if (anterior.estado !== nuevo.estado) {
+    crearNotificacion(db, {
+      destinatarios: participantesDelProyecto(db, riesgo.idProyecto),
+      idActor: req.usuario.id,
+      idProyecto: riesgo.idProyecto,
+      categoria: CATEGORIAS_EVENTO.CAMBIO_ESTADO,
+      mensaje: `El estado del riesgo ${riesgo.id} cambió a ${estado}`,
+      elemento: riesgo.id,
+      entidad: 'riesgo',
+      idEntidad: riesgo.id,
+      urlDestino: '/impedimentos'
+    });
+  }
+
   writeDB(db);
   return res.json({ mensaje: 'Seguimiento del riesgo actualizado.', riesgo });
 });
