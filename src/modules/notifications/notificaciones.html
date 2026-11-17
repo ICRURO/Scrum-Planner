@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notificaciones y novedades | Scrum Manager</title>
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/base.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <style>
+    .fila-no-leida { background: #F4FAF5; font-weight: 500; }
+    .badge-cat {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 4px 12px; border-radius: 999px; font-size: 0.82rem; font-weight: 700;
+      min-width: 120px; text-align: center;
+    }
+    .badge-cat--asignacion { background: #2E7D32; color: #FFFFFF; }
+    .badge-cat--impedimento { background: #C62828; color: #FFFFFF; }
+    .badge-cat--cambio { background: #B7791F; color: #FFFFFF; }
+    .badge-cat--invitacion { background: #6C757D; color: #FFFFFF; }
+    .btn-ver-elemento { color: var(--c-hoja); font-weight: 600; background: none; border: 0; padding: 0; cursor: pointer; }
+    .btn-ver-elemento:hover { text-decoration: underline; }
+    .btn-ver-elemento--bloqueado { color: var(--c-piedra); cursor: not-allowed; text-decoration: none !important; }
+  </style>
+</head>
+<body data-volver="/panel" data-volver-texto="panel" data-seccion="notificaciones" data-protegida>
+  <div id="app-header"></div>
+
+  <main class="pagina">
+    <div class="titulo-pagina">
+      <h1>NOTIFICACIONES Y NOVEDADES</h1>
+      <p>AVISOS SOBRE EVENTOS IMPORTANTES EN TUS PROYECTOS</p>
+    </div>
+
+    <section class="tarjeta">
+      <div class="barra">
+        <div class="entrada entrada--icono barra__buscar">
+          <span class="entrada__icono" data-icon="buscar"></span>
+          <input class="control" id="buscar-notificacion" type="search" placeholder="Buscar notificación" aria-label="Buscar notificación">
+        </div>
+
+        <select class="control barra__filtro" id="filtro-categoria" aria-label="Filtrar por categoría">
+          <option value="">Todas las categorías</option>
+          <option value="Asignación">Asignación</option>
+          <option value="Impedimento">Impedimento</option>
+          <option value="Cambio de estado">Cambio de estado</option>
+          <option value="Invitación">Invitación</option>
+        </select>
+
+        <span class="barra__espacio"></span>
+
+        <button class="btn btn-primario" type="button" id="btn-marcar-todas">
+          Marcar todas como leídas
+        </button>
+      </div>
+
+      <div class="tabla-contenedor" id="contenedor-tabla">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>FECHA</th>
+              <th>CATEGORÍA</th>
+              <th>EVENTO NOTIFICADO</th>
+              <th>ELEMENTO</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-notificaciones"></tbody>
+        </table>
+      </div>
+
+      <div class="vacio" id="sin-notificaciones" hidden>
+        <span class="vacio__icono" data-icon="campana" data-size="24"></span>
+        <h3>No tienes notificaciones para mostrar</h3>
+        <p>Cuando ocurran eventos relevantes en tus proyectos aparecerán aquí.</p>
+      </div>
+
+      <p class="tabla-nota">Las notificaciones muestran únicamente información que el usuario tiene permiso para consultar.</p>
+    </section>
+  </main>
+
+  <script src="/shared/js/icons.js"></script>
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="/shared/js/layout.js"></script>
+  <script src="/modules/notifications/notificaciones.js"></script>
+</body>
+</html>
