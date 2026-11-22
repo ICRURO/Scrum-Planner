@@ -1260,7 +1260,7 @@ async function agregarParticipanteConRol(proyectoId) {
       alert('Participante y rol registrados correctamente.');
       location.reload(); 
     } else {
-      alert(`Error: ${resultado.error}`);
+      alert(`Error: ${resultado.mensaje || resultado.error || 'No se pudo agregar el participante.'}`);
     }
   } catch (error) {
     console.error('Error de red al agregar participante:', error);

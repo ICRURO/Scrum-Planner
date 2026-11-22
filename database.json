@@ -176,9 +176,9 @@
       "nombre": "usuarioPrueba3",
       "apellidos": "Correo",
       "correo": "usuario3@gmail.com",
-      "password": null,
+      "password": "scrypt$7aef56c119346703ee7f79975f6b865c$90e7efe6c10b97a07cb4e8d397d4055593f66c49a4bd68591fec0ad26528914d126880bd69bfd3aa4c05a94b0ebe757756a86ebb5207e5d3a47771cdd3aa4d54",
       "rolGlobal": "usuario",
-      "estado": "invitacion_pendiente"
+      "estado": "activo"
     },
     {
       "id": "USR-021",
@@ -377,6 +377,12 @@
       "idProyecto": "PRJ-006",
       "idUsuario": "USR-002",
       "rol": "Product Owner"
+    },
+    {
+      "id": "PAR-019",
+      "idProyecto": "PRJ-001",
+      "idUsuario": "USR-020",
+      "rol": "Developer"
     }
   ],
   "historial": [
@@ -1207,6 +1213,16 @@
       "campo": "creacion",
       "valorAnterior": null,
       "valorNuevo": "prueba descripcion riesgo"
+    },
+    {
+      "id": "HIS-059",
+      "fecha": "2026-11-22T22:16:47.991Z",
+      "idUsuario": "USR-002",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-001",
+      "campo": "participante",
+      "valorAnterior": null,
+      "valorNuevo": "USR-020 (Developer)"
     }
   ],
   "tokens": [
