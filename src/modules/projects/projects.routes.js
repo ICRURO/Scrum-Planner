@@ -3,6 +3,7 @@ const express = require('express');
 const { readDB, writeDB } = require('../../config/db');
 const { registrarHistorial } = require('../../config/historial');
 const { requiereSesion } = require('../../middleware/auth');
+const { validarReferenciaEpica } = require('./epicas.logic');
 const { puede, rolEnProyecto, permisosProyecto, esParticipante, apiConPermiso } = require('../../middleware/permisos');
 const router = express.Router();
 router.use(requiereSesion);
@@ -427,6 +428,8 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
   const error = validarHistoria(datos);
   if (error) return res.status(400).json({ mensaje: error });
   const db = ctx.db;
+  const errorEpica = validarReferenciaEpica(db, ctx.proyecto.id, datos.idEpica, true);
+  if (errorEpica) return res.status(400).json({ mensaje: errorEpica });
   const errorPlanificacion = validarPlanificacion(db, ctx.proyecto.id, null, datos);
   if (errorPlanificacion) return res.status(400).json({ mensaje: errorPlanificacion });
   if (!db.historiasUsuario) db.historiasUsuario = [];
@@ -438,6 +441,7 @@ router.post('/:id/historias', apiConPermiso('gestionar_historias', (req) => req.
   const historia = {
     id: idHistoriaNueva,
     idProyecto: ctx.proyecto.id,
+    idEpica: datos.idEpica,
     idSprint: null,
     titulo: String(datos.titulo).trim(),
     descripcion: String(datos.descripcion).trim(),
@@ -462,6 +466,8 @@ router.post('/:id/historias/:idHistoria/divisiones', apiConPermiso('gestionar_hi
   const db = ctx.db;
   const origen = (db.historiasUsuario || []).find((h) => h.id === req.params.idHistoria && h.idProyecto === ctx.proyecto.id);
   if (!origen) return res.status(404).json({ mensaje: 'No se encontró la historia de usuario en este proyecto.' });
+  const errorEpicaOrigen = validarReferenciaEpica(db, ctx.proyecto.id, origen.idEpica, true);
+  if (errorEpicaOrigen) return res.status(400).json({ mensaje: 'Asigna una épica a la historia original antes de dividirla.' });
   const historias = req.body?.historias;
   if (!Array.isArray(historias) || historias.length < 2) {
     return res.status(400).json({ mensaje: 'Una división debe incluir al menos dos historias resultantes.' });
@@ -481,6 +487,7 @@ router.post('/:id/historias/:idHistoria/divisiones', apiConPermiso('gestionar_hi
       id: siguienteIdHistoria(db.historiasUsuario),
       idProyecto: ctx.proyecto.id,
       idHistoriaOrigen: origen.id,
+      idEpica: origen.idEpica,
       titulo: String(datos.titulo).trim(),
       descripcion: String(datos.descripcion).trim(),
       criterios: criterios.lista,
@@ -596,6 +603,13 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   if (error) return res.status(400).json({ mensaje: error });
   const errorPlanificacion = validarPlanificacion(db, ctx.proyecto.id, historia.id, datos);
   if (errorPlanificacion) return res.status(400).json({ mensaje: errorPlanificacion });
+  const idEpica = datos.idEpica === undefined ? (historia.idEpica || null) : datos.idEpica;
+  const errorEpica = validarReferenciaEpica(db, ctx.proyecto.id, idEpica, !!historia.idEpica || datos.idEpica !== undefined);
+  if (errorEpica) return res.status(400).json({ mensaje: errorEpica });
+  if (idEpica !== (historia.idEpica || null) &&
+      !['administrador', 'Product Owner', 'Scrum Master'].includes(rolEnProyecto(req.usuario, ctx.proyecto.id, db))) {
+    return res.status(403).json({ mensaje: 'No puedes cambiar la épica de una historia.' });
+  }
   const criterios = normalizarCriterios(db, historia, datos.criterios === undefined ? historia.criterios : datos.criterios);
   if (criterios.error) return res.status(400).json({ mensaje: criterios.error });
   const tareas = normalizarTareas(db, ctx.proyecto.id, historia, datos.tareas === undefined ? historia.tareas : datos.tareas, historia.idSprint);
@@ -613,6 +627,7 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
     return res.status(400).json({ mensaje: 'La aclaración no puede superar 2000 caracteres.' });
   }
   const cambios = titulo !== historia.titulo || descripcion !== historia.descripcion
+    || idEpica !== (historia.idEpica || null)
     || estimacion !== (historia.estimacion || null)
     || responsableOrganizativo !== (historia.responsableOrganizativo || null)
     || JSON.stringify(dependencias) !== JSON.stringify(historia.dependencias || [])
@@ -622,6 +637,7 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   if (!cambios) return res.status(400).json({ mensaje: 'No hay cambios que guardar.' });
   const valorAnterior = {
     titulo: historia.titulo,
+    idEpica: historia.idEpica || null,
     descripcion: historia.descripcion,
     criterios: historia.criterios || [],
     tareas: historia.tareas || [],
@@ -631,6 +647,7 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   };
   historia.titulo = titulo;
   historia.descripcion = descripcion;
+  historia.idEpica = idEpica;
   historia.criterios = criterios.lista;
   historia.tareas = tareas.lista;
   historia.estimacion = estimacion;
@@ -638,6 +655,7 @@ router.put('/:id/historias/:idHistoria', apiConPermiso('refinar_historias', (req
   historia.dependencias = dependencias;
   const valorNuevo = {
     titulo,
+    idEpica,
     descripcion,
     criterios: historia.criterios,
     tareas: historia.tareas,

@@ -1236,6 +1236,16 @@
         "nombre": "Prueba",
         "idProyecto": "PRJ-001"
       }
+    },
+    {
+      "id": "HIS-061",
+      "fecha": "2026-11-23T01:57:32.134Z",
+      "idUsuario": "USR-003",
+      "entidad": "historia_usuario",
+      "idEntidad": "HU-004",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": "HU-004 Prueba"
     }
   ],
   "tokens": [
@@ -1448,6 +1458,23 @@
       "responsableOrganizativo": null,
       "dependencias": [],
       "orden": 1,
+      "comentarios": []
+    },
+    {
+      "id": "HU-004",
+      "idProyecto": "PRJ-001",
+      "idEpica": "EP-001",
+      "idSprint": null,
+      "titulo": "HU-004 Prueba",
+      "descripcion": "Ocupo esto",
+      "criterios": [],
+      "tareas": [],
+      "estimacion": "XS",
+      "responsableOrganizativo": "Área de Operaciones",
+      "dependencias": [
+        "HU-001"
+      ],
+      "orden": 4,
       "comentarios": []
     }
   ],

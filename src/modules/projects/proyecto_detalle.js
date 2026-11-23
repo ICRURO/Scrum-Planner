@@ -224,6 +224,7 @@
 
   function reiniciarFormularioHistoria() {
     formularioHistoria.reset();
+    EpicasUI.seleccionar('');
     criteriosFormulario.replaceChildren();
     tareasFormulario.replaceChildren();
     historiaEditando = null;
@@ -272,7 +273,7 @@
                 <button class="btn btn-secundario btn-chico" type="button" data-mover-historia="${indice}" data-direccion="1" aria-label="Bajar prioridad" ${indice === historiasActuales.length - 1 ? 'disabled' : ''}>▼</button>
               </div>` : ''}
             </td>
-            <td><strong>${UI.escapar(historia.titulo)}</strong></td>
+            <td><strong>${UI.escapar(historia.titulo)}</strong><div>${EpicasUI.insignia(historia.idEpica)}</div></td>
             <td class="historia-tabla__descripcion">${UI.escapar(historia.descripcion)}</td>
             <td>${historia.estimacion
               ? `<span class="insignia historia-estimacion">Talla ${UI.escapar(historia.estimacion)}</span>`
@@ -1156,6 +1157,7 @@
     const datos = {
       titulo: document.getElementById('historia-titulo').value.trim(),
       descripcion: document.getElementById('historia-descripcion').value.trim(),
+      idEpica: EpicasUI.epicaSeleccionada(),
       estimacion: document.getElementById('historia-estimacion').value || null,
       dependencias: [...dependenciasFormulario.selectedOptions].map((opcion) => opcion.value),
       responsableOrganizativo: document.getElementById('historia-responsable').value.trim(),
@@ -1209,6 +1211,7 @@
     historiaEditando = historia.id;
     document.getElementById('historia-titulo').value = historia.titulo;
     document.getElementById('historia-descripcion').value = historia.descripcion;
+    EpicasUI.seleccionar(historia.idEpica);
     document.getElementById('historia-estimacion').value = historia.estimacion || '';
     document.getElementById('historia-responsable').value = historia.responsableOrganizativo || '';
     actualizarOpcionesDependencias(historia.dependencias || [], historia.id);

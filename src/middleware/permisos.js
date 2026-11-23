@@ -25,7 +25,7 @@ const MATRIZ = [
   { accion: 'finalizar_proyecto', texto: 'Finalizar proyecto', roles: ADMIN_Y_PO },
   { accion: 'reabrir_proyecto', texto: 'Reabrir proyecto', roles: ADMIN_Y_PO },
   { accion: 'archivar_proyecto', texto: 'Archivar proyecto', roles: ADMIN_Y_PO },
-  { accion: 'gestionar_historias', texto: 'Registrar y editar historias de usuario', roles: ADMIN_Y_PO },
+  { accion: 'gestionar_historias', texto: 'Registrar y editar historias de usuario', roles: ['administrador', 'Product Owner', 'Scrum Master'] },
   { accion: 'refinar_historias', texto: 'Refinar historias de usuario', roles: ['administrador', 'Product Owner', 'Scrum Master', 'Developer'] },
   { accion: 'priorizar_historias', texto: 'Modificar el orden del Product Backlog', roles: ADMIN_Y_PO },
   { accion: 'comentar_historias', texto: 'Comentar historias de usuario', roles: TODOS },
