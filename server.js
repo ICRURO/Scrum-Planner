@@ -69,6 +69,8 @@ app.use('/api/users', require('./src/modules/users/users.routes'));
 app.use('/api/projects', require('./src/modules/projects/projects.routes'));
 // API para administrar las épicas de cada proyecto
 app.use('/api/projects', require('./src/modules/projects/epicas.routes'));
+// Planning Poker por proyecto
+app.use('/api/projects', require('./src/modules/projects/poker.routes'));
 // Apartado equipos
 app.use('/api/equipos', require('./src/modules/equipos/equipos.routes'));
 

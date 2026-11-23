@@ -1,0 +1,27 @@
+/* Planning Poker: estilos compatibles con el diseño de Scrum-Planner. */
+.poker-seccion { display: grid; gap: 18px; }
+.poker-seccion .tarjeta__titulo { margin-bottom: 0; }
+.poker-intro { margin: 0; }
+.poker-control { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+.poker-control .campo { flex: 1 1 300px; }
+.poker-sesiones { display: flex; flex-wrap: wrap; gap: 10px; }
+.poker-sesion { font: inherit; min-width: 190px; flex: 1 1 220px; text-align: left; cursor: pointer; border: 1px solid var(--c-linea); border-radius: 9px; background: var(--c-papel); color: inherit; padding: 12px; }
+.poker-sesion strong, .poker-sesion small { display: block; }
+.poker-sesion small { margin-top: 6px; opacity: .75; }
+.poker-sesion--activa { border-color: var(--c-hoja); box-shadow: 0 0 0 1px var(--c-hoja); }
+.poker-detalle { border: 1px solid var(--c-linea); border-radius: 12px; padding: 18px; display: grid; gap: 15px; }
+.poker-cabecera { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: space-between; }
+.poker-cabecera h3, .poker-detalle h4 { margin: 0; }
+.poker-detalle p { margin: 0; }
+.poker-participantes, .poker-votos { display: flex; flex-wrap: wrap; gap: 8px; }
+.poker-persona { border-radius: 9px; background: var(--c-papel); border: 1px solid var(--c-linea); padding: 8px 10px; }
+.poker-indicador { font-size: .85em; color: var(--c-hoja); margin-left: 8px; }
+.poker-cartas { display: flex; flex-wrap: wrap; gap: 10px; }
+.poker-carta { font: inherit; font-size: 1.25rem; font-weight: 750; width: 62px; height: 90px; border: 2px solid var(--c-hoja); color: var(--c-hoja); background: var(--c-papel); cursor: pointer; border-radius: 10px; }
+.poker-carta:hover, .poker-carta--seleccionada { background: var(--c-hoja); color: #fff; }
+.poker-voto { display: flex; gap: 15px; border: 1px solid var(--c-linea); border-radius: 9px; padding: 9px 12px; }
+.poker-finalizar { display: grid; gap: 12px; padding: 15px; border-radius: 9px; background: var(--c-papel); }
+.poker-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+.poker-resultado { padding: 14px; border-left: 4px solid var(--c-hoja); background: var(--c-papel); }
+@media (max-width: 680px) { .poker-campos { grid-template-columns: 1fr; } .poker-carta { width: 54px; height: 74px; } }
+.historia-poker-datos { margin-top: 5px; color: var(--c-hoja); font-weight: 600; font-size: .85em; }

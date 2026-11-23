@@ -1246,6 +1246,16 @@
       "campo": "creacion",
       "valorAnterior": null,
       "valorNuevo": "HU-004 Prueba"
+    },
+    {
+      "id": "HIS-062",
+      "fecha": "2026-11-23T02:22:45.018Z",
+      "idUsuario": "USR-003",
+      "entidad": "proyecto",
+      "idEntidad": "PRJ-001",
+      "campo": "planning_poker",
+      "valorAnterior": null,
+      "valorNuevo": "PP-001 iniciado para HU-001"
     }
   ],
   "tokens": [
@@ -1665,6 +1675,19 @@
       "color": "#FF0000",
       "idCreador": "USR-003",
       "fechaCreacion": "2026-11-23T01:40:52.847Z"
+    }
+  ],
+  "pokerSesiones": [
+    {
+      "id": "PP-001",
+      "idProyecto": "PRJ-001",
+      "idHistoria": "HU-001",
+      "idCreador": "USR-003",
+      "estado": "votando",
+      "ronda": 1,
+      "votos": [],
+      "rondasAnteriores": [],
+      "fechaCreacion": "2026-11-23T02:22:45.018Z"
     }
   ]
 }

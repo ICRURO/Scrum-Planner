@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/shared/css/components.css">
   <link rel="stylesheet" href="/modules/projects/historias.css">
   <link rel="stylesheet" href="/modules/projects/epicas.css">
+  <link rel="stylesheet" href="/modules/projects/poker.css">
 </head>
 <body data-volver="/proyectos" data-volver-texto="proyectos" data-seccion="proyectos" data-protegida>
   <div id="app-header"></div>
@@ -312,7 +313,7 @@
                 <th>Prioridad</th>
                 <th>Título</th>
                 <th>Descripción</th>
-                <th>Estimación relativa</th>
+                <th>Estimación / Poker</th>
                 <th>Dependencias</th>
                 <th>Responsable organizativo</th>
                 <th>Criterios de aceptación</th>
@@ -327,6 +328,24 @@
         </div>
       </section>
       
+      <!-- Planning Poker: sesiones por historia del Product Backlog -->
+      <section class="tarjeta poker-seccion" id="poker-seccion">
+        <div class="historias-criterios-encabezado">
+          <h2 class="tarjeta__titulo">Planning Poker</h2>
+          <button type="button" class="btn btn-secundario btn-chico" id="poker-actualizar">Actualizar</button>
+        </div>
+        <p class="texto-suave poker-intro">El Scrum Master abre una sesión; los Developers votan con cartas Fibonacci. Las cartas se revelan al mismo tiempo y el acuerdo se guarda en la historia.</p>
+        <form id="poker-form-crear" class="poker-control" hidden>
+          <div class="campo">
+            <label for="poker-historia">Historia de usuario que se estimará</label>
+            <select class="control" id="poker-historia" required><option value="">Selecciona una historia</option></select>
+          </div>
+          <button class="btn btn-primario" type="submit">Abrir sesión</button>
+        </form>
+        <div id="poker-sesiones" class="poker-sesiones"><p class="texto-suave">Todavía no hay sesiones.</p></div>
+        <div id="poker-detalle" class="poker-detalle"><p class="texto-suave">Selecciona una sesión para empezar.</p></div>
+      </section>
+
       <!-- Sprint Backlog -->
       <section class="tarjeta historias-proyecto" id="seccion-sprint-backlog">
         <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="calendario"></span>Sprint Backlog: definición y lista de sprints</h2>
@@ -461,6 +480,7 @@
   <script src="/shared/js/ui.js"></script>
   <script src="/shared/js/layout.js"></script>
   <script src="/modules/projects/epicas.ui.js"></script>
+  <script src="/modules/projects/poker.ui.js"></script>
   <script src="/modules/projects/proyecto_detalle.js"></script>
 </body>
 </html>

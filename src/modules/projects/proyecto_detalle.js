@@ -277,7 +277,8 @@
             <td class="historia-tabla__descripcion">${UI.escapar(historia.descripcion)}</td>
             <td>${historia.estimacion
               ? `<span class="insignia historia-estimacion">Talla ${UI.escapar(historia.estimacion)}</span>`
-              : '<span class="historia-vacio">Sin estimar</span>'}</td>
+              : '<span class="historia-vacio">Sin estimar</span>'}
+              ${historia.puntosHistoria != null ? `<div class="historia-poker-datos">${Number(historia.puntosHistoria)} pts · ${Number(historia.horasEstimadas) || 0} h</div>` : ''}</td>
             <td class="historia-dependencias">${historia.dependencias?.length
               ? historia.dependencias.map((idDependencia) => {
                 const dependencia = historiasActuales.find((item) => item.id === idDependencia);
@@ -985,12 +986,24 @@
     document.getElementById('acciones').innerHTML = botones.join('');
     
     const aviso = document.getElementById('aviso-rol');
+    
     if (!botones.length) {
-      aviso.innerHTML = `${Icons.get('info', 20)}<span>Tu rol (${UI.escapar(miRol)}) permite consultar pero no modificar.</span>`;
+      if (miRol === 'Scrum Master') {
+        aviso.innerHTML = `${Icons.get('info', 20)}
+          <span>Como Scrum Master puedes administrar épicas,
+          gestionar el equipo y dirigir sesiones de Planning Poker.
+          Los cambios generales del proyecto corresponden
+          al Product Owner.</span>`;
+      } else {
+        aviso.innerHTML = `${Icons.get('info', 20)}
+          <span>Tu rol (${UI.escapar(miRol)}) no permite
+          modificar los datos generales del proyecto.</span>`;
+      }
       aviso.hidden = false;
     } else {
       aviso.hidden = true;
     }
+
     
     document.getElementById('info').innerHTML = `
       <div><dt>Descripción</dt><dd>${UI.escapar(p.descripcion)}</dd></div>
@@ -999,6 +1012,7 @@
       <div><dt>Tu rol</dt><dd>${UI.insigniaRol(miRol === 'administrador' ? 'Administrador general' : miRol)}</dd></div>`;
     await EpicasUI.cargar(p.id, miRol, p.archivado);
     dibujarHistorias(historiasUsuario, permisos, p.archivado);
+    await PokerUI.cargar(p.id, miRol, p.archivado, historiasUsuario);
     dibujarSprints(r.datos.sprints || [], miRol, permisos, p.archivado);
     dibujarTableroScrum(r.datos.sprints || [], miRol, p.archivado);
     
