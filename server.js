@@ -67,6 +67,8 @@ app.get('/capacitacion', requierePagina, (req, res) => res.sendFile(pagina('trai
 app.use('/api/auth', require('./src/modules/auth/auth.routes'));
 app.use('/api/users', require('./src/modules/users/users.routes'));
 app.use('/api/projects', require('./src/modules/projects/projects.routes'));
+// API para administrar las épicas de cada proyecto
+app.use('/api/projects', require('./src/modules/projects/epicas.routes'));
 // Apartado equipos
 app.use('/api/equipos', require('./src/modules/equipos/equipos.routes'));
 

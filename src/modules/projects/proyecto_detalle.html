@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/shared/css/base.css">
   <link rel="stylesheet" href="/shared/css/components.css">
   <link rel="stylesheet" href="/modules/projects/historias.css">
+  <link rel="stylesheet" href="/modules/projects/epicas.css">
 </head>
 <body data-volver="/proyectos" data-volver-texto="proyectos" data-seccion="proyectos" data-protegida>
   <div id="app-header"></div>
@@ -150,6 +151,74 @@
         </div>
       </section>
 
+
+      <!-- Gestión de épicas del proyecto -->
+      <section class="tarjeta seccion-epicas" id="seccion-epicas">
+
+        <div class="epicas-encabezado">
+          <h2 class="tarjeta__titulo">Épicas del proyecto</h2>
+          <button class="btn btn-primario btn-chico"
+                  id="btn-nueva-epica" type="button" hidden>
+            + Nueva épica
+          </button>
+        </div>
+
+        <p class="texto-suave">
+          Categorías para organizar las historias del Product Backlog.
+        </p>
+
+        <form id="form-epica" class="epicas-form" hidden>
+
+          <h3 id="titulo-form-epica">Nueva épica</h3>
+          <input type="hidden" id="epica-id">
+
+          <div class="campo">
+            <label for="epica-nombre">Nombre de la épica</label>
+            <input class="control" id="epica-nombre"
+                  maxlength="100" required
+                  placeholder="Ej.: Autenticación">
+          </div>
+
+          <div class="campo">
+            <label for="epica-descripcion">Descripción (opcional)</label>
+            <textarea class="control" id="epica-descripcion"
+                      maxlength="500"
+                      placeholder="Objetivo general de esta épica"></textarea>
+          </div>
+
+          <div class="campo">
+            <label for="epica-color">Color de la épica (obligatorio)</label>
+
+            <div class="epicas-color-campo">
+              <input class="control" id="epica-color"
+                    maxlength="7" required
+                    pattern="#[0-9a-fA-F]{6}"
+                    placeholder="#208E60"
+                    value="#208E60">
+
+              <input id="epica-color-selector"
+                    type="color" value="#208E60"
+                    aria-label="Elegir color">
+            </div>
+          </div>
+
+          <div class="historias-acciones">
+            <button class="btn btn-primario" type="submit">
+              Guardar épica
+            </button>
+
+            <button class="btn btn-secundario"
+                    type="button" id="cancelar-epica">
+              Cancelar
+            </button>
+          </div>
+
+        </form>
+
+        <div id="lista-epicas" class="epicas-lista"></div>
+
+      </section>
+
       <!-- Product Backlog -->
       <section class="tarjeta historias-proyecto">
         <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="info"></span>Product Backlog: historias y criterios de aceptación</h2>
@@ -164,6 +233,17 @@
               <textarea class="control" id="historia-descripcion" name="descripcion" required placeholder="Como [rol], quiero [necesidad], para [beneficio]."></textarea>
               <span class="campo__ayuda">Puedes redactarla con la estructura: Como..., quiero..., para...</span>
             </div>
+
+            <div class="campo">
+              <label for="historia-epica">Épica (obligatoria)</label>
+              <select class="control" id="historia-epica" name="idEpica" required>
+                <option value="">Selecciona una épica</option>
+              </select>
+              <span class="campo__ayuda">
+                Cada historia debe pertenecer a una épica del mismo proyecto.
+              </span>
+            </div>
+
             <div class="campo">
               <label for="historia-estimacion">Estimación relativa</label>
               <select class="control" id="historia-estimacion" name="estimacion">
@@ -380,6 +460,7 @@
   <script src="/shared/js/api.js"></script>
   <script src="/shared/js/ui.js"></script>
   <script src="/shared/js/layout.js"></script>
+  <script src="/modules/projects/epicas.ui.js"></script>
   <script src="/modules/projects/proyecto_detalle.js"></script>
 </body>
 </html>

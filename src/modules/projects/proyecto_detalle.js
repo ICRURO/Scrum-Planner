@@ -996,7 +996,7 @@
       <div><dt>Objetivo</dt><dd>${UI.escapar(p.objetivo)}</dd></div>
       <div><dt>Fechas previstas</dt><dd>${UI.rangoFechas(p.fechaInicio, p.fechaFin)}</dd></div>
       <div><dt>Tu rol</dt><dd>${UI.insigniaRol(miRol === 'administrador' ? 'Administrador general' : miRol)}</dd></div>`;
-      
+    await EpicasUI.cargar(p.id, miRol, p.archivado);
     dibujarHistorias(historiasUsuario, permisos, p.archivado);
     dibujarSprints(r.datos.sprints || [], miRol, permisos, p.archivado);
     dibujarTableroScrum(r.datos.sprints || [], miRol, p.archivado);

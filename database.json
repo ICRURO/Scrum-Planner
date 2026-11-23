@@ -1223,6 +1223,19 @@
       "campo": "participante",
       "valorAnterior": null,
       "valorNuevo": "USR-020 (Developer)"
+    },
+    {
+      "id": "HIS-060",
+      "fecha": "2026-11-23T01:40:52.847Z",
+      "idUsuario": "USR-003",
+      "entidad": "epica",
+      "idEntidad": "EP-001",
+      "campo": "creacion",
+      "valorAnterior": null,
+      "valorNuevo": {
+        "nombre": "Prueba",
+        "idProyecto": "PRJ-001"
+      }
     }
   ],
   "tokens": [
@@ -1614,6 +1627,17 @@
       "estado": "Identificado",
       "idReportadoPor": "USR-001",
       "fechaRegistro": "2026-11-10T02:53:50.874Z"
+    }
+  ],
+  "epicas": [
+    {
+      "id": "EP-001",
+      "idProyecto": "PRJ-001",
+      "nombre": "Prueba",
+      "descripcion": "Épica muy épica",
+      "color": "#FF0000",
+      "idCreador": "USR-003",
+      "fechaCreacion": "2026-11-23T01:40:52.847Z"
     }
   ]
 }

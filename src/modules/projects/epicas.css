@@ -1,0 +1,15 @@
+/* Épicas - integración con el diseño actual de Scrum Manager */
+.seccion-epicas { display: grid; gap: 14px; }
+.epicas-encabezado { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+.epicas-lista { display: grid; gap: 10px; }
+.epica-tarjeta { display: flex; align-items: center; gap: 12px; border: 1px solid var(--c-linea, #dce3e0); border-radius: var(--radio-m, 10px); padding: 12px; }
+.epica-color { width: 12px; align-self: stretch; min-height: 38px; border-radius: 5px; flex-shrink: 0; }
+.epica-tarjeta__info { flex: 1; min-width: 0; }
+.epica-tarjeta__info p { margin: 4px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.epicas-form { padding: 15px; border: 1px solid var(--c-linea, #dce3e0); border-radius: var(--radio-m, 10px); display: grid; gap: 12px; }
+.epicas-form[hidden] { display: none !important; }
+.epicas-form .campo { display: grid; gap: 5px; }
+.epicas-color-campo { display: flex; gap: 8px; align-items: center; }
+.epicas-color-campo input[type=color] { width: 54px; min-width: 54px; height: 40px; border: 1px solid #cad7d1; border-radius: 8px; cursor: pointer; }
+.epica-etiqueta { margin-top: 6px; display: inline-block; }
+@media (max-width: 560px) { .epica-tarjeta { flex-wrap: wrap; } }
