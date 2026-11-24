@@ -5,7 +5,7 @@
       "nombre": "Admin",
       "apellidos": "Demo",
       "correo": "admin@scrum.test",
-      "password": "scrypt$92a23d5894225cc71d6663ea5a5189f2$20bc94302166688a266a29e6ac373da66929501060e00d4aa6e48cb9f74a22f49dc7b0f07388dbb0ade0b34389f4607251a8de3e94c8e931a2f6d05c5fb4143a",
+      "password": "scrypt$36a6d95e82c010a36bb164493a9a9681$bc06628849b0e1b5e249b80429fcfc1f9ee8accfd97b094574627173309290ef913d31da7762635e13ef0c02aedb578289218fc917b29df975eca8af5b2f2d8b",
       "rolGlobal": "administrador",
       "estado": "activo"
     },
@@ -1256,6 +1256,76 @@
       "campo": "planning_poker",
       "valorAnterior": null,
       "valorNuevo": "PP-001 iniciado para HU-001"
+    },
+    {
+      "id": "HIS-063",
+      "fecha": "2026-11-24T05:10:38.167Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-001",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-064",
+      "fecha": "2026-11-24T05:11:28.558Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-001",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-065",
+      "fecha": "2026-11-24T05:11:58.951Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-001",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-066",
+      "fecha": "2026-11-24T05:52:32.945Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-001",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-067",
+      "fecha": "2026-11-24T05:59:07.769Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-001",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-068",
+      "fecha": "2026-11-24T06:03:45.344Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-001",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-069",
+      "fecha": "2026-11-24T06:04:19.705Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-001",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
     }
   ],
   "tokens": [
@@ -1334,6 +1404,62 @@
       "idUsuario": "USR-022",
       "tipo": "invitacion",
       "expira": "2026-10-29T14:09:40.737Z",
+      "usado": true
+    },
+    {
+      "token": "9d15747a165784fe9af871263bd589b881ccdae983f4dda6",
+      "idUsuario": "USR-001",
+      "tipo": "recuperacion",
+      "expira": "2026-11-24T06:07:10.068Z",
+      "usado": true
+    },
+    {
+      "token": "487f0c18a3da5fc4456a7a15724e169a0c386da0c310568a",
+      "idUsuario": "USR-001",
+      "tipo": "recuperacion",
+      "expira": "2026-11-24T06:11:10.494Z",
+      "usado": true
+    },
+    {
+      "token": "0084f417f96af5844ae57ec173192834519746b550ee9f66",
+      "idUsuario": "USR-001",
+      "tipo": "recuperacion",
+      "expira": "2026-11-24T06:11:44.806Z",
+      "usado": true
+    },
+    {
+      "token": "741ab95cbb8e1e827062a9e63090f060b1af02d77842dd2d",
+      "idUsuario": "USR-001",
+      "tipo": "recuperacion",
+      "expira": "2026-11-24T06:52:13.003Z",
+      "usado": true
+    },
+    {
+      "token": "eeca3fece94aacaaa194d4e7fac725def8e7601fef4908d5",
+      "idUsuario": "USR-001",
+      "tipo": "recuperacion",
+      "expira": "2026-11-24T06:58:29.353Z",
+      "usado": true
+    },
+    {
+      "token": "3a40dfaa618b4b69d07259a7542743d812ec0e6eabe55131",
+      "idUsuario": "USR-001",
+      "tipo": "recuperacion",
+      "expira": "2026-11-24T07:02:52.432Z",
+      "usado": true
+    },
+    {
+      "token": "d308f122c0b537a2658ed807c809dfa937dd0393330a458c",
+      "idUsuario": "USR-001",
+      "tipo": "recuperacion",
+      "expira": "2026-11-24T07:03:28.170Z",
+      "usado": true
+    },
+    {
+      "token": "d4a9ac088fea76e22acb71fd5ba0027f4a52975bb70ec765",
+      "idUsuario": "USR-001",
+      "tipo": "recuperacion",
+      "expira": "2026-11-24T07:04:02.761Z",
       "usado": true
     }
   ],
