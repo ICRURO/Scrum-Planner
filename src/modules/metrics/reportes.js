@@ -56,8 +56,8 @@
         const { sprintsDisponibles, sprint } = res.datos;
 
         if (sprintsDisponibles && sprintsDisponibles.length > 0) {
-            selectSprint.innerHTML = sprintsDisponibles
-                .map((s) => `<option value="${s.id}">${UI.escapar(s.nombre)}</option>`)
+            selectSprint.innerHTML = '<option value="TODOS">General del proyecto</option>' + sprintsDisponibles
+                .map((s) => `<option value="${UI.escapar(s.id)}">${UI.escapar(s.nombre)}</option>`)
                 .join('');
 
             if (sprint) {
@@ -67,13 +67,8 @@
             }
             await cargarMetricas(selectSprint.value);
         } else {
-            selectSprint.innerHTML = '<option value="">Sin sprints</option>';
-            contenedorSvg.innerHTML = '<span class="texto-suave">Sin sprints registrados.</span>';
-            alertaDatos.hidden = false;
-            tablaProgreso.innerHTML = '<tr><td colspan="3" class="texto-suave">No hay tareas.</td></tr>';
-            if (tablaReportesEstado) {
-                tablaReportesEstado.innerHTML = '<tr><td colspan="3">Selecciona un Sprint para generar su reporte.</td></tr>';
-            }
+            selectSprint.innerHTML = '<option value="TODOS">General del proyecto</option>';
+            await cargarMetricas('TODOS');
         }
     }
 
@@ -120,7 +115,9 @@
         const idProyecto = selectProyecto.value;
         if (!idProyecto) return;
 
-        const res = await Api.get(`/api/metrics/proyectos/${encodeURIComponent(idProyecto)}/sprints/${encodeURIComponent(idSprint)}`);
+        BurndownUI.limpiar();
+        const res = await Api.get(`/api/metrics/proyectos/${encodeURIComponent(idProyecto)}/burndown/${encodeURIComponent(idSprint)}`);
+        if (selectProyecto.value !== idProyecto || selectSprint.value !== idSprint) return;
         if (!res.ok) return UI.toast(res.datos?.mensaje || 'Error al obtener métricas.', 'error');
 
         const { metricas, sprint } = res.datos;
@@ -134,6 +131,7 @@
                 </tr>`;
         }
 
+        if (tablaReportesEstado && !sprint) tablaReportesEstado.innerHTML = '<tr><td colspan="3">General del proyecto · Usa los botones de exportación del doble Burndown.</td></tr>';
         alertaDatos.hidden = metricas.datosSuficientes;
 
         document.getElementById('talla-xs').textContent = metricas.conteoTallas.XS || 0;
@@ -142,7 +140,7 @@
         document.getElementById('talla-l').textContent = metricas.conteoTallas.L || 0;
         document.getElementById('talla-xl').textContent = metricas.conteoTallas.XL || 0;
 
-        dibujarBurndownSVG(metricas);
+        BurndownUI.pintar(res.datos.burndown, idProyecto, idSprint);
         
         if (notasBurndown) {
             notasBurndown.textContent = metricas.advertencias?.[0] || '';
@@ -224,6 +222,10 @@
     async function descargarReporte(idSprint, formato = 'pdf', alcance = 'sprint') {
         const idProyecto = selectProyecto.value;
         if (!idProyecto || (alcance === 'sprint' && !idSprint)) return UI.toast('Selecciona un proyecto y un Sprint.', 'error');
+        if (alcance === 'sprint' && idSprint === 'TODOS') {
+            if (formato === 'txt') BurndownUI.exportar(); else window.print();
+            return;
+        }
         try {
             const base = `/api/metrics/proyectos/${encodeURIComponent(idProyecto)}`;
             const url = alcance === 'proyecto' ? `${base}/exportar?formato=${formato}` : `${base}/sprints/${encodeURIComponent(idSprint)}/exportar?formato=${formato}`;

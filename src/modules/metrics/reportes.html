@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/shared/css/base.css">
 <link rel="stylesheet" href="/shared/css/components.css">
 <link rel="stylesheet" href="/modules/metrics/reportes.css">
+<link rel="stylesheet" href="/modules/metrics/burndown.css">
 <style>
 .controles-filtro { flex-wrap: wrap; }
 @media print {
@@ -47,23 +48,42 @@
     <!-- Banner compacto de datos insuficientes -->
     <div class="alerta alerta--info" id="alerta-datos-insuficientes" hidden>
         <span class="icono-ficha" data-icon="info"></span>
-        <span>Se requieren tareas con horas estimadas y fechas válidas para dibujar el burndown.</span>
+        <span>Se requieren historias estimadas mediante Planning Poker y fechas válidas para calcular los Burndown.</span>
     </div>
 
+    <p id="notas-doble-burndown" class="texto-suave" aria-live="polite"></p>
+    <div class="burndown-exportar">
+      <button class="btn btn-secundario" type="button" id="btn-burndown-txt" disabled>Exportar ambas gráficas (TXT)</button>
+      <button class="btn btn-secundario" type="button" id="btn-burndown-pdf">Imprimir / Guardar PDF</button>
+    </div>
     <!-- Cuadrante 2x2 -->
     <div class="rejilla-metricas" id="contenedor-metricas">
     
         <!-- Burndown Chart -->
         <section class="tarjeta">
             <div class="tarjeta-encabezado">
-                <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="bandera"></span>Burndown Chart</h2>
+                <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="bandera"></span>Burndown Chart — Horas reales</h2>
                 <div class="leyenda-grafica">
                     <span class="leyenda-item"><span class="indicador indicador--ideal"></span> Ideal</span>
                     <span class="leyenda-item"><span class="indicador indicador--actual"></span> Actual</span>
                 </div>
             </div>
+            <p id="burndown-resumen-horas"></p>
             <div class="contenedor-svg" id="grafico-burndown"></div>
             <p id="notas-burndown" class="texto-suave" style="font-size: .85rem; margin-top: 12px" aria-live="polite"></p>
+        </section>
+
+        <!-- Burndown por puntos de historia -->
+        <section class="tarjeta">
+            <div class="tarjeta-encabezado">
+                <h2 class="tarjeta__titulo">Burndown Chart — Puntos de historia</h2>
+                <div class="leyenda-grafica">
+                    <span class="leyenda-item"><span class="indicador indicador--ideal"></span> Ideal</span>
+                    <span class="leyenda-item"><span class="indicador indicador--actual"></span> Actual</span>
+                </div>
+            </div>
+            <p id="burndown-resumen-puntos"></p>
+            <div class="contenedor-svg" id="grafico-burndown-puntos"></div>
         </section>
 
         <!-- Historias por Talla -->
@@ -168,6 +188,7 @@
 <script src="/shared/js/api.js"></script>
 <script src="/shared/js/ui.js"></script>
 <script src="/shared/js/layout.js"></script>
+<script src="/modules/metrics/burndown.ui.js"></script>
 <script src="/modules/metrics/reportes.js"></script>
 </body>
 </html>

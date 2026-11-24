@@ -743,6 +743,7 @@
                   <span>${UI.escapar(t.nombreResponsable || t.idResponsable || 'Sin asignar')}</span>
                 </div>
                 ${selectorEstado}
+                ${HorasUI.tarjeta(t, miRolActual, proyectoArchivadoActual || actual?.estado === 'finalizado')}
               </article>`;
           }).join('');
         }
@@ -1014,6 +1015,7 @@
     dibujarHistorias(historiasUsuario, permisos, p.archivado);
     await PokerUI.cargar(p.id, miRol, p.archivado, historiasUsuario);
     dibujarSprints(r.datos.sprints || [], miRol, permisos, p.archivado);
+    await HorasUI.cargar(p.id, sesion, renderizarTareasTablero);
     dibujarTableroScrum(r.datos.sprints || [], miRol, p.archivado);
     
     // HU-38: Cargar historial estructurado y renderizar con filtros

@@ -1,0 +1,6 @@
+.registro-horas-tarjeta { display:flex; gap:6px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-top:10px; padding-top:8px; border-top:1px solid var(--c-linea,#d8e0dc); }
+.registro-horas-tarjeta small { color:var(--c-texto-suave,#54645e); }
+#dialogo-horas { border:1px solid #cbd5d1; border-radius:14px; padding:24px; width:min(440px,92vw); background:white; color:#172c25; margin:auto; }
+#dialogo-horas::backdrop { background:#142b2566; }
+#dialogo-horas h2 { margin:0 0 16px; font-size:1.2rem; }
+#horas-error {color:#a12424; min-height:1.4em;}
