@@ -1,0 +1,6 @@
+/* Extensión del diseño de reportes existente. */
+.rejilla-metricas > .tarjeta { min-width:0; }
+#burndown-resumen-horas,#burndown-resumen-puntos { font-weight:700; color:var(--c-texto,#173d30); margin:10px 0; }
+#notas-doble-burndown { font-size:.85rem; line-height:1.5; }
+.burndown-exportar { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 18px; }
+@media print { .burndown-exportar{display:none!important} .rejilla-metricas{grid-template-columns:1fr 1fr} }

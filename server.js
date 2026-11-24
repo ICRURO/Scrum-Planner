@@ -75,6 +75,7 @@ app.use('/api/projects', require('./src/modules/projects/poker.routes'));
 app.use('/api/equipos', require('./src/modules/equipos/equipos.routes'));
 
 // ---------- API de métricas ----------
+app.use('/api/metrics', require('./src/modules/metrics/burndown.routes'));
 app.use('/api/metrics', require('./src/modules/metrics/metrics.routes'));
 
 // ---------- API de capacitación ----------
