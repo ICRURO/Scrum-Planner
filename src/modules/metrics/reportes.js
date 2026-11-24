@@ -84,7 +84,12 @@
         if (linkRiesgos) linkRiesgos.href = `/impedimentos?proyecto=${encodeURIComponent(idProyecto)}`;
 
         const res = await Api.get(`/api/metrics/proyectos/${encodeURIComponent(idProyecto)}/historial-sprints`);
-        const listaSprints = res.datos?.sprints || res.sprints || [];
+        if (idProyecto !== selectProyecto.value) return;
+        if (!res.ok) {
+            tablaSprintsHistorial.innerHTML = '<tr><td colspan="4">No se pudo consultar el historial.</td></tr>';
+            return;
+        }
+        const listaSprints = res.datos.sprints || [];
 
         if (listaSprints.length === 0) {
             tablaSprintsHistorial.innerHTML = `<tr><td colspan="4" class="texto-suave" style="text-align: center;">No hay Sprints pasados registrados en este proyecto.</td></tr>`;
@@ -94,7 +99,7 @@
         tablaSprintsHistorial.innerHTML = listaSprints.map((s) => {
             const esCancelado = String(s.estado || '').toLowerCase() === 'cancelado';
             const claseEstado = esCancelado ? 'insignia--finalizado' : 'insignia--activo';
-            const fechaMostrada = s.fechaCierre ? UI.formatoFecha(s.fechaCierre) : (s.fechaFin ? UI.formatoFecha(s.fechaFin) : 'Sin registrar');
+            const fechaMostrada = s.fechaCierre ? UI.formatoFecha(s.fechaCierre) : 'Sin registrar';
 
             return `
                 <tr>
@@ -222,8 +227,8 @@
     async function descargarReporte(idSprint, formato = 'pdf', alcance = 'sprint') {
         const idProyecto = selectProyecto.value;
         if (!idProyecto || (alcance === 'sprint' && !idSprint)) return UI.toast('Selecciona un proyecto y un Sprint.', 'error');
-        if (alcance === 'sprint' && idSprint === 'TODOS') {
-            if (formato === 'txt') BurndownUI.exportar(); else window.print();
+        if (alcance === 'sprint' && (formato === 'pdf' || idSprint === 'TODOS')) {
+            BurndownUI.exportar(formato, idProyecto, idSprint);
             return;
         }
         try {
@@ -248,7 +253,7 @@
         }
     }
 
-    document.getElementById('btn-descargar-pdf-completo')?.addEventListener('click', () => descargarReporte(null, formatoReporte?.value || 'pdf', 'proyecto'));
+    document.getElementById('btn-descargar-pdf-completo')?.addEventListener('click', () => descargarReporte(null, 'pdf', 'proyecto'));
     document.getElementById('btn-exportar')?.addEventListener('click', () => descargarReporte(selectSprint.value, formatoReporte?.value || 'pdf', 'sprint'));
 
     document.addEventListener('click', e => {

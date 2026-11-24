@@ -5,7 +5,7 @@
       "nombre": "Admin",
       "apellidos": "Demo",
       "correo": "admin@scrum.test",
-      "password": "scrypt$36a6d95e82c010a36bb164493a9a9681$bc06628849b0e1b5e249b80429fcfc1f9ee8accfd97b094574627173309290ef913d31da7762635e13ef0c02aedb578289218fc917b29df975eca8af5b2f2d8b",
+      "password": "scrypt$d00cf7508ed575b4a2eab711e2564cd8$256090c51aa567f4ca8683b3f03dd4528a2ccebf0a326387b5fe642f63d387bd3409f6f4212f32339325766596bf89bee57976e491cd50afde04593f5c681fc5",
       "rolGlobal": "administrador",
       "estado": "activo"
     },
@@ -1326,6 +1326,16 @@
       "campo": "contrasena",
       "valorAnterior": null,
       "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-070",
+      "fecha": "2026-11-24T07:40:24.271Z",
+      "idUsuario": "USR-001",
+      "entidad": "usuario",
+      "idEntidad": "USR-001",
+      "campo": "contrasena",
+      "valorAnterior": null,
+      "valorNuevo": "restablecida"
     }
   ],
   "tokens": [
@@ -1461,6 +1471,13 @@
       "tipo": "recuperacion",
       "expira": "2026-11-24T07:04:02.761Z",
       "usado": true
+    },
+    {
+      "token": "5ec739f343c5404655b409024ab02b2f04ac19765e11af38",
+      "idUsuario": "USR-001",
+      "tipo": "recuperacion",
+      "expira": "2026-11-24T08:38:11.213Z",
+      "usado": true
     }
   ],
   "historiasUsuario": [
@@ -1501,7 +1518,9 @@
           "idResponsable": "USR-010",
           "idUsuarioResponsable": "USR-010"
         }
-      ]
+      ],
+      "puntosHistoria": 5,
+      "horasEstimadas": 12
     },
     {
       "id": "HU-002",
@@ -1542,7 +1561,9 @@
           "idResponsable": "USR-014",
           "idUsuarioResponsable": "USR-014"
         }
-      ]
+      ],
+      "puntosHistoria": 5,
+      "horasEstimadas": 20
     },
     {
       "id": "HU-003",
@@ -1581,7 +1602,9 @@
           "idResponsable": "USR-012",
           "idUsuarioResponsable": "USR-012"
         }
-      ]
+      ],
+      "puntosHistoria": 3,
+      "horasEstimadas": 10
     },
     {
       "id": "HU-P2-01",
@@ -1611,7 +1634,9 @@
         "HU-001"
       ],
       "orden": 4,
-      "comentarios": []
+      "comentarios": [],
+      "puntosHistoria": 2,
+      "horasEstimadas": 6
     }
   ],
   "sprints": [
@@ -1814,6 +1839,47 @@
       "votos": [],
       "rondasAnteriores": [],
       "fechaCreacion": "2026-11-23T02:22:45.018Z"
+    }
+  ],
+  "registrosHoras": [
+    {
+      "id": "DEMO-BURNDOWN-TK-002",
+      "idSolicitud": "DEMO-BURNDOWN-TK-002",
+      "idProyecto": "PRJ-001",
+      "idSprint": "SPR-001",
+      "idHistoria": "HU-001",
+      "idTarea": "TK-002",
+      "idUsuario": "USR-010",
+      "fecha": "2026-10-14",
+      "horas": 2,
+      "fechaRegistro": "2026-11-24T07:59:50.648Z",
+      "esDemo": true
+    },
+    {
+      "id": "DEMO-BURNDOWN-TK-003",
+      "idSolicitud": "DEMO-BURNDOWN-TK-003",
+      "idProyecto": "PRJ-001",
+      "idSprint": "SPR-002",
+      "idHistoria": "HU-002",
+      "idTarea": "TK-003",
+      "idUsuario": "USR-010",
+      "fecha": "2026-10-28",
+      "horas": 4,
+      "fechaRegistro": "2026-11-24T07:59:50.650Z",
+      "esDemo": true
+    },
+    {
+      "id": "DEMO-BURNDOWN-TK-004",
+      "idSolicitud": "DEMO-BURNDOWN-TK-004",
+      "idProyecto": "PRJ-001",
+      "idSprint": "SPR-002",
+      "idHistoria": "HU-002",
+      "idTarea": "TK-004",
+      "idUsuario": "USR-014",
+      "fecha": "2026-11-03",
+      "horas": 3,
+      "fechaRegistro": "2026-11-24T07:59:50.650Z",
+      "esDemo": true
     }
   ]
 }

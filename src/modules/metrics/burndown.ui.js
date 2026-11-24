@@ -32,14 +32,20 @@ const BurndownUI = {
     document.getElementById('burndown-resumen-horas').textContent=`${mostrar(b.horas.pendientes,b.horas.disponible)} / ${mostrar(b.horas.total,b.horas.disponible)} h del presupuesto · ${b.horas.invertidas} h registradas`+(b.horas.disponible&&b.horas.exceso?` · Exceso: ${b.horas.exceso} h`:'');
     document.getElementById('notas-doble-burndown').textContent=b.advertencias.join(' ');
     document.getElementById('btn-burndown-txt').disabled=false;
+    document.getElementById('btn-burndown-pdf').disabled=false;
   },
   limpiar(){
     this.idProyecto=null;this.idSprint=null;
     for(const id of ['grafico-burndown','grafico-burndown-puntos'])document.getElementById(id).textContent='Selecciona un proyecto o sprint.';
     for(const id of ['burndown-resumen-puntos','burndown-resumen-horas','notas-doble-burndown'])document.getElementById(id).textContent='';
     document.getElementById('btn-burndown-txt').disabled=true;
+    document.getElementById('btn-burndown-pdf').disabled=true;
   },
-  exportar(){if(this.idProyecto&&this.idSprint)window.location.href=`/api/metrics/proyectos/${encodeURIComponent(this.idProyecto)}/burndown/${encodeURIComponent(this.idSprint)}?formato=txt`;}
+  exportar(formato = 'txt', idProyecto = this.idProyecto, idSprint = this.idSprint) {
+    if (!idProyecto || !idSprint) return;
+    const base = `/api/metrics/proyectos/${encodeURIComponent(idProyecto)}/burndown/${encodeURIComponent(idSprint)}`;
+    window.location.assign(`${base}?formato=${encodeURIComponent(formato)}`);
+  }
 };
-document.getElementById('btn-burndown-txt')?.addEventListener('click',()=>BurndownUI.exportar());
-document.getElementById('btn-burndown-pdf')?.addEventListener('click',()=>window.print());
+document.getElementById('btn-burndown-txt')?.addEventListener('click', () => BurndownUI.exportar());
+document.getElementById('btn-burndown-pdf')?.addEventListener('click', () => BurndownUI.exportar('pdf'));

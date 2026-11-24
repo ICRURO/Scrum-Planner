@@ -6,6 +6,7 @@ const {registrarHistorial}=require('../../config/historial');
 const {requiereSesion}=require('../../middleware/auth');
 const {puede,rolEnProyecto}=require('../../middleware/permisos');
 const {calcular,alcance,tareasHistoria,fechaLocal,dia}=require('./burndown.logic');
+const { enviarPDF } = require('./burndown.pdf');
 const router=express.Router();
 router.use(requiereSesion);
 function contexto(req,res){
@@ -29,6 +30,7 @@ router.get('/proyectos/:idProyecto/burndown/:alcance',(req,res)=>{
   const sprint=req.params.alcance==='TODOS'?null:(ctx.db.sprints||[]).find(s=>s.id===req.params.alcance&&s.idProyecto===ctx.proyecto.id);
   if(req.params.alcance!=='TODOS'&&!sprint)return res.status(404).json({mensaje:'Sprint no encontrado en el proyecto.'});
   const datos=reporte(ctx,sprint);
+  if (req.query.formato === 'pdf') return enviarPDF(res, datos);
   if(req.query.formato==='txt'){
     const b=datos.burndown;
     const filas=b.etiquetasDias.map((d,i)=>[d,b.puntos.disponible?b.puntos.serieIdeal[i]:'N/D',b.puntos.disponible?b.puntos.serieReal[i]??'N/D':'N/D',b.horas.disponible?b.horas.serieIdeal[i]:'N/D',b.horas.disponible?b.horas.serieReal[i]??'N/D':'N/D'].join('\t'));
@@ -38,6 +40,44 @@ router.get('/proyectos/:idProyecto/burndown/:alcance',(req,res)=>{
   }
   res.json(datos);
 });
+router.get('/proyectos/:idProyecto/exportar', (req, res) => {
+  const ctx = contexto(req, res);
+  if (!ctx) return;
+  const { db, proyecto } = ctx;
+  const delProyecto = lista => (lista || []).filter(item => item.idProyecto === proyecto.id);
+  const secciones = [
+    ['Proyecto', [proyecto.descripcion, proyecto.objetivo, proyecto.estado].filter(Boolean)],
+    ['Equipo', delProyecto(db.participantes).map(p => {
+      const u = (db.usuarios || []).find(u => u.id === p.idUsuario);
+      return `${u ? [u.nombre, u.apellidos].filter(Boolean).join(' ') : p.idUsuario} · ${p.rol}`;
+    })],
+    ['Sprints', delProyecto(db.sprints).map(s => `${s.nombre} · ${s.estado} · ${s.fechaInicio || '—'} al ${s.fechaFin || '—'}`)],
+    ['Historias y tareas', alcance(db, proyecto, null).flatMap(h => [
+      `${h.id} · ${h.titulo} · ${h.puntosHistoria ?? '—'} pts · ${h.horasEstimadas ?? '—'} h estimadas`,
+      ...tareasHistoria(db, h).map(t => `    ${t.id} · ${t.titulo} · ${t.estado}`)
+    ])],
+    ['Definition of Done', delProyecto(db.dods).map(d => d.descripcion).filter(Boolean)],
+    ['Impedimentos', delProyecto(db.impedimentos).map(i => `${i.descripcion || i.titulo || i.id} · ${i.estado || '—'}`)],
+    ['Riesgos', delProyecto(db.riesgos).map(r => `${r.descripcion || r.titulo || r.id} · ${r.estado || '—'}`)],
+    ['Reuniones', delProyecto(db.reuniones).map(r => `${r.titulo || r.tipo || r.id} · ${r.fecha || r.fechaInicio || '—'}`)]
+  ];
+  return enviarPDF(res, reporte(ctx, null), secciones);
+});
+
+router.get('/proyectos/:idProyecto/historial-sprints', (req, res) => {
+  const ctx = contexto(req, res);
+  if (!ctx) return;
+  const cerrado = estado => ['finalizado', 'cancelado'].includes(String(estado).toLowerCase());
+  const sprints = (ctx.db.sprints || [])
+    .filter(s => s.idProyecto === ctx.proyecto.id && cerrado(s.estado))
+    .map(s => {
+      const evento = (ctx.db.historial || []).findLast(h => h.entidad === 'sprint' &&
+        h.idEntidad === s.id && h.campo === 'estado' && cerrado(h.valorNuevo?.estado ?? h.valorNuevo));
+      return { ...s, fechaCierre: s.fechaCierre || (evento?.fecha ? fechaLocal(new Date(evento.fecha)) : null) };
+    });
+  res.json({ sprints });
+});
+
 router.get('/proyectos/:idProyecto/horas',(req,res)=>{
   const ctx=contexto(req,res);if(!ctx)return;
   const totales=Object.create(null);

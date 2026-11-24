@@ -4,3 +4,19 @@
 #notas-doble-burndown { font-size:.85rem; line-height:1.5; }
 .burndown-exportar { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 18px; }
 @media print { .burndown-exportar{display:none!important} .rejilla-metricas{grid-template-columns:1fr 1fr} }
+
+/* El SVG conserva su proporción y ocupa su propia altura en la tarjeta. */
+#grafico-burndown,
+#grafico-burndown-puntos {
+  display: block;
+  height: auto;
+  min-height: 170px;
+  align-content: center;
+}
+
+#grafico-burndown svg,
+#grafico-burndown-puntos svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
