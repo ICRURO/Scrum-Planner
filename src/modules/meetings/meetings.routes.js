@@ -1,4 +1,5 @@
 const express = require('express');
+const PDFDocument = require('pdfkit');
 const router = express.Router();
 const { readDB, writeDB } = require('../../config/db');
 const { registrarHistorial } = require('../../config/historial');
@@ -106,6 +107,37 @@ router.get('/', (req, res) => {
     .map(r => presentar(db, r, req.usuario))
     .sort((a, b) => b.fecha.localeCompare(a.fecha));
   res.json({ reuniones });
+});
+
+router.get('/:id/pdf', (req, res) => {
+  const db = readDB();
+  const reunion = (db.reuniones || []).find(r => r.id === req.params.id && r.tipo === 'Sprint Retrospective');
+  if (!reunion) return res.status(404).json({ mensaje: 'Retrospectiva no encontrada.' });
+  if (!puedeVer(db, req.usuario, reunion.idProyecto)) {
+    return res.status(403).json({ mensaje: 'No tienes acceso a esta retrospectiva.' });
+  }
+
+  const detalle = presentar(db, reunion, req.usuario);
+  const doc = new PDFDocument({ size: 'A4', margin: 48 });
+  const id = reunion.id.replace(/[^a-zA-Z0-9_-]/g, '_');
+  res.attachment(`retrospectiva-${id}.pdf`).type('application/pdf');
+  doc.on('error', error => res.destroy(error));
+  doc.pipe(res);
+
+  doc.fontSize(18).text(`Retrospectiva · ${reunion.id}`).moveDown();
+  doc.fontSize(11).text(`Proyecto: ${detalle.nombreProyecto}`);
+  doc.text(`Sprint: ${detalle.nombreSprint}`);
+  doc.text(`Fecha: ${detalle.fecha}`);
+  doc.text(`Participantes: ${detalle.nombresParticipantes.join(', ') || 'Sin participantes'}`).moveDown();
+  doc.fontSize(14).text('Observaciones');
+  doc.fontSize(11).text(detalle.observaciones || 'Sin observaciones').moveDown();
+  doc.fontSize(14).text('Acuerdos');
+  doc.fontSize(11);
+  if (!detalle.acuerdos.length) doc.text('Sin acuerdos registrados.');
+  for (const a of detalle.acuerdos) {
+    doc.text([a.descripcion, a.nombreResponsable, a.estado, a.fechaCompromiso].filter(Boolean).join(' · '));
+  }
+  doc.end();
 });
 
 router.get('/:id', (req, res) => {

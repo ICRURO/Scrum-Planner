@@ -32,8 +32,8 @@
         <div class="controles-filtro">
             <select id="select-proyecto" class="control" aria-label="Seleccionar proyecto"></select>
             <select id="select-sprint" class="control" aria-label="Seleccionar sprint"></select>
-            <select id="formato-reporte" class="control" aria-label="Formato del reporte del Sprint"><option value="pdf">PDF</option><option value="txt">TXT</option></select>
-            <button id="btn-exportar" class="btn btn--primario" title="Exportar reporte de métricas">
+            <select id="formato-reporte" class="control" aria-label="Formato de exportación del burndown"><option value="pdf">PDF</option><option value="txt">TXT</option></select>
+            <button id="btn-exportar" class="btn btn--primario" title="Exportar ambas series del burndown">
             <svg class="icono-svg-exportar" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
@@ -156,9 +156,9 @@
             <section class="tarjeta">
                 <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="historia"></span>Recursos para el equipo</h2>
                 <ul class="lista-simple" style="font-size: 0.92rem;">
-                    <li><a href="/proyectos" id="link-recurso-dod" class="btn-texto" style="padding: 0;">• Plantillas Definition of Done (DoD)</a></li>
-                    <li><a href="/reuniones" id="link-recurso-retro" class="btn-texto" style="padding: 0;">• Enlace a Retrospectivas PDF</a></li>
-                    <li><a href="/impedimentos" id="link-recurso-riesgos" class="btn-texto" style="padding: 0;">• Matriz de riesgo actualizada</a></li>
+                    <li><a href="/proyectos" id="link-recurso-dod" class="btn-texto" style="padding: 0;">• Definition of Done del proyecto</a></li>
+                    <li><a href="/reuniones" id="link-recurso-retro" class="btn-texto" style="padding: 0;">• Retrospectivas del proyecto (PDF)</a></li>
+                    <li><a href="/impedimentos" id="link-recurso-riesgos" class="btn-texto" style="padding: 0;">• Matriz de riesgos del proyecto</a></li>
                 </ul>
             </section>
         </div>

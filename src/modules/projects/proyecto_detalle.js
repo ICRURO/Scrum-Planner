@@ -1263,6 +1263,11 @@
   });
 
   await pintar();
+  if (window.location.hash === '#definition-of-done' && !document.getElementById('contenido').hidden) {
+    const seccion = document.getElementById('definition-of-done');
+    seccion?.scrollIntoView({ block: 'center' });
+    seccion?.focus({ preventScroll: true });
+  }
 })();
 
 async function agregarParticipanteConRol(proyectoId) {

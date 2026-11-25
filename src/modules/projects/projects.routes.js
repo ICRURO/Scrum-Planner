@@ -61,6 +61,10 @@ function siguienteIdSprint(sprints = []) {
   return `SPR-${String(max + 1).padStart(3, '0')}`;
 }
 
+function esSprintAbierto(estado) {
+  return !['finalizado', 'cancelado'].includes(String(estado).toLowerCase());
+}
+
 function fechaActualLocal() {
   const hoy = new Date();
   const anio = hoy.getFullYear();
@@ -702,6 +706,7 @@ router.post('/:id/sprints', (req, res) => {
     fechaInicio: datos.fechaInicio,
     fechaFin: datos.fechaFin,
     estado: datos.estado || 'Planificado',
+    ...(!esSprintAbierto(datos.estado) ? { fechaCierre: fechaActualLocal() } : {}),
     historiasAsignadas: Array.isArray(datos.historiasAsignadas) ? datos.historiasAsignadas : []
   };
   db.sprints.push(sprint);
@@ -754,6 +759,11 @@ router.put('/:id/sprints/:idSprint', (req, res) => {
   sprint.objetivo = objetivo;
   sprint.fechaInicio = fechaInicio;
   sprint.fechaFin = fechaFin;
+  if (esSprintAbierto(sprint.estado) && !esSprintAbierto(estado)) {
+    sprint.fechaCierre = fechaActualLocal();
+  } else if (esSprintAbierto(estado)) {
+    delete sprint.fechaCierre;
+  }
   sprint.estado = estado;
   sprint.historiasAsignadas = historiasAsignadas;
   const valorNuevo = {
@@ -814,6 +824,7 @@ router.put('/:id/sprints/:idSprint/finalizar', (req, res) => {
   }
   const estadoAnterior = sprint.estado;
   sprint.estado = 'Finalizado';
+  sprint.fechaCierre = fechaActualLocal();
   registrarHistorial(db, {
     idUsuario: req.usuario.id,
     entidad: 'sprint',
@@ -938,6 +949,7 @@ router.put('/:id/sprints/:idSprint/cancelar', (req, res) => {
   }
   const estadoAnterior = sprint.estado;
   sprint.estado = 'Cancelado';
+  sprint.fechaCierre = fechaActualLocal();
   sprint.razonCancelacion = razon;
   registrarHistorial(db, {
     idUsuario: req.usuario.id,
@@ -1122,4 +1134,4 @@ router.put('/:id/archivar', apiConPermiso('archivar_proyecto', (req) => req.para
   res.json({ mensaje: archivar ? 'Proyecto archivado.' : 'Proyecto desarchivado.', proyecto });
 });
 
-module.exports = router; 
+module.exports = router;

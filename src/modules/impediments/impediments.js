@@ -4,6 +4,9 @@
   if (!sesion) return;
 
   const $ = id => document.getElementById(id);
+  const parametros = new URLSearchParams(window.location.search);
+  const proyectoDelReporte = parametros.get('proyecto');
+  const abrirRiesgos = parametros.get('vista') === 'riesgos';
   const vistas = {
     impedimentos: $('vista-listado'),
     nuevoImpedimento: $('vista-formulario'),
@@ -247,6 +250,7 @@
   function dibujarRiesgos() {
     const busqueda = $('buscar-riesgos').value.trim().toLowerCase();
     const filtrados = riesgos.filter(r =>
+      (!proyectoDelReporte || !abrirRiesgos || r.idProyecto === proyectoDelReporte) &&
       `${r.id} ${r.descripcion} ${r.idProyecto} ${r.probabilidad} ${r.nombreResponsable} ${r.estado}`
         .toLowerCase().includes(busqueda)
     );
@@ -420,7 +424,7 @@
   });
   formSeguimientoRiesgo.addEventListener('submit', guardarSeguimientoRiesgo);
 
-  mostrarVista('impedimentos');
+  mostrarVista(abrirRiesgos ? 'riesgos' : 'impedimentos');
   await cargarOpciones();
   await cargarImpedimentos();
   await cargarRiesgos();

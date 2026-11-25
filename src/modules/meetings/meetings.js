@@ -3,6 +3,9 @@
   if (!sesion) return;
 
   const $ = id => document.getElementById(id);
+  const parametros = new URLSearchParams(window.location.search);
+  const proyectoDelReporte = parametros.get('proyecto');
+  const abrirRetrospectivas = parametros.get('tipo') === 'retrospectiva';
   const seguro = valor => UI.escapar(String(valor ?? ''));
   const vistas = {
     lista: $('vista-reuniones'),
@@ -89,7 +92,7 @@
     const tipo = $('filtro-tipo').value;
     const filtradas = reuniones.filter(r => {
       const enTexto = `${r.id} ${r.tipo} ${r.fecha} ${r.nombreProyecto} ${r.nombreSprint} ${(r.nombresParticipantes || []).join(' ')} ${r.estadoAcuerdos}`.toLowerCase();
-      return (!tipo || r.tipo === tipo) && (!texto || enTexto.includes(texto));
+      return (!proyectoDelReporte || r.idProyecto === proyectoDelReporte) && (!tipo || r.tipo === tipo) && (!texto || enTexto.includes(texto));
     });
     $('contenedor-reuniones').hidden = !filtradas.length;
     $('sin-reuniones').hidden = !!filtradas.length;
@@ -101,7 +104,9 @@
         <td>${seguro(r.nombreProyecto)}<br><small>${seguro(r.nombreSprint)}</small></td>
         <td>${seguro((r.nombresParticipantes || []).join(', '))}</td>
         <td><span class="ep09-estado">${seguro(r.estadoAcuerdos)}</span></td>
-        <td class="ep09-acciones-celda"><button class="btn btn-secundario btn-chico" type="button" data-reunion="${seguro(r.id)}">Ver detalles</button></td>
+        <td class="ep09-acciones-celda"><button class="btn btn-secundario btn-chico" type="button" data-reunion="${seguro(r.id)}">Ver detalles</button>
+          ${r.tipo === 'Sprint Retrospective' ? `<a class="btn btn-secundario btn-chico" href="/api/reuniones/${encodeURIComponent(r.id)}/pdf">PDF</a>` : ''}
+        </td>
       </tr>
     `).join('');
   }
@@ -320,5 +325,6 @@
 
   vista('lista');
   await cargarOpciones();
+  if (abrirRetrospectivas) $('filtro-tipo').value = 'Sprint Retrospective';
   await cargarReuniones();
 })();

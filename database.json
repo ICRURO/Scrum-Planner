@@ -1336,6 +1336,20 @@
       "campo": "contrasena",
       "valorAnterior": null,
       "valorNuevo": "restablecida"
+    },
+    {
+      "id": "HIS-071",
+      "fecha": "2026-11-25T07:38:29.883Z",
+      "idUsuario": "USR-001",
+      "entidad": "tarea",
+      "idEntidad": "TK-003",
+      "campo": "estado",
+      "valorAnterior": "Terminado",
+      "valorNuevo": {
+        "estado": "En revisión",
+        "titulo": "Creación del módulo de proyectos y detalle",
+        "idHistoria": "HU-002"
+      }
     }
   ],
   "tokens": [
@@ -1544,8 +1558,8 @@
           "titulo": "Creación del módulo de proyectos y detalle",
           "descripcion": "Crear los módulos que tendrá el proyecto y sus detalles",
           "horasEstimadas": 14,
-          "estado": "Terminado",
-          "fechaTerminado": "2026-11-03",
+          "estado": "En revisión",
+          "fechaTerminado": null,
           "idResponsable": "USR-010",
           "idUsuarioResponsable": "USR-010"
         },
@@ -1709,8 +1723,8 @@
       "idHistoria": "HU-002",
       "titulo": "Creación del módulo de proyectos y detalle",
       "horasEstimadas": 14,
-      "estado": "Terminado",
-      "fechaTerminado": "2026-11-03",
+      "estado": "En revisión",
+      "fechaTerminado": null,
       "idResponsable": "USR-010",
       "descripcion": "Crear los módulos que tendrá el proyecto y sus detalles",
       "idUsuarioResponsable": "USR-010"

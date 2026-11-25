@@ -138,13 +138,14 @@
 
     const sprintsProyecto = (db.sprints || []).filter((s) => s.idProyecto === idProyecto);
     const sprint = sprintsProyecto.find((s) => s.id === idSprint);
-    const tareas = sprint ? (db.tareas || []).filter((t) => t.idSprint === sprint.id) : [];
+    if (!sprint) return res.status(404).json({ mensaje: 'Sprint no encontrado en el proyecto.' });
+    const tareas = (db.tareas || []).filter((t) => t.idSprint === sprint.id);
 
     const totalHoras = tareas.reduce((acc, t) => acc + (Number(t.horasEstimadas) || 1), 0);
     const terminadas = tareas.filter((t) => t.estado === 'terminado' || t.estado === 'Finalizado' || t.estado === 'Terminado').length;
 
     const reporteTxt = `========================================
-    REPORTE DE MÉTRICAS Y HORAS INVERTIDAS
+    RESUMEN DE TAREAS Y HORAS ESTIMADAS
     ========================================
     Proyecto: ${proyecto.id} - ${proyecto.nombre}
     Sprint: ${sprint ? sprint.nombre : idSprint}

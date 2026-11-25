@@ -72,7 +72,10 @@ router.get('/proyectos/:idProyecto/historial-sprints', (req, res) => {
     .filter(s => s.idProyecto === ctx.proyecto.id && cerrado(s.estado))
     .map(s => {
       const evento = (ctx.db.historial || []).findLast(h => h.entidad === 'sprint' &&
-        h.idEntidad === s.id && h.campo === 'estado' && cerrado(h.valorNuevo?.estado ?? h.valorNuevo));
+        h.idEntidad === s.id && (
+          (h.campo === 'estado' && cerrado(h.valorNuevo?.estado ?? h.valorNuevo)) ||
+          (h.campo === 'edicion' && cerrado(h.valorNuevo?.estado) && !cerrado(h.valorAnterior?.estado))
+        ));
       return { ...s, fechaCierre: s.fechaCierre || (evento?.fecha ? fechaLocal(new Date(evento.fecha)) : null) };
     });
   res.json({ sprints });

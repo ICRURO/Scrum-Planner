@@ -79,9 +79,9 @@
         const linkDod = document.getElementById('link-recurso-dod');
         const linkRetro = document.getElementById('link-recurso-retro');
         const linkRiesgos = document.getElementById('link-recurso-riesgos');
-        if (linkDod) linkDod.href = `/proyectos/detalle?id=${encodeURIComponent(idProyecto)}`;
-        if (linkRetro) linkRetro.href = `/reuniones?proyecto=${encodeURIComponent(idProyecto)}`;
-        if (linkRiesgos) linkRiesgos.href = `/impedimentos?proyecto=${encodeURIComponent(idProyecto)}`;
+        if (linkDod) linkDod.href = `/proyectos/detalle?id=${encodeURIComponent(idProyecto)}#definition-of-done`;
+        if (linkRetro) linkRetro.href = `/reuniones?proyecto=${encodeURIComponent(idProyecto)}&tipo=retrospectiva`;
+        if (linkRiesgos) linkRiesgos.href = `/impedimentos?proyecto=${encodeURIComponent(idProyecto)}&vista=riesgos`;
 
         const res = await Api.get(`/api/metrics/proyectos/${encodeURIComponent(idProyecto)}/historial-sprints`);
         if (idProyecto !== selectProyecto.value) return;
@@ -130,8 +130,8 @@
         if (tablaReportesEstado && sprint) {
             tablaReportesEstado.innerHTML = `
                 <tr>
-                    <td>Reporte Ejecutivo (${UI.escapar(sprint.nombre)})</td>
-                    <td><button class="btn btn--secundario" data-sprint-pdf="${UI.escapar(sprint.id)}">PDF / TXT</button></td>
+                    <td>Burndown (${UI.escapar(sprint.nombre)})</td>
+                    <td><button class="btn btn--secundario" data-sprint-pdf="${UI.escapar(sprint.id)}">PDF</button></td>
                     <td>${UI.escapar(metricas.fechaConsulta)}</td>
                 </tr>`;
         }
@@ -227,13 +227,13 @@
     async function descargarReporte(idSprint, formato = 'pdf', alcance = 'sprint') {
         const idProyecto = selectProyecto.value;
         if (!idProyecto || (alcance === 'sprint' && !idSprint)) return UI.toast('Selecciona un proyecto y un Sprint.', 'error');
-        if (alcance === 'sprint' && (formato === 'pdf' || idSprint === 'TODOS')) {
+        if (alcance === 'sprint') {
             BurndownUI.exportar(formato, idProyecto, idSprint);
             return;
         }
         try {
             const base = `/api/metrics/proyectos/${encodeURIComponent(idProyecto)}`;
-            const url = alcance === 'proyecto' ? `${base}/exportar?formato=${formato}` : `${base}/sprints/${encodeURIComponent(idSprint)}/exportar?formato=${formato}`;
+            const url = `${base}/exportar?formato=pdf`;
             const respuesta = await fetch(url, { credentials: 'same-origin' });
             if (!respuesta.ok) {
                 const error = await respuesta.json().catch(() => ({}));
@@ -258,7 +258,7 @@
 
     document.addEventListener('click', e => {
         const boton = e.target.closest('[data-sprint-pdf]');
-        if (boton) descargarReporte(boton.dataset.sprintPdf, formatoReporte?.value || 'pdf', 'sprint');
+        if (boton) descargarReporte(boton.dataset.sprintPdf, 'pdf', 'sprint');
     });
 
     await inicializar();
