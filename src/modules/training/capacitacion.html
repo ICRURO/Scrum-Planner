@@ -23,13 +23,13 @@
       <h2 class="tarjeta__titulo"><span class="icono-ficha" data-icon="bandera"></span>Bienvenido a la Capacitación</h2>
       <p>Hemos detectado que cuentas con módulos pendientes en tu guía de Scrum Manager. ¿Deseas tomar la capacitación ahora o prefieres realizarla después?</p>
       <div class="tarjeta__pie" style="margin-top: 20px;">
-        <button class="btn btn-secundario" id="btn-despues">Tomar después</button>
-        <button class="btn btn-primario" id="btn-ahora">Tomar capacitación ahora</button>
+        <button class="btn btn-secundario" id="btn-despues" type="button">Tomar después</button>
+        <button class="btn btn-primario" id="btn-ahora" type="button">Tomar capacitación ahora</button>
       </div>
     </section>
 
     <!-- Contenedor del Tutorial Interactivo (HU-56, HU-57) -->
-    <div class="rejilla-panel" id="contenedor-tutorial">
+    <div class="rejilla-panel" id="contenedor-tutorial" hidden>
       <section class="tarjeta">
         <h2 class="tarjeta__titulo" id="titulo-modulo"><span class="icono-ficha" data-icon="info"></span>Módulo de Aprendizaje</h2>
         <div id="contenido-teoria" style="margin-bottom: 24px; line-height: 1.6;">
@@ -49,6 +49,7 @@
           <div style="font-size: 1.5rem; font-weight: 700; color: var(--c-hoja); margin-bottom: 8px;" id="texto-porcentaje">0%</div>
           <progress id="barra-progreso" value="0" max="100" style="width: 100%; height: 12px; accent-color: var(--c-brote);"></progress>
           <p class="nota" style="margin-top: 12px;">Tu avance se guarda de forma automática conforme avanzas en los módulos.</p>
+          <button class="btn btn-secundario" id="btn-saltar-tutorial" type="button">Saltar tutorial</button>
         </section>
 
         <!-- Panel Administrativo de Avances (HU-55 - Visible solo para Admin) -->

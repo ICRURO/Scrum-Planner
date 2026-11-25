@@ -9,6 +9,8 @@
 
   const modalBienvenida = document.getElementById('modal-bienvenida');
   const contenedorTutorial = document.getElementById('contenedor-tutorial');
+  const btnDespues = document.getElementById('btn-despues');
+  const btnSaltar = document.getElementById('btn-saltar-tutorial');
   const contenidoTeoria = document.getElementById('contenido-teoria');
   const tituloModulo = document.getElementById('titulo-modulo');
   const btnAnterior = document.getElementById('btn-anterior');
@@ -20,6 +22,71 @@
   const tablaAdmin = document.getElementById('tabla-avances-admin');
 
   let pasoActual = 0;
+  let guardadoPendiente = Promise.resolve();
+
+  const participaciones = sesion.participaciones || [];
+  let participacionActual = 0;
+
+  const rutasPorRol = {
+    'Scrum Master': {
+      enfoque: 'Facilita los eventos Scrum, ayuda a dar seguimiento a los impedimentos y coordina la estimación del equipo.',
+      pasos: {
+        4: 'En el detalle del proyecto, entra a Planning Poker e inicia la estimación de una historia. Revela los votos para facilitar la conversación y guarda la estimación acordada.',
+        8: 'Abre Impedimentos y riesgos, selecciona tu proyecto y revisa los bloqueos que requieren seguimiento con el equipo.',
+        9: 'Abre Reuniones para organizar un evento Scrum y registra su propósito y los acuerdos del equipo.'
+      }
+    },
+    'Product Owner': {
+      enfoque: 'Ordena el Product Backlog, aclara el valor de las historias y revisa los resultados del sprint.',
+      pasos: {
+        2: 'Abre el detalle de tu proyecto y revisa el objetivo y el estado antes de cambiar la información del proyecto.',
+        4: 'Entra al Product Backlog para crear o editar historias, aclarar criterios de aceptación y ordenar las prioridades.',
+        5: 'En Sprint Backlog, revisa el alcance y el objetivo del sprint antes de decidir si debe finalizarse o cancelarse.',
+        11: 'Abre Reportes y consulta el avance del proyecto para preparar la revisión del sprint.'
+      }
+    },
+    Developer: {
+      enfoque: 'Refina historias, participa en Planning Poker y registra el avance de tus tareas asignadas.',
+      pasos: {
+        4: 'En Planning Poker, vota la estimación cuando el Scrum Master abra una sesión para tu equipo.',
+        6: 'En el Tablero Scrum, localiza tus tareas asignadas. Actualiza su estado y usa Registrar horas para capturar el trabajo realizado.',
+        7: 'Consulta la Definition of Done del proyecto y verifica los criterios antes de dar una tarea por terminada.',
+        10: 'En Reportes, revisa el burndown por horas y verifica cómo se reflejan las horas registradas.'
+      }
+    },
+    Interesado: {
+      enfoque: 'Consulta el avance del proyecto y comparte observaciones sobre las historias a las que tienes acceso.',
+      pasos: {
+        4: 'Abre el Product Backlog de tu proyecto y consulta las historias. Usa la opción de comentar para compartir observaciones.',
+        11: 'Abre Reportes para consultar el avance del proyecto.'
+      }
+    }
+  };
+
+  function guiaDelRol(esc) {
+    const participacion = participaciones[participacionActual];
+    const rol = participacion?.rol;
+    const ruta = rutasPorRol[rol];
+    if (!ruta) return '';
+
+    const selector = participaciones.length > 1 ? `
+      <label for="proyecto-capacitacion">Proyecto de la guía</label>
+      <select class="control" id="proyecto-capacitacion">
+        ${participaciones.map((p, i) => `
+          <option value="${i}" ${i === participacionActual ? 'selected' : ''}>
+            ${esc(p.nombreProyecto || p.idProyecto)} · ${esc(p.rol)}
+          </option>
+        `).join('')}
+      </select>` : '';
+
+    return `
+      <section style="padding:14px 16px; margin-bottom:24px; background:#edf5ee; border-radius:8px;">
+        ${selector}
+        <h3>Tu recorrido como ${esc(rol)}</h3>
+        <p>${esc(ruta.enfoque)}</p>
+        ${ruta.pasos[pasoActual] ? `<p><strong>En este módulo:</strong> ${esc(ruta.pasos[pasoActual])}</p>` : ''}
+      </section>`;
+  }
 
   // Guía verificada contra pantallas y rutas del proyecto recibido.
   const pasosCapacitacion = [
@@ -244,6 +311,7 @@
   async function cargarProgreso() {
     const r = await Api.get('/api/training/progreso');
 
+    let mostrarBienvenida = false;
     if (r.ok && r.datos?.progreso) {
       const prog = r.datos.progreso;
 
@@ -251,13 +319,11 @@
         ? prog.pasoIndex
         : 0;
 
-      actualizarInterfazProgreso(false);
-
-      if (prog.porcentaje === 0 && pasoActual === 0) {
-        modalBienvenida.hidden = false;
-        contenedorTutorial.style.opacity = '0.4';
-      }
+      mostrarBienvenida = prog.porcentaje === 0 && pasoActual === 0;
     }
+    actualizarInterfazProgreso(false);
+    modalBienvenida.hidden = !mostrarBienvenida;
+    contenedorTutorial.hidden = mostrarBienvenida;
 
     const resAdmin = await Api.get('/api/training/admin/avances');
 
@@ -330,6 +396,8 @@
 
           <div>${esc(leccion.objetivo)}</div>
         </div>
+
+        ${guiaDelRol(esc)}
 
         <!-- FUNDAMENTO SCRUM -->
         <div style="
@@ -440,12 +508,13 @@
         : 'Siguiente';
 
     if (guardar) {
-      Api.put('/api/training/progreso', {
+      const progreso = {
         porcentaje: porcentajeCalculado,
         pasoIndex: pasoActual,
         moduloActual: `Épica ${pasoActual + 1}`,
         completado: porcentajeCalculado === 100
-      });
+      };
+      guardadoPendiente = guardadoPendiente.then(() => Api.put('/api/training/progreso', progreso));
     }
   }
 
@@ -455,22 +524,33 @@
 
   document.getElementById('btn-ahora').addEventListener('click', () => {
     modalBienvenida.hidden = true;
-    contenedorTutorial.style.opacity = '1';
+    contenedorTutorial.hidden = false;
   });
 
-  document.getElementById('btn-despues').addEventListener('click', () => {
-    modalBienvenida.hidden = true;
-    contenedorTutorial.style.opacity = '1';
+  async function salirDelTutorial() {
+    btnDespues.disabled = true;
+    btnSaltar.disabled = true;
+    btnAnterior.disabled = true;
+    btnSiguiente.disabled = true;
+    await guardadoPendiente;
+    window.location.assign('/panel');
+  }
 
-    UI.toast(
-      'Puedes retomar la capacitación en cualquier momento.',
-      'info'
-    );
-  });
+  btnDespues.addEventListener('click', salirDelTutorial);
+  btnSaltar.addEventListener('click', salirDelTutorial);
 
   // ================================================================
   // NAVEGACIÓN ENTRE MÓDULOS
   // ================================================================
+
+  contenidoTeoria.addEventListener('change', e => {
+    if (e.target.id !== 'proyecto-capacitacion') return;
+    const indice = Number(e.target.value);
+    if (!Number.isInteger(indice) || !participaciones[indice]) return;
+    participacionActual = indice;
+    actualizarInterfazProgreso(false);
+    document.getElementById('proyecto-capacitacion')?.focus();
+  });
 
   btnSiguiente.addEventListener('click', () => {
     if (pasoActual < pasosCapacitacion.length - 1) {
